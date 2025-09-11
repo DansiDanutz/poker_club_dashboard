@@ -12,41 +12,47 @@ import { useSyncDatabase } from "../../../hooks/use-sync-database";
 export default function PlayerDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const playerId = params.id as string;
+  const playerId = parseInt(params.id as string);
   
   const { 
     players, 
     sessions: allSessions, 
-    promotions,
-    achievements 
+    promotions
   } = useSyncDatabase();
   
-  const [player, setPlayer] = useState(null);
-  const [playerSessions, setPlayerSessions] = useState([]);
-  const [playerStats, setPlayerStats] = useState({});
+  const [player, setPlayer] = useState<any>(null);
+  const [playerSessions, setPlayerSessions] = useState<any[]>([]);
+  const [playerStats, setPlayerStats] = useState<{
+    totalSessions: number;
+    totalHours: string;
+    averageHours: string;
+  }>({
+    totalSessions: 0,
+    totalHours: '0',
+    averageHours: '0'
+  });
 
   useEffect(() => {
     if (players.length > 0) {
-      const foundPlayer = players.find(p => p.id === parseInt(playerId));
+      const foundPlayer = players.find(p => p.id === playerId);
       setPlayer(foundPlayer);
       
       if (foundPlayer && allSessions.length > 0) {
-        const sessions = allSessions.filter(s => 
-          s.players?.some(sp => sp.id === foundPlayer.id)
-        );
+        // Filter sessions for this specific player
+        const sessions = allSessions.filter(s => s.player_id === foundPlayer.id);
         setPlayerSessions(sessions);
         
-        // Calculate stats
+        // Calculate stats using the correct session structure
         const totalSessions = sessions.length;
         const totalHours = sessions.reduce((sum, session) => {
-          const playerInSession = session.players?.find(sp => sp.id === foundPlayer.id);
-          return sum + (playerInSession?.hoursPlayed || 0);
+          // Convert duration from minutes to hours
+          return sum + (session.duration || 0) / 60;
         }, 0);
         
         setPlayerStats({
           totalSessions,
           totalHours: totalHours.toFixed(1),
-          averageHours: totalSessions > 0 ? (totalHours / totalSessions).toFixed(1) : 0
+          averageHours: totalSessions > 0 ? (totalHours / totalSessions).toFixed(1) : '0'
         });
       }
     }
@@ -125,17 +131,19 @@ export default function PlayerDetailPage() {
           ) : (
             <div className="space-y-4">
               {playerSessions.slice(0, 10).map((session) => {
-                const playerInSession = session.players?.find(sp => sp.id === player.id);
+                const hours = (session.duration || 0) / 60;
                 return (
                   <div key={session.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
-                      <p className="font-medium">{session.date}</p>
-                      <p className="text-sm text-muted-foreground">Table {session.table}</p>
+                      <p className="font-medium">{session.date_string || session.date}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {session.seat_in_time} - {session.seat_out_time}
+                      </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium">{playerInSession?.hoursPlayed || 0}h</p>
-                      <Badge variant={session.isActive ? "default" : "secondary"}>
-                        {session.isActive ? "Active" : "Completed"}
+                      <p className="font-medium">{hours.toFixed(1)}h</p>
+                      <Badge variant="secondary">
+                        Completed
                       </Badge>
                     </div>
                   </div>

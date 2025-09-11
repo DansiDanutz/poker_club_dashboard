@@ -11,7 +11,7 @@ import { useSyncDatabase } from "../../../hooks/use-sync-database";
 export default function PromotionDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const promotionId = params.id as string;
+  const promotionId = parseInt(params.id as string);
   
   const { 
     players, 
@@ -19,50 +19,57 @@ export default function PromotionDetailPage() {
     promotions 
   } = useSyncDatabase();
   
-  const [promotion, setPromotion] = useState(null);
-  const [promotionStats, setPromotionStats] = useState({});
-  const [leaderboard, setLeaderboard] = useState([]);
+  const [promotion, setPromotion] = useState<any>(null);
+  const [promotionStats, setPromotionStats] = useState<{
+    totalSessions: number;
+    totalPlayers: number;
+    totalHours: number;
+  }>({
+    totalSessions: 0,
+    totalPlayers: 0,
+    totalHours: 0
+  });
+  const [leaderboard, setLeaderboard] = useState<any[]>([]);
 
   useEffect(() => {
     if (promotions.length > 0) {
-      const foundPromotion = promotions.find(p => p.id === parseInt(promotionId));
+      const foundPromotion = promotions.find(p => p.id === promotionId);
       setPromotion(foundPromotion);
       
       if (foundPromotion && allSessions.length > 0 && players.length > 0) {
         // Filter sessions within promotion period
         const promotionSessions = allSessions.filter(session => {
           const sessionDate = new Date(session.date);
-          const startDate = new Date(foundPromotion.startDate);
-          const endDate = new Date(foundPromotion.endDate);
+          const startDate = new Date(foundPromotion.start_date);
+          const endDate = new Date(foundPromotion.end_date);
           return sessionDate >= startDate && sessionDate <= endDate;
         });
 
-        // Calculate leaderboard
-        const playerStats = {};
+        // Calculate leaderboard using actual session structure
+        const playerStats: Record<number, any> = {};
         promotionSessions.forEach(session => {
-          session.players?.forEach(sessionPlayer => {
-            const playerId = sessionPlayer.id;
-            if (!playerStats[playerId]) {
-              playerStats[playerId] = {
-                playerId,
-                name: players.find(p => p.id === playerId)?.name || 'Unknown',
-                totalHours: 0,
-                sessions: 0
-              };
-            }
-            playerStats[playerId].totalHours += sessionPlayer.hoursPlayed || 0;
-            playerStats[playerId].sessions += 1;
-          });
+          const playerId = session.player_id;
+          if (!playerStats[playerId]) {
+            playerStats[playerId] = {
+              playerId,
+              name: players.find(p => p.id === playerId)?.name || 'Unknown',
+              totalHours: 0,
+              sessions: 0
+            };
+          }
+          // Convert duration from minutes to hours
+          playerStats[playerId].totalHours += (session.duration || 0) / 60;
+          playerStats[playerId].sessions += 1;
         });
 
         const sortedLeaderboard = Object.values(playerStats)
-          .sort((a, b) => b.totalHours - a.totalHours);
+          .sort((a: any, b: any) => b.totalHours - a.totalHours);
 
         setLeaderboard(sortedLeaderboard);
         setPromotionStats({
           totalSessions: promotionSessions.length,
           totalPlayers: Object.keys(playerStats).length,
-          totalHours: Object.values(playerStats).reduce((sum, player) => sum + player.totalHours, 0)
+          totalHours: Object.values(playerStats).reduce((sum: number, player: any) => sum + (player.totalHours || 0), 0)
         });
       }
     }
@@ -86,7 +93,7 @@ export default function PromotionDetailPage() {
     );
   }
 
-  const isActive = new Date() >= new Date(promotion.startDate) && new Date() <= new Date(promotion.endDate);
+  const isActive = new Date() >= new Date(promotion.start_date) && new Date() <= new Date(promotion.end_date);
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -114,11 +121,11 @@ export default function PromotionDetailPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Start Date</p>
-              <p className="text-lg">{new Date(promotion.startDate).toLocaleDateString()}</p>
+              <p className="text-lg">{new Date(promotion.start_date).toLocaleDateString()}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">End Date</p>
-              <p className="text-lg">{new Date(promotion.endDate).toLocaleDateString()}</p>
+              <p className="text-lg">{new Date(promotion.end_date).toLocaleDateString()}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">Prize</p>
