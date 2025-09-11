@@ -1,0 +1,22 @@
+name: poker-club-dashboard
+services:
+- name: web
+  source_dir: /
+  github:
+    repo: DansiDanutz/poker_club_dashboard
+    branch: main
+  run_command: npm start
+  environment_slug: node-js
+  instance_count: 1
+  instance_size_slug: basic-xxs
+  routes:
+  - path: /
+  health_check:
+    http_path: /
+  envs:
+  - key: NODE_ENV
+    value: "production"
+  - key: NEXT_PUBLIC_SUPABASE_URL
+    value: "https://pewwxyyxcepvluowvaxh.supabase.co"
+  - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+    value: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBld3d4eXl4Y2Vwdmx1b3d2YXhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcxOTA2MjgsImV4cCI6MjA3Mjc2NjYyOH0.nVln959hYDI4mDhdR_4K2FQ_vX9gtiSJMe4yiiqU0qs"
