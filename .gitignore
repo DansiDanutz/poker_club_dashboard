@@ -59,3 +59,5 @@ debug-*.js
 # Temporary files
 *.tmp
 *.temp
+*.swp
+*.swo
