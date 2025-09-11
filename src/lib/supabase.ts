@@ -206,13 +206,27 @@ export class DatabaseService {
     }
 
     const sessions = data || []
-    const sessionHours = sessions.reduce((sum, session) => sum + session.duration, 0)
-    const totalSessions = sessions.length
+    console.log(`🔍 DEBUG Player ${playerId}: Found ${sessions.length} sessions`)
+    console.log(`🔍 DEBUG Sessions data:`, sessions)
     
+    const sessionHours = sessions.reduce((sum, session) => {
+      const duration = session.duration || 0
+      console.log(`🔍 DEBUG Session duration: ${duration} (type: ${typeof duration})`)
+      return sum + duration
+    }, 0)
+    const totalSessions = sessions.length
+
+    console.log(`🔍 DEBUG Player ${playerId}: Session hours = ${sessionHours}`)
+
     // Subtract penalties and add bonuses
     const penaltyHours = await this.calculatePlayerPenalties(playerId)
     const addonHours = await this.calculatePlayerAddons(playerId)
+
+    console.log(`🔍 DEBUG Player ${playerId}: Penalties = ${penaltyHours}h, Addons = ${addonHours}h`)
+
     const totalHours = Math.max(0, sessionHours - penaltyHours + addonHours) // Don't allow negative hours
+
+    console.log(`🔍 DEBUG Player ${playerId}: Final total = ${totalHours}h`)
 
     return { totalHours, totalSessions }
   }
