@@ -24,7 +24,9 @@ import {
   ChevronRight,
   Eye,
   Sparkles,
-  Minus
+  Minus,
+  ChevronUp,
+  ChevronDown
 } from 'lucide-react';
 
 // Import shadcn/ui components
@@ -118,6 +120,10 @@ const PokerClubDashboard = () => {
   const [historyDateTo, setHistoryDateTo] = useState('');
   const [historyPlayerFilter, setHistoryPlayerFilter] = useState('');
   const [historyActivityFilter, setHistoryActivityFilter] = useState('all');
+  
+  // Sorting state
+  const [sortField, setSortField] = useState<'date' | 'player' | 'type' | 'value'>('date');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
   // Club settings - Initialize with default, load from storage in useEffect
   const [clubSettings, setClubSettings] = useState<ClubSettings>({
@@ -261,8 +267,34 @@ const PokerClubDashboard = () => {
       return true;
     });
     
-    // Sort by date (most recent first)
-    return filteredActivities.sort((a, b) => b.date.getTime() - a.date.getTime());
+    // Apply sorting
+    return filteredActivities.sort((a, b) => {
+      let comparison = 0;
+      
+      switch (sortField) {
+        case 'date':
+          comparison = a.date.getTime() - b.date.getTime();
+          break;
+        case 'player':
+          comparison = a.player_name.localeCompare(b.player_name);
+          break;
+        case 'type':
+          const typeOrder = { session: 1, penalty: 2, addon: 3 };
+          comparison = typeOrder[a.type] - typeOrder[b.type];
+          break;
+        case 'value':
+          const aValue = a.type === 'session' ? a.data.duration / 60 : 
+                        a.type === 'penalty' ? -(a.data.penalty_minutes / 60) :
+                        a.data.bonus_minutes / 60;
+          const bValue = b.type === 'session' ? b.data.duration / 60 : 
+                        b.type === 'penalty' ? -(b.data.penalty_minutes / 60) :
+                        b.data.bonus_minutes / 60;
+          comparison = aValue - bValue;
+          break;
+      }
+      
+      return sortDirection === 'desc' ? -comparison : comparison;
+    });
   };
   
   const filteredActivities = getFilteredActivities();
@@ -1688,6 +1720,58 @@ const PokerClubDashboard = () => {
                       </div>
                       <div className="text-sm text-muted-foreground">
                         Showing {filteredActivities.length} activities ({cashGameHistory.length} sessions, {penalties.length} penalties, {addons.length} bonuses)
+                      </div>
+                    </div>
+                    
+                    {/* Sorting Controls */}
+                    <div className="mb-4 p-3 bg-muted/30 rounded-lg border">
+                      <div className="flex flex-wrap items-center gap-3">
+                        <span className="text-sm font-medium text-muted-foreground">Sort by:</span>
+                        
+                        {/* Sort Field Buttons */}
+                        <div className="flex gap-1">
+                          {[
+                            { key: 'date', label: 'Date' },
+                            { key: 'player', label: 'Player' },
+                            { key: 'type', label: 'Type' },
+                            { key: 'value', label: 'Value' }
+                          ].map(({ key, label }) => (
+                            <Button
+                              key={key}
+                              variant={sortField === key ? "default" : "ghost"}
+                              size="sm"
+                              onClick={() => {
+                                if (sortField === key) {
+                                  setSortDirection(sortDirection === 'desc' ? 'asc' : 'desc');
+                                } else {
+                                  setSortField(key as typeof sortField);
+                                  setSortDirection('desc');
+                                }
+                              }}
+                              className="flex items-center gap-1"
+                            >
+                              {label}
+                              {sortField === key && (
+                                sortDirection === 'desc' ? 
+                                <ChevronDown className="h-3 w-3" /> : 
+                                <ChevronUp className="h-3 w-3" />
+                              )}
+                            </Button>
+                          ))}
+                        </div>
+                        
+                        {/* Reset Sort */}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSortField('date');
+                            setSortDirection('desc');
+                          }}
+                          className="text-xs"
+                        >
+                          Reset Sort
+                        </Button>
                       </div>
                     </div>
                     {/* Activity Feed */}
