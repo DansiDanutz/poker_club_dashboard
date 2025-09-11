@@ -112,6 +112,11 @@ const PokerClubDashboard = () => {
   const [activeTables, setActiveTables] = useState<ActiveTable[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [confirmEndSession, setConfirmEndSession] = useState<{tableId: number, playerName: string} | null>(null);
+  
+  // Session history filters
+  const [historyDateFrom, setHistoryDateFrom] = useState('');
+  const [historyDateTo, setHistoryDateTo] = useState('');
+  const [historyPlayerFilter, setHistoryPlayerFilter] = useState('');
 
   // Club settings - Initialize with default, load from storage in useEffect
   const [clubSettings, setClubSettings] = useState<ClubSettings>({
@@ -192,6 +197,30 @@ const PokerClubDashboard = () => {
   const players: Player[] = (!mounted || dbLoading) ? (mounted ? loadFromStorage('pokerClubPlayers', []) as Player[] : []) : dbPlayers;
   const promotions: Promotion[] = (!mounted || dbLoading) ? (mounted ? loadFromStorage('pokerClubPromotions', []) as Promotion[] : []) : dbPromotions;
   const cashGameHistory: Session[] = (!mounted || dbLoading) ? (mounted ? loadFromStorage('pokerClubHistory', []) as Session[] : []) : dbSessions;
+
+  // Filter sessions based on date range and player
+  const filteredSessions = cashGameHistory.filter((session: Session) => {
+    // Date filter
+    if (historyDateFrom) {
+      const sessionDate = new Date(session.date);
+      const fromDate = new Date(historyDateFrom);
+      if (sessionDate < fromDate) return false;
+    }
+    
+    if (historyDateTo) {
+      const sessionDate = new Date(session.date);
+      const toDate = new Date(historyDateTo);
+      toDate.setHours(23, 59, 59, 999); // Include the entire end date
+      if (sessionDate > toDate) return false;
+    }
+    
+    // Player filter
+    if (historyPlayerFilter && historyPlayerFilter !== 'all') {
+      return session.player_name.toLowerCase().includes(historyPlayerFilter.toLowerCase());
+    }
+    
+    return true;
+  });
 
   // Save to localStorage whenever data changes (client-side only)
   useEffect(() => {
@@ -1542,6 +1571,58 @@ const PokerClubDashboard = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
+                    {/* Filter Controls */}
+                    <div className="mb-6 p-4 bg-muted/50 rounded-lg space-y-4">
+                      <div className="flex flex-col sm:flex-row gap-4">
+                        <div className="flex-1">
+                          <label className="text-sm font-medium mb-1 block">From Date</label>
+                          <Input
+                            type="date"
+                            value={historyDateFrom}
+                            onChange={(e) => setHistoryDateFrom(e.target.value)}
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <label className="text-sm font-medium mb-1 block">To Date</label>
+                          <Input
+                            type="date"
+                            value={historyDateTo}
+                            onChange={(e) => setHistoryDateTo(e.target.value)}
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <label className="text-sm font-medium mb-1 block">Player</label>
+                          <Select value={historyPlayerFilter} onValueChange={setHistoryPlayerFilter}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="All players" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">All Players</SelectItem>
+                              {players.map((player: Player) => (
+                                <SelectItem key={player.id} value={player.name}>
+                                  {player.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="flex items-end">
+                          <Button 
+                            variant="outline" 
+                            onClick={() => {
+                              setHistoryDateFrom('');
+                              setHistoryDateTo('');
+                              setHistoryPlayerFilter('');
+                            }}
+                          >
+                            Clear Filters
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Showing {filteredSessions.length} of {cashGameHistory.length} sessions
+                      </div>
+                    </div>
                     <div className="overflow-x-auto">
                       <Table>
                       <TableHeader>
@@ -1554,7 +1635,7 @@ const PokerClubDashboard = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {cashGameHistory.slice().reverse().map((session: Session) => (
+                        {filteredSessions.slice().reverse().map((session: Session) => (
                           <TableRow key={session.id}>
                             <TableCell>{new Date(session.date).toLocaleDateString()}</TableCell>
                             <TableCell className="font-medium">{session.player_name}</TableCell>
@@ -1570,6 +1651,11 @@ const PokerClubDashboard = () => {
                       </TableBody>
                     </Table>
                     </div>
+                    {filteredSessions.length === 0 && cashGameHistory.length > 0 && (
+                      <div className="text-center py-12 text-muted-foreground">
+                        No sessions match the current filters
+                      </div>
+                    )}
                     {cashGameHistory.length === 0 && (
                       <div className="text-center py-12 text-muted-foreground">
                         No sessions recorded yet
