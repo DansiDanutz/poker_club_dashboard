@@ -61,3 +61,5 @@ debug-*.js
 *.temp
 *.swp
 *.swo
+
+# Force Vercel redeploy trigger
