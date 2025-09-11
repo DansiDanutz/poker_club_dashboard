@@ -117,6 +117,7 @@ const PokerClubDashboard = () => {
   const [historyDateFrom, setHistoryDateFrom] = useState('');
   const [historyDateTo, setHistoryDateTo] = useState('');
   const [historyPlayerFilter, setHistoryPlayerFilter] = useState('');
+  const [historyActivityFilter, setHistoryActivityFilter] = useState('all');
 
   // Club settings - Initialize with default, load from storage in useEffect
   const [clubSettings, setClubSettings] = useState<ClubSettings>({
@@ -198,29 +199,73 @@ const PokerClubDashboard = () => {
   const promotions: Promotion[] = (!mounted || dbLoading) ? (mounted ? loadFromStorage('pokerClubPromotions', []) as Promotion[] : []) : dbPromotions;
   const cashGameHistory: Session[] = (!mounted || dbLoading) ? (mounted ? loadFromStorage('pokerClubHistory', []) as Session[] : []) : dbSessions;
 
-  // Filter sessions based on date range and player
-  const filteredSessions = cashGameHistory.filter((session: Session) => {
-    // Date filter
-    if (historyDateFrom) {
-      const sessionDate = new Date(session.date);
-      const fromDate = new Date(historyDateFrom);
-      if (sessionDate < fromDate) return false;
+  // Create comprehensive activity feed with sessions, penalties, and addons
+  const getFilteredActivities = () => {
+    const activities = [];
+    
+    // Add sessions
+    if (historyActivityFilter === 'all' || historyActivityFilter === 'sessions') {
+      cashGameHistory.forEach(session => {
+        activities.push({
+          type: 'session',
+          date: new Date(session.date),
+          player_name: session.player_name,
+          data: session
+        });
+      });
     }
     
-    if (historyDateTo) {
-      const sessionDate = new Date(session.date);
-      const toDate = new Date(historyDateTo);
-      toDate.setHours(23, 59, 59, 999); // Include the entire end date
-      if (sessionDate > toDate) return false;
+    // Add penalties
+    if (historyActivityFilter === 'all' || historyActivityFilter === 'penalties') {
+      penalties.forEach(penalty => {
+        activities.push({
+          type: 'penalty',
+          date: new Date(penalty.date_applied),
+          player_name: penalty.player_name,
+          data: penalty
+        });
+      });
     }
     
-    // Player filter
-    if (historyPlayerFilter && historyPlayerFilter !== 'all') {
-      return session.player_name.toLowerCase().includes(historyPlayerFilter.toLowerCase());
+    // Add addons
+    if (historyActivityFilter === 'all' || historyActivityFilter === 'addons') {
+      addons.forEach(addon => {
+        activities.push({
+          type: 'addon',
+          date: new Date(addon.date_applied),
+          player_name: addon.player_name,
+          data: addon
+        });
+      });
     }
     
-    return true;
-  });
+    // Apply date filters
+    const filteredActivities = activities.filter(activity => {
+      // Date filter
+      if (historyDateFrom) {
+        const fromDate = new Date(historyDateFrom);
+        if (activity.date < fromDate) return false;
+      }
+      
+      if (historyDateTo) {
+        const toDate = new Date(historyDateTo);
+        toDate.setHours(23, 59, 59, 999);
+        if (activity.date > toDate) return false;
+      }
+      
+      // Player filter
+      if (historyPlayerFilter && historyPlayerFilter !== 'all') {
+        return activity.player_name.toLowerCase().includes(historyPlayerFilter.toLowerCase());
+      }
+      
+      return true;
+    });
+    
+    // Sort by date (most recent first)
+    return filteredActivities.sort((a, b) => b.date.getTime() - a.date.getTime());
+  };
+  
+  const filteredActivities = getFilteredActivities();
 
   // Save to localStorage whenever data changes (client-side only)
   useEffect(() => {
@@ -1571,8 +1616,11 @@ const PokerClubDashboard = () => {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Calendar />
-                      Session History
+                      Activity History
                     </CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      Sessions, penalties, and bonuses for all players
+                    </p>
                   </CardHeader>
                   <CardContent>
                     {/* Filter Controls */}
@@ -1610,6 +1658,20 @@ const PokerClubDashboard = () => {
                             </SelectContent>
                           </Select>
                         </div>
+                        <div className="flex-1">
+                          <label className="text-sm font-medium mb-1 block">Activity Type</label>
+                          <Select value={historyActivityFilter} onValueChange={setHistoryActivityFilter}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="All activities" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">All Activities</SelectItem>
+                              <SelectItem value="sessions">Sessions Only</SelectItem>
+                              <SelectItem value="penalties">Penalties Only</SelectItem>
+                              <SelectItem value="addons">Bonuses Only</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
                         <div className="flex items-end">
                           <Button 
                             variant="outline" 
@@ -1617,6 +1679,7 @@ const PokerClubDashboard = () => {
                               setHistoryDateFrom('');
                               setHistoryDateTo('');
                               setHistoryPlayerFilter('');
+                              setHistoryActivityFilter('all');
                             }}
                           >
                             Clear Filters
@@ -1624,45 +1687,111 @@ const PokerClubDashboard = () => {
                         </div>
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        Showing {filteredSessions.length} of {cashGameHistory.length} sessions
+                        Showing {filteredActivities.length} activities ({cashGameHistory.length} sessions, {penalties.length} penalties, {addons.length} bonuses)
                       </div>
                     </div>
-                    <div className="overflow-x-auto">
-                      <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Player</TableHead>
-                          <TableHead>Started</TableHead>
-                          <TableHead>Ended</TableHead>
-                          <TableHead>Duration</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredSessions.slice().reverse().map((session: Session) => (
-                          <TableRow key={session.id}>
-                            <TableCell>{new Date(session.date).toLocaleDateString()}</TableCell>
-                            <TableCell className="font-medium">{session.player_name}</TableCell>
-                            <TableCell>{new Date(session.seat_in_time).toLocaleTimeString()}</TableCell>
-                            <TableCell>{new Date(session.seat_out_time).toLocaleTimeString()}</TableCell>
-                            <TableCell>
-                              <span className="text-blue-600 font-semibold">
-                                {formatDuration(session.duration)}
-                              </span>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                    </div>
-                    {filteredSessions.length === 0 && cashGameHistory.length > 0 && (
+                    {/* Activity Feed */}
+                    {filteredActivities.length === 0 ? (
                       <div className="text-center py-12 text-muted-foreground">
-                        No sessions match the current filters
+                        <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                        <p>No activities match the current filters</p>
+                        <p className="text-sm mt-2">Try adjusting your filters or check back later</p>
                       </div>
-                    )}
-                    {cashGameHistory.length === 0 && (
-                      <div className="text-center py-12 text-muted-foreground">
-                        No sessions recorded yet
+                    ) : (
+                      <div className="space-y-3">
+                        {filteredActivities.slice(0, 30).map((activity) => {
+                          if (activity.type === 'session') {
+                            const session = activity.data;
+                            const hours = (session.duration || 0) / 60;
+                            return (
+                              <div key={`session-${session.id}`} className="flex items-center justify-between p-4 border rounded-lg bg-blue-50/30 dark:bg-blue-950/20 hover:bg-blue-50/50 dark:hover:bg-blue-950/30 transition-colors">
+                                <div className="flex items-center gap-3">
+                                  <Clock className="h-5 w-5 text-blue-500 flex-shrink-0" />
+                                  <div>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <span className="font-medium">{session.player_name}</span>
+                                      <Badge variant="secondary">Session</Badge>
+                                    </div>
+                                    <p className="text-sm text-muted-foreground">
+                                      {new Date(session.date).toLocaleDateString()} • {new Date(session.seat_in_time).toLocaleTimeString()} - {new Date(session.seat_out_time).toLocaleTimeString()}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <p className="font-medium text-blue-600">+{hours.toFixed(1)}h</p>
+                                  <p className="text-xs text-muted-foreground">Playing time</p>
+                                </div>
+                              </div>
+                            );
+                          } else if (activity.type === 'penalty') {
+                            const penalty = activity.data;
+                            const hours = penalty.penalty_minutes / 60;
+                            return (
+                              <div key={`penalty-${penalty.id}`} className="flex items-center justify-between p-4 border rounded-lg bg-red-50/30 dark:bg-red-950/20 hover:bg-red-50/50 dark:hover:bg-red-950/30 transition-colors">
+                                <div className="flex items-center gap-3">
+                                  <Minus className="h-5 w-5 text-red-500 flex-shrink-0" />
+                                  <div>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <span className="font-medium">{penalty.player_name}</span>
+                                      <Badge variant="destructive">Penalty</Badge>
+                                    </div>
+                                    <p className="text-sm text-muted-foreground">
+                                      {new Date(penalty.date_applied).toLocaleDateString()} • {penalty.reason}
+                                    </p>
+                                    {penalty.reason_type && (
+                                      <p className="text-xs text-muted-foreground">
+                                        Category: {penalty.reason_type.replace('_', ' ')}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <p className="font-medium text-red-600">-{hours.toFixed(1)}h</p>
+                                  <p className="text-xs text-muted-foreground">Time penalty</p>
+                                </div>
+                              </div>
+                            );
+                          } else if (activity.type === 'addon') {
+                            const addon = activity.data;
+                            const hours = addon.bonus_minutes / 60;
+                            return (
+                              <div key={`addon-${addon.id}`} className="flex items-center justify-between p-4 border rounded-lg bg-green-50/30 dark:bg-green-950/20 hover:bg-green-50/50 dark:hover:bg-green-950/30 transition-colors">
+                                <div className="flex items-center gap-3">
+                                  <Plus className="h-5 w-5 text-green-500 flex-shrink-0" />
+                                  <div>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <span className="font-medium">{addon.player_name}</span>
+                                      <Badge className="bg-green-600 hover:bg-green-700">Bonus</Badge>
+                                    </div>
+                                    <p className="text-sm text-muted-foreground">
+                                      {new Date(addon.date_applied).toLocaleDateString()} • {addon.reason}
+                                    </p>
+                                    {addon.reason_type && (
+                                      <p className="text-xs text-muted-foreground">
+                                        Category: {addon.reason_type.replace('_', ' ')}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <p className="font-medium text-green-600">+{hours.toFixed(1)}h</p>
+                                  <p className="text-xs text-muted-foreground">Bonus time</p>
+                                </div>
+                              </div>
+                            );
+                          }
+                          return null;
+                        })}
+                        {filteredActivities.length > 30 && (
+                          <div className="text-center py-4">
+                            <p className="text-sm text-muted-foreground">
+                              Showing latest 30 activities of {filteredActivities.length} total
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Use filters to narrow down results
+                            </p>
+                          </div>
+                        )}
                       </div>
                     )}
                   </CardContent>
