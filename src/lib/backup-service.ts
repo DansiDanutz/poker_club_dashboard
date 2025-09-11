@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import { Player, Session, Promotion, Penalty, Addon, Achievement, ClubSettings } from '@/types';
+import { Player, Session, Promotion, Penalty, Addon, Achievement, ClubSettings } from '../types';
 
 export interface BackupSettings {
   autoBackup: boolean;

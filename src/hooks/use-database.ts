@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { DatabaseService, PlayerDB, SessionDB, PromotionDB } from '@/lib/supabase'
-import { Player, Session, Promotion } from '@/types'
+import { DatabaseService, PlayerDB, SessionDB, PromotionDB } from '../lib/supabase'
+import { Player, Session, Promotion } from '../types'
 
 // Helper functions to convert between DB and App types
 function dbPlayerToAppPlayer(dbPlayer: PlayerDB): Player {

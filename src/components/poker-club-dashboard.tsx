@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '../hooks/use-mobile';
 import { 
   Search, 
   User, 
@@ -28,22 +28,22 @@ import {
 } from 'lucide-react';
 
 // Import shadcn/ui components
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Badge } from "./ui/badge";
+import { Tabs, TabsContent } from "./ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
+import { Separator } from "./ui/separator";
 import { AddPlayerDialog } from "./add-player-dialog";
 import { AddPromotionDialog } from "./add-promotion-dialog";
 import { ThemeToggle } from "./theme-toggle";
-import { useSyncDatabase } from "@/hooks/use-sync-database";
-import { Player, Session, Promotion, ActiveTable, ClubSettings } from "@/types";
-import { DatabaseService } from "@/lib/supabase";
-import { BackupService, BackupData } from "@/lib/backup-service";
+import { useSyncDatabase } from "../hooks/use-sync-database";
+import { Player, Session, Promotion, ActiveTable, ClubSettings } from "../types";
+import { DatabaseService } from "../lib/supabase";
+import { BackupService, BackupData } from "../lib/backup-service";
 
 const PokerClubDashboard = () => {
   const router = useRouter();

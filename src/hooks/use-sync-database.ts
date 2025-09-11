@@ -1,8 +1,8 @@
 "use client"
 
 import { useState, useEffect, useCallback } from 'react'
-import { DatabaseService, PlayerDB, SessionDB, PromotionDB } from '@/lib/supabase'
-import { Player, Session, Promotion } from '@/types'
+import { DatabaseService, PlayerDB, SessionDB, PromotionDB } from '../lib/supabase'
+import { Player, Session, Promotion } from '../types'
 
 // Types for offline queue
 interface OfflineAction {
