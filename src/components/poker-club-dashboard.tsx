@@ -283,10 +283,20 @@ const PokerClubDashboard = () => {
           comparison = typeOrder[a.type] - typeOrder[b.type];
           break;
         case 'value':
-          const aValue = a.type === 'session' ? a.data.duration / 60 : 
+          const aDurationMinutes = a.type === 'session' 
+            ? (a.data.seat_in_time && a.data.seat_out_time 
+                ? (new Date(a.data.seat_out_time).getTime() - new Date(a.data.seat_in_time).getTime()) / (1000 * 60)
+                : (a.data.duration || 0))
+            : 0;
+          const bDurationMinutes = b.type === 'session' 
+            ? (b.data.seat_in_time && b.data.seat_out_time 
+                ? (new Date(b.data.seat_out_time).getTime() - new Date(b.data.seat_in_time).getTime()) / (1000 * 60)
+                : (b.data.duration || 0))
+            : 0;
+          const aValue = a.type === 'session' ? aDurationMinutes / 60 : 
                         a.type === 'penalty' ? -(a.data.penalty_minutes / 60) :
                         a.data.bonus_minutes / 60;
-          const bValue = b.type === 'session' ? b.data.duration / 60 : 
+          const bValue = b.type === 'session' ? bDurationMinutes / 60 : 
                         b.type === 'penalty' ? -(b.data.penalty_minutes / 60) :
                         b.data.bonus_minutes / 60;
           comparison = aValue - bValue;
@@ -1786,7 +1796,11 @@ const PokerClubDashboard = () => {
                         {filteredActivities.slice(0, 30).map((activity) => {
                           if (activity.type === 'session') {
                             const session = activity.data;
-                            const hours = (session.duration || 0) / 60;
+                            // Calculate duration from seat_in_time and seat_out_time in minutes, then convert to hours
+                            const durationMinutes = session.seat_in_time && session.seat_out_time 
+                              ? (new Date(session.seat_out_time).getTime() - new Date(session.seat_in_time).getTime()) / (1000 * 60)
+                              : (session.duration || 0);
+                            const hours = durationMinutes / 60;
                             return (
                               <div key={`session-${session.id}`} className="flex items-center justify-between p-4 border rounded-lg bg-blue-50/30 dark:bg-blue-950/20 hover:bg-blue-50/50 dark:hover:bg-blue-950/30 transition-colors">
                                 <div className="flex items-center gap-3">
