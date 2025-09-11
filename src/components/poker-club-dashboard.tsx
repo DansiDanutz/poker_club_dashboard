@@ -114,6 +114,9 @@ const PokerClubDashboard = () => {
   const [activeTables, setActiveTables] = useState<ActiveTable[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [confirmEndSession, setConfirmEndSession] = useState<{tableId: number, playerName: string} | null>(null);
+  const [isProcessingEndSession, setIsProcessingEndSession] = useState(false);
+  const [isProcessingPenalty, setIsProcessingPenalty] = useState(false);
+  const [isProcessingAddon, setIsProcessingAddon] = useState(false);
   
   // Session history filters
   const [historyDateFrom, setHistoryDateFrom] = useState('');
@@ -404,9 +407,31 @@ const PokerClubDashboard = () => {
 
   // Confirm and actually end the session
   const confirmEndSessionAction = async () => {
-    if (confirmEndSession) {
-      await sitOutPlayer(confirmEndSession.tableId);
+    if (confirmEndSession && !isProcessingEndSession) {
+      // Check if the table still exists in active tables to prevent duplicates
+      const tableExists = activeTables.find(t => t.id === confirmEndSession.tableId);
+      if (!tableExists) {
+        console.log('Table no longer exists, session already processed');
+        setConfirmEndSession(null);
+        return;
+      }
+
+      // Set processing state to prevent multiple clicks
+      setIsProcessingEndSession(true);
+      
+      // Clear the confirmation dialog immediately to prevent double-processing
+      const sessionInfo = confirmEndSession;
       setConfirmEndSession(null);
+      
+      try {
+        // Process the session
+        await sitOutPlayer(sessionInfo.tableId);
+      } catch (error) {
+        console.error('Error ending session:', error);
+      } finally {
+        // Reset processing state
+        setIsProcessingEndSession(false);
+      }
     }
   };
 
@@ -1346,12 +1371,17 @@ const PokerClubDashboard = () => {
                         </div>
 
                         <Button 
-                          className="w-full bg-red-600 hover:bg-red-700"
+                          className="w-full bg-red-600 hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                          disabled={isProcessingPenalty}
                           onClick={async () => {
+                            if (isProcessingPenalty) return; // Prevent double clicks
+                            
                             if (!penaltyForm.playerId || !penaltyForm.penaltyMinutes || !penaltyForm.reasonType || !penaltyForm.reason) {
                               alert('Please fill in all required fields');
                               return;
                             }
+                            
+                            setIsProcessingPenalty(true);
                             
                             try {
                               const penalty = await DatabaseService.createPenalty({
@@ -1394,11 +1424,13 @@ const PokerClubDashboard = () => {
                             } catch (error) {
                               console.error('Error applying penalty:', error);
                               alert('Error applying penalty: ' + (error instanceof Error ? error.message : String(error)));
+                            } finally {
+                              setIsProcessingPenalty(false);
                             }
                           }}
                         >
                           <Minus className="h-4 w-4 mr-2" />
-                          Apply Penalty
+                          {isProcessingPenalty ? 'Processing...' : 'Apply Penalty'}
                         </Button>
                       </div>
 
@@ -1556,12 +1588,17 @@ const PokerClubDashboard = () => {
                         </div>
 
                         <Button 
-                          className="w-full bg-green-600 hover:bg-green-700"
+                          className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                          disabled={isProcessingAddon}
                           onClick={async () => {
+                            if (isProcessingAddon) return; // Prevent double clicks
+                            
                             if (!addonForm.playerId || !addonForm.bonusMinutes || !addonForm.reasonType || !addonForm.reason) {
                               alert('Please fill in all required fields');
                               return;
                             }
+                            
+                            setIsProcessingAddon(true);
                             
                             try {
                               const addon = await DatabaseService.createAddon({
@@ -1604,11 +1641,13 @@ const PokerClubDashboard = () => {
                             } catch (error) {
                               console.error('Error applying bonus:', error);
                               alert('Error applying bonus: ' + (error instanceof Error ? error.message : String(error)));
+                            } finally {
+                              setIsProcessingAddon(false);
                             }
                           }}
                         >
                           <Plus className="h-4 w-4 mr-2" />
-                          Apply Bonus
+                          {isProcessingAddon ? 'Processing...' : 'Apply Bonus'}
                         </Button>
                       </div>
 
@@ -2356,11 +2395,12 @@ const PokerClubDashboard = () => {
             <div className="flex gap-3">
               <Button
                 variant="destructive"
-                className="flex-1"
+                className="flex-1 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                disabled={isProcessingEndSession}
                 onClick={confirmEndSessionAction}
               >
                 <X className="h-4 w-4 mr-2" />
-                Yes, End Session
+                {isProcessingEndSession ? 'Processing...' : 'Yes, End Session'}
               </Button>
               <Button
                 variant="outline"
