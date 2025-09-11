@@ -363,6 +363,10 @@ const PokerClubDashboard = () => {
       // Save session to database
       await dbAddSession(session);
       
+      // Recalculate player statistics
+      await recalculateAllPlayerStats();
+      await refreshData();
+      
       // Remove from active tables
       setActiveTables(prevTables => prevTables.filter(t => t.id !== tableId));
 
