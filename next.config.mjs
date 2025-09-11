@@ -40,6 +40,15 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['@radix-ui/react-icons', 'lucide-react'],
   },
+
+  // Webpack configuration to help with module resolution
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': './src',
+    };
+    return config;
+  },
 }
 
-module.exports = nextConfig
+export default nextConfig;
