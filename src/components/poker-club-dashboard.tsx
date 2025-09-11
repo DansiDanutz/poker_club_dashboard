@@ -265,7 +265,7 @@ const PokerClubDashboard = () => {
 
   // Enhanced menu items configuration
   const menuItems = [
-    { id: 'tables', label: 'Active Tables', icon: Home, color: 'text-emerald-400', gradient: 'from-emerald-500 to-teal-500' },
+    { id: 'tables', label: 'Active Players', icon: Home, color: 'text-emerald-400', gradient: 'from-emerald-500 to-teal-500' },
     { id: 'players', label: 'Player Database', icon: Users, color: 'text-blue-400', gradient: 'from-blue-500 to-cyan-500' },
     { id: 'leaderboard', label: 'Leaderboard', icon: Trophy, color: 'text-yellow-400', gradient: 'from-yellow-500 to-amber-500' },
     { id: 'promotions', label: 'Promotions', icon: Award, color: 'text-purple-400', gradient: 'from-purple-500 to-pink-500' },
@@ -286,7 +286,7 @@ const PokerClubDashboard = () => {
     console.log('Sitting in player:', player.name);
     
     if (activeTables.find(t => t.player.id === player.id)) {
-      alert('Player is already seated at a table');
+      alert('Player is already active');
       return;
     }
     
@@ -300,7 +300,7 @@ const PokerClubDashboard = () => {
     
     setActiveTables(prevTables => {
       const updated = [...prevTables, newTable];
-      console.log('Active tables after sit in:', updated);
+      console.log('Active players after sit in:', updated);
       return updated;
     });
     
@@ -787,7 +787,7 @@ const PokerClubDashboard = () => {
           {/* Enhanced Content Area */}
           <div className="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-900/50 via-slate-800/30 to-slate-900/50">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              {/* Enhanced Active Tables Tab */}
+              {/* Enhanced Active Players Tab */}
               <TabsContent value="tables" className="space-y-6">
                 <Card className="bg-gradient-to-br from-slate-800/60 via-slate-700/40 to-slate-800/60 border-slate-600 shadow-2xl backdrop-blur-sm">
                   <CardHeader className="pb-4">
@@ -797,10 +797,10 @@ const PokerClubDashboard = () => {
                       </div>
                       <div>
                         <div className="bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent">
-                          Active Tables
+                          Active Players
                         </div>
                         <div className="text-sm font-normal text-emerald-400 mt-1">
-                          {activeTables.length} players seated
+                          {activeTables.length} players active
                         </div>
                       </div>
                     </CardTitle>
@@ -812,7 +812,7 @@ const PokerClubDashboard = () => {
                         <Search className="absolute left-3 top-3 text-muted-foreground" size={20} />
                         <Input
                           type="text"
-                          placeholder="Search players to sit in..."
+                          placeholder="Search players to start session..."
                           value={searchTerm}
                           onChange={(e) => setSearchTerm(e.target.value)}
                           className="pl-10"
@@ -844,7 +844,7 @@ const PokerClubDashboard = () => {
                                   <Badge variant="secondary">Already Seated</Badge>
                                 ) : (
                                   <Button variant="outline" size="sm">
-                                    Sit In
+                                    Start Session
                                   </Button>
                                 )}
                               </div>
@@ -854,7 +854,7 @@ const PokerClubDashboard = () => {
                       )}
                     </div>
 
-                    {/* Active Tables Grid */}
+                    {/* Active Players Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {activeTables.map(table => {
                         const currentDuration = (new Date().getTime() - table.seatTime.getTime()) / 1000 / 60 / 60;
@@ -868,7 +868,7 @@ const PokerClubDashboard = () => {
                                   </h3>
                                   <div className="text-sm text-emerald-300 mt-1 flex items-center gap-1">
                                     <Clock size={12} />
-                                    Sat in: {table.seatTime.toLocaleTimeString()}
+                                    Started: {table.seatTime.toLocaleTimeString()}
                                   </div>
                                 </div>
                                 <div className="flex flex-col items-center gap-1">
@@ -904,8 +904,8 @@ const PokerClubDashboard = () => {
                     {activeTables.length === 0 && (
                       <div className="text-center py-12 text-muted-foreground">
                         <Users size={48} className="mx-auto mb-4 opacity-50" />
-                        <p className="text-lg">No players seated</p>
-                        <p className="text-sm mt-2">Search for players above to sit them in</p>
+                        <p className="text-lg">No players active</p>
+                        <p className="text-sm mt-2">Search for players above to start their session</p>
                       </div>
                     )}
                   </CardContent>
@@ -1629,8 +1629,8 @@ const PokerClubDashboard = () => {
                         <TableRow>
                           <TableHead>Date</TableHead>
                           <TableHead>Player</TableHead>
-                          <TableHead>Sat In</TableHead>
-                          <TableHead>Sat Out</TableHead>
+                          <TableHead>Started</TableHead>
+                          <TableHead>Ended</TableHead>
                           <TableHead>Duration</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -2119,7 +2119,7 @@ const PokerClubDashboard = () => {
               <ul className="list-disc list-inside mt-2 space-y-1">
                 <li>Record the session duration</li>
                 <li>Update player statistics</li>
-                <li>Free up the table</li>
+                <li>End the active session</li>
               </ul>
             </div>
             <div className="flex gap-3">
