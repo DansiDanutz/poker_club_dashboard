@@ -207,19 +207,46 @@ export default function PlayerDetailPage() {
                 const now = new Date();
                 const isActive = now >= promotionStart && now <= promotionEnd;
                 
-                // Filter sessions within promotion period
+                // Filter sessions within promotion period for current player
                 const promotionSessions = playerSessions.filter(session => {
                   const sessionDate = new Date(session.date);
                   return sessionDate >= promotionStart && sessionDate <= promotionEnd;
                 });
                 
-                // Calculate total hours in this promotion
+                // Calculate current player's hours in this promotion
                 const promotionHours = promotionSessions.reduce((sum, session) => {
                   const durationMinutes = session.seat_in_time && session.seat_out_time 
                     ? (new Date(session.seat_out_time).getTime() - new Date(session.seat_in_time).getTime()) / (1000 * 60)
                     : (session.duration || 0) * 60;
                   return sum + (durationMinutes / 60);
                 }, 0);
+
+                // Calculate comprehensive promotion statistics for ALL players
+                const allPromotionSessions = allSessions.filter(session => {
+                  const sessionDate = new Date(session.date);
+                  return sessionDate >= promotionStart && sessionDate <= promotionEnd;
+                });
+
+                // Total hours played by all players in this promotion
+                const totalPromotionHours = allPromotionSessions.reduce((sum, session) => {
+                  const durationMinutes = session.seat_in_time && session.seat_out_time 
+                    ? (new Date(session.seat_out_time).getTime() - new Date(session.seat_in_time).getTime()) / (1000 * 60)
+                    : (session.duration || 0) * 60;
+                  return sum + (durationMinutes / 60);
+                }, 0);
+
+                // Unique players in this promotion
+                const uniquePlayerIds = new Set(allPromotionSessions.map(session => session.player_id));
+                const uniquePlayersCount = uniquePlayerIds.size;
+
+                // Calculate promotion duration in days
+                const promotionDurationMs = promotionEnd.getTime() - promotionStart.getTime();
+                const promotionDurationDays = Math.max(1, Math.ceil(promotionDurationMs / (1000 * 60 * 60 * 24)));
+
+                // Average hours per player per day
+                const avgHoursPerPlayerPerDay = uniquePlayersCount > 0 
+                  ? totalPromotionHours / (uniquePlayersCount * promotionDurationDays)
+                  : 0;
 
                 return (
                   <Card 
@@ -245,9 +272,10 @@ export default function PlayerDetailPage() {
                     </CardHeader>
                     <CardContent className="px-3 pb-3 pt-0">
                       <div className="space-y-2">
+                        {/* Current Player Stats */}
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-medium">Hours Played:</span>
-                          <span className={`text-base font-bold ${
+                          <span className="text-xs font-medium">Your Hours:</span>
+                          <span className={`text-sm font-bold ${
                             promotionHours > 0 
                               ? 'text-blue-600 dark:text-blue-400' 
                               : 'text-muted-foreground'
@@ -256,21 +284,35 @@ export default function PlayerDetailPage() {
                           </span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-medium">Sessions:</span>
+                          <span className="text-xs font-medium">Your Sessions:</span>
                           <span className="text-xs text-muted-foreground">
                             {promotionSessions.length}
                           </span>
                         </div>
-                        {promotionHours > 0 && (
-                          <div className="mt-2 pt-2 border-t">
-                            <div className="text-xs text-muted-foreground">
-                              Avg: {promotionSessions.length > 0 
-                                ? `${(promotionHours / promotionSessions.length).toFixed(1)}h per session`
-                                : '0h per session'
-                              }
+                        
+                        {/* Promotion-wide Statistics */}
+                        <div className="mt-2 pt-2 border-t border-dashed">
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-medium text-purple-600 dark:text-purple-400">Total Hours:</span>
+                              <span className="text-xs font-semibold text-purple-600 dark:text-purple-400">
+                                {totalPromotionHours.toFixed(1)}h
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-medium text-purple-600 dark:text-purple-400">Unique Players:</span>
+                              <span className="text-xs font-semibold text-purple-600 dark:text-purple-400">
+                                {uniquePlayersCount}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-medium text-purple-600 dark:text-purple-400">Avg/Player/Day:</span>
+                              <span className="text-xs font-semibold text-purple-600 dark:text-purple-400">
+                                {avgHoursPerPlayerPerDay.toFixed(1)}h
+                              </span>
                             </div>
                           </div>
-                        )}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
