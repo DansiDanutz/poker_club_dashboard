@@ -27,7 +27,8 @@ import {
   Minus,
   ChevronUp,
   ChevronDown,
-  Loader2
+  Loader2,
+  Tv
 } from 'lucide-react';
 
 // Import shadcn/ui components
@@ -170,6 +171,12 @@ const PokerClubDashboard = () => {
   const [backupLoading, setBackupLoading] = useState(false);
   const [backupStats, setBackupStats] = useState<any>(null);
 
+  // TV Display state
+  const [selectedTvPromotion, setSelectedTvPromotion] = useState<string>('');
+  const [tvRules, setTvRules] = useState<string>('');
+  const [tvPrices, setTvPrices] = useState<string>('');
+  const [editingTvCard, setEditingTvCard] = useState<'rules' | 'prices' | null>(null);
+
 
   // Set mounted state and load club settings and active tables from localStorage on mount (client-side only)
   useEffect(() => {
@@ -179,6 +186,12 @@ const PokerClubDashboard = () => {
       if (stored && typeof stored === 'object') {
         setClubSettings(stored as ClubSettings);
       }
+      
+      // Load TV display settings
+      const storedTvRules = loadFromStorage('pokerClubTvRules', 'Enter your competition rules here...');
+      const storedTvPrices = loadFromStorage('pokerClubTvPrices', 'Enter your prizes information here...');
+      setTvRules(typeof storedTvRules === 'string' ? storedTvRules : '');
+      setTvPrices(typeof storedTvPrices === 'string' ? storedTvPrices : '');
       
       // Load active tables from localStorage
       const storedActiveTables = loadFromStorage('pokerClubActiveTables', []);
@@ -338,6 +351,14 @@ const PokerClubDashboard = () => {
     }
   }, [clubSettings]);
 
+  // Save TV settings to localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined' && mounted) {
+      localStorage.setItem('pokerClubTvRules', tvRules);
+      localStorage.setItem('pokerClubTvPrices', tvPrices);
+    }
+  }, [tvRules, tvPrices, mounted]);
+
   // Save active tables to localStorage whenever they change (client-side only)
   useEffect(() => {
     if (typeof window !== 'undefined' && mounted) {
@@ -360,6 +381,7 @@ const PokerClubDashboard = () => {
     { id: 'players', label: 'Player Database', icon: Users, color: 'text-blue-400', gradient: 'from-blue-500 to-cyan-500' },
     { id: 'leaderboard', label: 'Leaderboard', icon: Trophy, color: 'text-yellow-400', gradient: 'from-yellow-500 to-amber-500' },
     { id: 'promotions', label: 'Promotions', icon: Award, color: 'text-purple-400', gradient: 'from-purple-500 to-pink-500' },
+    { id: 'tv', label: 'TV Display', icon: Tv, color: 'text-cyan-400', gradient: 'from-cyan-500 to-blue-500' },
     { id: 'penalties', label: 'Penalties', icon: Minus, color: 'text-red-400', gradient: 'from-red-500 to-rose-500' },
     { id: 'addons', label: 'Add-ons', icon: Plus, color: 'text-green-400', gradient: 'from-green-500 to-emerald-500' },
     { id: 'history', label: 'History', icon: History, color: 'text-orange-400', gradient: 'from-orange-500 to-red-500' },
@@ -2038,6 +2060,288 @@ const PokerClubDashboard = () => {
                     )}
                   </CardContent>
                 </Card>
+              </TabsContent>
+
+              {/* TV Display Tab */}
+              <TabsContent value="tv" className="space-y-6">
+                <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-purple-950">
+                  {/* TV Display Header */}
+                  <div className="bg-gradient-to-r from-cyan-900/20 via-blue-900/30 to-purple-900/20 backdrop-blur-sm border-b border-cyan-500/20 p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full">
+                          <Tv className="h-8 w-8 text-white" />
+                        </div>
+                        <div>
+                          <h1 className="text-3xl font-bold text-white">TV Display Mode</h1>
+                          <p className="text-cyan-200">Professional Tournament Leaderboard</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-white">
+                          {currentTime.toLocaleTimeString()}
+                        </div>
+                        <div className="text-cyan-200">
+                          {currentTime.toLocaleDateString()}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Promotion Selector */}
+                  <div className="p-6">
+                    <Card className="bg-gradient-to-r from-slate-800/60 via-slate-700/40 to-slate-800/60 border-cyan-500/30 shadow-2xl backdrop-blur-sm">
+                      <CardContent className="p-6">
+                        <div className="flex items-center gap-4">
+                          <Award className="h-6 w-6 text-cyan-400" />
+                          <label className="text-lg font-semibold text-white">Select Promotion:</label>
+                          <Select value={selectedTvPromotion} onValueChange={setSelectedTvPromotion}>
+                            <SelectTrigger className="w-80 bg-slate-700/50 border-cyan-500/30 text-white">
+                              <SelectValue placeholder="Choose a promotion to display..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {promotions.filter((p: any) => !p.deleted).map((promotion: any) => (
+                                <SelectItem key={promotion.id} value={promotion.id.toString()}>
+                                  {promotion.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {selectedTvPromotion && (() => {
+                    const promotion = promotions.find((p: any) => p.id.toString() === selectedTvPromotion);
+                    if (!promotion) return null;
+
+                    const startDate = new Date(promotion.start_date);
+                    const endDate = new Date(promotion.end_date);
+                    const now = new Date();
+                    const isActive = now >= startDate && now <= endDate;
+                    
+                    // Calculate days remaining
+                    const daysRemaining = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+                    
+                    // Calculate leaderboard
+                    const promotionSessions = cashGameHistory.filter(session => {
+                      const sessionDate = new Date(session.date);
+                      return sessionDate >= startDate && sessionDate <= endDate;
+                    });
+
+                    const playerStats: Record<number, any> = {};
+                    promotionSessions.forEach(session => {
+                      const playerId = session.player_id;
+                      if (!playerStats[playerId]) {
+                        playerStats[playerId] = {
+                          playerId,
+                          name: players.find(p => p.id === playerId)?.name || 'Unknown',
+                          totalHours: 0,
+                          sessions: 0
+                        };
+                      }
+                      // Calculate duration from seat_in_time and seat_out_time, fallback to duration field
+                      const durationMinutes = session.seat_in_time && session.seat_out_time 
+                        ? (new Date(session.seat_out_time).getTime() - new Date(session.seat_in_time).getTime()) / (1000 * 60)
+                        : (session.duration || 0) * 60;
+                      playerStats[playerId].totalHours += durationMinutes / 60;
+                      playerStats[playerId].sessions += 1;
+                    });
+
+                    const leaderboard = Object.values(playerStats)
+                      .sort((a: any, b: any) => b.totalHours - a.totalHours)
+                      .slice(0, 10); // Top 10
+
+                    const totalPlayers = Object.keys(playerStats).length;
+
+                    return (
+                      <div className="px-6 space-y-6">
+                        {/* Promotion Header */}
+                        <Card className="bg-gradient-to-r from-purple-900/40 via-blue-900/40 to-cyan-900/40 border-gradient border-2 border-transparent bg-clip-border">
+                          <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 via-blue-500/20 to-cyan-500/20 rounded-lg" />
+                          <CardContent className="relative p-8">
+                            <div className="text-center space-y-4">
+                              <h2 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400">
+                                {promotion.name}
+                              </h2>
+                              <div className="flex justify-center items-center gap-12 text-lg">
+                                <div className="text-center">
+                                  <div className="text-cyan-300">Start Date</div>
+                                  <div className="text-white font-semibold">{startDate.toLocaleDateString()}</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="text-cyan-300">End Date</div>
+                                  <div className="text-white font-semibold">{endDate.toLocaleDateString()}</div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="text-cyan-300">Days Remaining</div>
+                                  <div className={`text-2xl font-bold ${daysRemaining > 7 ? 'text-green-400' : daysRemaining > 3 ? 'text-yellow-400' : 'text-red-400'}`}>
+                                    {isActive ? (daysRemaining > 0 ? daysRemaining : 'Final Day!') : 'Ended'}
+                                  </div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="text-cyan-300">Total Players</div>
+                                  <div className="text-white text-2xl font-bold">{totalPlayers}</div>
+                                </div>
+                              </div>
+                              <Badge 
+                                className={`text-lg px-4 py-2 ${
+                                  isActive 
+                                    ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white' 
+                                    : 'bg-gradient-to-r from-gray-500 to-slate-500 text-white'
+                                }`}
+                              >
+                                {isActive ? '🏆 ACTIVE TOURNAMENT' : '⏰ TOURNAMENT ENDED'}
+                              </Badge>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                          {/* Leaderboard */}
+                          <div className="lg:col-span-2">
+                            <Card className="bg-gradient-to-br from-slate-800/80 via-slate-700/60 to-slate-800/80 border-yellow-500/30 shadow-2xl">
+                              <CardHeader className="bg-gradient-to-r from-yellow-600/20 to-amber-600/20 border-b border-yellow-500/20">
+                                <CardTitle className="flex items-center gap-3 text-2xl text-white">
+                                  <Trophy className="h-8 w-8 text-yellow-400" />
+                                  🏆 LEADERBOARD
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent className="p-0">
+                                {leaderboard.length > 0 ? (
+                                  <div className="space-y-0">
+                                    {leaderboard.map((player: any, index: number) => (
+                                      <div 
+                                        key={player.playerId}
+                                        className={`flex items-center justify-between p-6 border-b border-slate-600/30 ${
+                                          index === 0 ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20' :
+                                          index === 1 ? 'bg-gradient-to-r from-gray-300/20 to-slate-300/20' :
+                                          index === 2 ? 'bg-gradient-to-r from-amber-600/20 to-orange-600/20' :
+                                          'hover:bg-slate-700/30'
+                                        } transition-all duration-300`}
+                                      >
+                                        <div className="flex items-center gap-4">
+                                          <div className={`w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold ${
+                                            index === 0 ? 'bg-gradient-to-r from-yellow-400 to-amber-400 text-black' :
+                                            index === 1 ? 'bg-gradient-to-r from-gray-300 to-slate-300 text-black' :
+                                            index === 2 ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white' :
+                                            'bg-slate-600 text-white'
+                                          }`}>
+                                            {index + 1}
+                                          </div>
+                                          <div>
+                                            <div className="text-xl font-semibold text-white">{player.name}</div>
+                                            <div className="text-cyan-300">{player.sessions} sessions</div>
+                                          </div>
+                                        </div>
+                                        <div className="text-right">
+                                          <div className="text-2xl font-bold text-white">{player.totalHours.toFixed(1)}h</div>
+                                          <div className="text-sm text-cyan-300">Total Hours</div>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="p-12 text-center text-slate-400">
+                                    <Trophy className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                                    <p className="text-xl">No players yet</p>
+                                    <p>Leaderboard will update as players participate</p>
+                                  </div>
+                                )}
+                              </CardContent>
+                            </Card>
+                          </div>
+
+                          {/* Rules and Prices Cards */}
+                          <div className="space-y-6">
+                            {/* Rules Card */}
+                            <Card className="bg-gradient-to-br from-blue-900/60 via-blue-800/40 to-blue-900/60 border-blue-500/30 shadow-xl">
+                              <CardHeader className="bg-gradient-to-r from-blue-600/20 to-blue-500/20 border-b border-blue-500/20">
+                                <CardTitle className="flex items-center justify-between text-lg text-white">
+                                  <span className="flex items-center gap-2">
+                                    📋 RULES
+                                  </span>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => setEditingTvCard(editingTvCard === 'rules' ? null : 'rules')}
+                                    className="text-blue-300 hover:text-white hover:bg-blue-600/20"
+                                  >
+                                    <Edit2 className="h-4 w-4" />
+                                  </Button>
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent className="p-6">
+                                {editingTvCard === 'rules' ? (
+                                  <div className="space-y-3">
+                                    <textarea
+                                      value={tvRules}
+                                      onChange={(e) => setTvRules(e.target.value)}
+                                      className="w-full h-40 p-3 bg-slate-700/50 border border-blue-500/30 rounded text-white resize-none"
+                                      placeholder="Enter tournament rules..."
+                                    />
+                                    <Button
+                                      onClick={() => setEditingTvCard(null)}
+                                      className="w-full bg-blue-600 hover:bg-blue-700"
+                                    >
+                                      Save Rules
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <div className="text-white whitespace-pre-wrap text-sm leading-relaxed">
+                                    {tvRules || 'Click edit to add tournament rules...'}
+                                  </div>
+                                )}
+                              </CardContent>
+                            </Card>
+
+                            {/* Prices Card */}
+                            <Card className="bg-gradient-to-br from-green-900/60 via-emerald-800/40 to-green-900/60 border-green-500/30 shadow-xl">
+                              <CardHeader className="bg-gradient-to-r from-green-600/20 to-emerald-500/20 border-b border-green-500/20">
+                                <CardTitle className="flex items-center justify-between text-lg text-white">
+                                  <span className="flex items-center gap-2">
+                                    💰 PRIZES
+                                  </span>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => setEditingTvCard(editingTvCard === 'prices' ? null : 'prices')}
+                                    className="text-green-300 hover:text-white hover:bg-green-600/20"
+                                  >
+                                    <Edit2 className="h-4 w-4" />
+                                  </Button>
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent className="p-6">
+                                {editingTvCard === 'prices' ? (
+                                  <div className="space-y-3">
+                                    <textarea
+                                      value={tvPrices}
+                                      onChange={(e) => setTvPrices(e.target.value)}
+                                      className="w-full h-40 p-3 bg-slate-700/50 border border-green-500/30 rounded text-white resize-none"
+                                      placeholder="Enter prize information..."
+                                    />
+                                    <Button
+                                      onClick={() => setEditingTvCard(null)}
+                                      className="w-full bg-green-600 hover:bg-green-700"
+                                    >
+                                      Save Prizes
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <div className="text-white whitespace-pre-wrap text-sm leading-relaxed">
+                                    {tvPrices || 'Click edit to add prize information...'}
+                                  </div>
+                                )}
+                              </CardContent>
+                            </Card>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
               </TabsContent>
 
               {/* Settings Tab */}
