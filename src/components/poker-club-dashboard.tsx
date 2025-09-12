@@ -2068,24 +2068,28 @@ const PokerClubDashboard = () => {
 
               {/* TV Display Tab */}
               <TabsContent value="tv" className="space-y-6">
-                <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-purple-950">
-                  {/* TV Display Header */}
-                  <div className="bg-gradient-to-r from-cyan-900/20 via-blue-900/30 to-purple-900/20 backdrop-blur-sm border-b border-cyan-500/20 p-6">
+                <div className="min-h-screen bg-slate-900">
+                  {/* Clean TV Display Header */}
+                  <div className="bg-gradient-to-r from-slate-800 to-slate-700 border-b border-slate-600 p-6 shadow-lg">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
-                        <div className="p-3 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full">
+                        <div className="p-3 bg-blue-600 rounded-full shadow-lg">
                           <Tv className="h-8 w-8 text-white" />
                         </div>
                         <div>
-                          <h1 className="text-3xl font-bold text-white">TV Display Mode</h1>
-                          <p className="text-cyan-200">Professional Tournament Leaderboard</p>
+                          <h1 className="text-3xl font-bold text-white">
+                            TV Display Mode
+                          </h1>
+                          <p className="text-slate-300 font-medium">
+                            Tournament Leaderboard Display
+                          </p>
                         </div>
                       </div>
                       <div className="text-right">
                         <div className="text-2xl font-bold text-white">
                           {currentTime.toLocaleTimeString()}
                         </div>
-                        <div className="text-cyan-200">
+                        <div className="text-slate-300">
                           {currentTime.toLocaleDateString()}
                         </div>
                       </div>
@@ -2094,14 +2098,16 @@ const PokerClubDashboard = () => {
 
                   {/* Promotion Selector */}
                   <div className="p-6">
-                    <Card className="bg-gradient-to-r from-slate-800/60 via-slate-700/40 to-slate-800/60 border-cyan-500/30 shadow-2xl backdrop-blur-sm">
+                    <Card className="bg-slate-800 border-slate-600">
                       <CardContent className="p-6">
                         <div className="flex items-center gap-4">
-                          <Award className="h-6 w-6 text-cyan-400" />
-                          <label className="text-lg font-semibold text-white">Select Promotion:</label>
+                          <Award className="h-6 w-6 text-blue-400" />
+                          <label className="text-lg font-semibold text-white">
+                            Select Tournament to Display:
+                          </label>
                           <Select value={selectedTvPromotion} onValueChange={setSelectedTvPromotion}>
-                            <SelectTrigger className="w-80 bg-slate-700/50 border-cyan-500/30 text-white">
-                              <SelectValue placeholder="Choose a promotion to display..." />
+                            <SelectTrigger className="w-80 bg-slate-700 border-slate-600 text-white">
+                              <SelectValue placeholder="Choose a promotion..." />
                             </SelectTrigger>
                             <SelectContent>
                               {promotions.filter((p: any) => !p.deleted).map((promotion: any) => (
@@ -2125,7 +2131,6 @@ const PokerClubDashboard = () => {
                     const now = new Date();
                     const isActive = now >= startDate && now <= endDate;
                     const isUpcoming = now < startDate;
-                    const isEnded = now > endDate;
                     
                     // Calculate days remaining or days until start
                     const daysRemaining = isUpcoming 
@@ -2165,25 +2170,25 @@ const PokerClubDashboard = () => {
 
                     return (
                       <div className="px-6 space-y-6">
-                        {/* Promotion Header */}
-                        <Card className="bg-gradient-to-r from-purple-900/40 via-blue-900/40 to-cyan-900/40 border-gradient border-2 border-transparent bg-clip-border">
-                          <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 via-blue-500/20 to-cyan-500/20 rounded-lg" />
-                          <CardContent className="relative p-8">
-                            <div className="text-center space-y-4">
-                              <h2 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400">
-                                {promotion.name}
+                        {/* Tournament Header */}
+                        <Card className="bg-slate-800 border-slate-600 mb-8">
+                          <CardContent className="p-8">
+                            <div className="text-center space-y-6">
+                              <h2 className="text-4xl font-bold text-white mb-4">
+                                🏆 {promotion.name}
                               </h2>
-                              <div className="flex justify-center items-center gap-12 text-lg">
-                                <div className="text-center">
-                                  <div className="text-cyan-300">Start Date</div>
-                                  <div className="text-white font-semibold">{startDate.toLocaleDateString()}</div>
+                              
+                              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                                <div className="text-center p-4 bg-slate-700 rounded-lg">
+                                  <div className="text-blue-400 font-medium mb-2">Start Date</div>
+                                  <div className="text-white text-lg font-bold">{startDate.toLocaleDateString()}</div>
                                 </div>
-                                <div className="text-center">
-                                  <div className="text-cyan-300">End Date</div>
-                                  <div className="text-white font-semibold">{endDate.toLocaleDateString()}</div>
+                                <div className="text-center p-4 bg-slate-700 rounded-lg">
+                                  <div className="text-purple-400 font-medium mb-2">End Date</div>
+                                  <div className="text-white text-lg font-bold">{endDate.toLocaleDateString()}</div>
                                 </div>
-                                <div className="text-center">
-                                  <div className="text-cyan-300">
+                                <div className="text-center p-4 bg-slate-700 rounded-lg">
+                                  <div className="text-green-400 font-medium mb-2">
                                     {isUpcoming ? 'Days Until Start' : 'Days Remaining'}
                                   </div>
                                   <div className={`text-2xl font-bold ${
@@ -2193,30 +2198,27 @@ const PokerClubDashboard = () => {
                                     'text-red-400'
                                   }`}>
                                     {isUpcoming ? 
-                                      (daysRemaining > 0 ? daysRemaining : 'Starts Today!') :
+                                      (daysRemaining > 0 ? `${daysRemaining}` : 'Today!') :
                                       isActive ? 
-                                        (daysRemaining > 0 ? daysRemaining : 'Final Day!') :
+                                        (daysRemaining > 0 ? `${daysRemaining}` : 'Final Day!') :
                                         'Ended'
                                     }
                                   </div>
                                 </div>
-                                <div className="text-center">
-                                  <div className="text-cyan-300">Total Players</div>
+                                <div className="text-center p-4 bg-slate-700 rounded-lg">
+                                  <div className="text-yellow-400 font-medium mb-2">Total Players</div>
                                   <div className="text-white text-2xl font-bold">{totalPlayers}</div>
                                 </div>
                               </div>
-                              <Badge 
-                                className={`text-lg px-4 py-2 ${
-                                  isUpcoming 
-                                    ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white' :
-                                    isActive 
-                                      ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white' 
-                                      : 'bg-gradient-to-r from-gray-500 to-slate-500 text-white'
-                                }`}
-                              >
-                                {isUpcoming ? '📅 UPCOMING TOURNAMENT' : 
-                                 isActive ? '🏆 ACTIVE TOURNAMENT' : 
-                                 '⏰ TOURNAMENT ENDED'}
+                              
+                              <Badge className={`text-lg px-6 py-2 ${
+                                isUpcoming ? 'bg-blue-600 text-white' :
+                                isActive ? 'bg-green-600 text-white' : 
+                                'bg-gray-600 text-white'
+                              }`}>
+                                {isUpcoming ? 'UPCOMING TOURNAMENT' : 
+                                 isActive ? 'ACTIVE TOURNAMENT' : 
+                                 'TOURNAMENT ENDED'}
                               </Badge>
                             </div>
                           </CardContent>
@@ -2225,63 +2227,66 @@ const PokerClubDashboard = () => {
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                           {/* Leaderboard */}
                           <div className="lg:col-span-2">
-                            <Card className="bg-gradient-to-br from-slate-800/80 via-slate-700/60 to-slate-800/80 border-yellow-500/30 shadow-2xl">
-                              <CardHeader className="bg-gradient-to-r from-yellow-600/20 to-amber-600/20 border-b border-yellow-500/20">
+                            <Card className="bg-slate-800 border-slate-600">
+                              <CardHeader className="bg-slate-700 border-b border-slate-600">
                                 <CardTitle className="flex items-center gap-3 text-2xl text-white">
                                   <Trophy className="h-8 w-8 text-yellow-400" />
                                   🏆 LEADERBOARD
                                 </CardTitle>
                               </CardHeader>
+                              
                               <CardContent className="p-0">
                                 {leaderboard.length > 0 ? (
                                   <div className="space-y-0">
                                     {leaderboard.map((player: any, index: number) => (
                                       <div 
                                         key={player.playerId}
-                                        className={`flex items-center justify-between p-6 border-b border-slate-600/30 ${
-                                          index === 0 ? 'bg-gradient-to-r from-yellow-500/20 to-amber-500/20' :
-                                          index === 1 ? 'bg-gradient-to-r from-gray-300/20 to-slate-300/20' :
-                                          index === 2 ? 'bg-gradient-to-r from-amber-600/20 to-orange-600/20' :
+                                        className={`flex items-center justify-between p-6 border-b border-slate-600 ${
+                                          index === 0 ? 'bg-yellow-900/20' :
+                                          index === 1 ? 'bg-gray-700/20' :
+                                          index === 2 ? 'bg-amber-900/20' :
                                           'hover:bg-slate-700/30'
-                                        } transition-all duration-300`}
+                                        }`}
                                       >
                                         <div className="flex items-center gap-4">
                                           <div className={`w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold ${
-                                            index === 0 ? 'bg-gradient-to-r from-yellow-400 to-amber-400 text-black' :
-                                            index === 1 ? 'bg-gradient-to-r from-gray-300 to-slate-300 text-black' :
-                                            index === 2 ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white' :
+                                            index === 0 ? 'bg-yellow-500 text-black' :
+                                            index === 1 ? 'bg-gray-400 text-black' :
+                                            index === 2 ? 'bg-amber-600 text-white' :
                                             'bg-slate-600 text-white'
                                           }`}>
-                                            {index + 1}
+                                            {index === 0 ? '👑' : index + 1}
                                           </div>
+                                          
                                           <div>
-                                            <div className="text-xl font-semibold text-white">{player.name}</div>
-                                            <div className="text-cyan-300">{player.sessions} sessions</div>
+                                            <div className="text-xl font-bold text-white">{player.name}</div>
+                                            <div className="text-slate-400">{player.sessions} sessions</div>
                                           </div>
                                         </div>
+                                        
                                         <div className="text-right">
                                           <div className="text-2xl font-bold text-white">{player.totalHours.toFixed(1)}h</div>
-                                          <div className="text-sm text-cyan-300">Total Hours</div>
+                                          <div className="text-slate-400 text-sm">Total Hours</div>
                                         </div>
                                       </div>
                                     ))}
                                   </div>
                                 ) : (
-                                  <div className="p-12 text-center text-slate-400">
-                                    <Trophy className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                                    <p className="text-xl">No players yet</p>
-                                    <p>Leaderboard will update as players participate</p>
+                                  <div className="p-16 text-center text-slate-400">
+                                    <Trophy className="h-16 w-16 mx-auto mb-4 text-yellow-400/50" />
+                                    <p className="text-xl font-bold text-slate-300 mb-2">No Players Yet</p>
+                                    <p className="text-slate-400">Leaderboard will update as players participate</p>
                                   </div>
                                 )}
                               </CardContent>
                             </Card>
                           </div>
 
-                          {/* Rules and Prices Cards */}
+                          {/* Rules and Prizes Cards */}
                           <div className="space-y-6">
                             {/* Rules Card */}
-                            <Card className="bg-gradient-to-br from-blue-900/60 via-blue-800/40 to-blue-900/60 border-blue-500/30 shadow-xl">
-                              <CardHeader className="bg-gradient-to-r from-blue-600/20 to-blue-500/20 border-b border-blue-500/20">
+                            <Card className="bg-blue-900/50 border-blue-600/50">
+                              <CardHeader className="bg-blue-800/50 border-b border-blue-600/50">
                                 <CardTitle className="flex items-center justify-between text-lg text-white">
                                   <span className="flex items-center gap-2">
                                     📋 RULES
@@ -2296,13 +2301,14 @@ const PokerClubDashboard = () => {
                                   </Button>
                                 </CardTitle>
                               </CardHeader>
+                              
                               <CardContent className="p-6">
                                 {editingTvCard === 'rules' ? (
                                   <div className="space-y-3">
                                     <textarea
                                       value={tvRules}
                                       onChange={(e) => setTvRules(e.target.value)}
-                                      className="w-full h-40 p-3 bg-slate-700/50 border border-blue-500/30 rounded text-white resize-none"
+                                      className="w-full h-40 p-3 bg-slate-700 border border-blue-500/30 rounded text-white resize-none"
                                       placeholder="Enter tournament rules..."
                                     />
                                     <Button
@@ -2320,9 +2326,9 @@ const PokerClubDashboard = () => {
                               </CardContent>
                             </Card>
 
-                            {/* Prices Card */}
-                            <Card className="bg-gradient-to-br from-green-900/60 via-emerald-800/40 to-green-900/60 border-green-500/30 shadow-xl">
-                              <CardHeader className="bg-gradient-to-r from-green-600/20 to-emerald-500/20 border-b border-green-500/20">
+                            {/* Prizes Card */}
+                            <Card className="bg-green-900/50 border-green-600/50">
+                              <CardHeader className="bg-green-800/50 border-b border-green-600/50">
                                 <CardTitle className="flex items-center justify-between text-lg text-white">
                                   <span className="flex items-center gap-2">
                                     💰 PRIZES
@@ -2337,13 +2343,14 @@ const PokerClubDashboard = () => {
                                   </Button>
                                 </CardTitle>
                               </CardHeader>
+                              
                               <CardContent className="p-6">
                                 {editingTvCard === 'prices' ? (
                                   <div className="space-y-3">
                                     <textarea
                                       value={tvPrices}
                                       onChange={(e) => setTvPrices(e.target.value)}
-                                      className="w-full h-40 p-3 bg-slate-700/50 border border-green-500/30 rounded text-white resize-none"
+                                      className="w-full h-40 p-3 bg-slate-700 border border-green-500/30 rounded text-white resize-none"
                                       placeholder="Enter prize information..."
                                     />
                                     <Button
