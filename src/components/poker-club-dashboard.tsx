@@ -26,7 +26,8 @@ import {
   Sparkles,
   Minus,
   ChevronUp,
-  ChevronDown
+  ChevronDown,
+  Loader2
 } from 'lucide-react';
 
 // Import shadcn/ui components
@@ -2413,7 +2414,11 @@ const PokerClubDashboard = () => {
                 disabled={isProcessingEndSession}
                 onClick={confirmEndSessionAction}
               >
-                <X className="h-4 w-4 mr-2" />
+                {isProcessingEndSession ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <X className="h-4 w-4 mr-2" />
+                )}
                 {isProcessingEndSession ? 'Processing...' : 'Yes, End Session'}
               </Button>
               <Button

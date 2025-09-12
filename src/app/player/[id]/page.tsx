@@ -199,7 +199,7 @@ export default function PlayerDetailPage() {
           {promotions.length === 0 ? (
             <p className="text-muted-foreground text-center py-8">No promotions available</p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
               {promotions.map((promotion) => {
                 // Calculate player's hours in this promotion
                 const promotionStart = new Date(promotion.start_date);
@@ -229,9 +229,9 @@ export default function PlayerDetailPage() {
                       : 'border-gray-200 bg-gray-50/30 dark:border-gray-700 dark:bg-gray-950/20'
                     }`}
                   >
-                    <CardHeader className="pb-3">
+                    <CardHeader className="pb-2 px-3 pt-3">
                       <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg font-semibold">{promotion.name}</CardTitle>
+                        <CardTitle className="text-sm font-semibold truncate">{promotion.name}</CardTitle>
                         <Badge 
                           variant={isActive ? "default" : "secondary"}
                           className={isActive ? "bg-green-600 hover:bg-green-700" : ""}
@@ -239,15 +239,15 @@ export default function PlayerDetailPage() {
                           {isActive ? "Active" : "Ended"}
                         </Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs text-muted-foreground">
                         {promotionStart.toLocaleDateString()} - {promotionEnd.toLocaleDateString()}
                       </p>
                     </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
+                    <CardContent className="px-3 pb-3 pt-0">
+                      <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium">Hours Played:</span>
-                          <span className={`text-lg font-bold ${
+                          <span className="text-xs font-medium">Hours Played:</span>
+                          <span className={`text-base font-bold ${
                             promotionHours > 0 
                               ? 'text-blue-600 dark:text-blue-400' 
                               : 'text-muted-foreground'
@@ -256,13 +256,13 @@ export default function PlayerDetailPage() {
                           </span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium">Sessions:</span>
-                          <span className="text-sm text-muted-foreground">
+                          <span className="text-xs font-medium">Sessions:</span>
+                          <span className="text-xs text-muted-foreground">
                             {promotionSessions.length}
                           </span>
                         </div>
                         {promotionHours > 0 && (
-                          <div className="mt-3 pt-3 border-t">
+                          <div className="mt-2 pt-2 border-t">
                             <div className="text-xs text-muted-foreground">
                               Avg: {promotionSessions.length > 0 
                                 ? `${(promotionHours / promotionSessions.length).toFixed(1)}h per session`
