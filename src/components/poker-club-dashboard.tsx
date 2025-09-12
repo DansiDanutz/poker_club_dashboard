@@ -187,11 +187,15 @@ const PokerClubDashboard = () => {
         setClubSettings(stored as ClubSettings);
       }
       
-      // Load TV display settings
-      const storedTvRules = loadFromStorage('pokerClubTvRules', 'Enter your competition rules here...');
-      const storedTvPrices = loadFromStorage('pokerClubTvPrices', 'Enter your prizes information here...');
-      setTvRules(typeof storedTvRules === 'string' ? storedTvRules : '');
-      setTvPrices(typeof storedTvPrices === 'string' ? storedTvPrices : '');
+      // Load TV display settings - handle as direct strings, not JSON
+      const storedTvRules = typeof window !== 'undefined' ? 
+        (localStorage.getItem('pokerClubTvRules') || 'Enter your competition rules here...') : 
+        'Enter your competition rules here...';
+      const storedTvPrices = typeof window !== 'undefined' ? 
+        (localStorage.getItem('pokerClubTvPrices') || 'Enter your prizes information here...') : 
+        'Enter your prizes information here...';
+      setTvRules(storedTvRules);
+      setTvPrices(storedTvPrices);
       
       // Load active tables from localStorage
       const storedActiveTables = loadFromStorage('pokerClubActiveTables', []);
@@ -351,7 +355,7 @@ const PokerClubDashboard = () => {
     }
   }, [clubSettings]);
 
-  // Save TV settings to localStorage
+  // Save TV settings to localStorage as strings
   useEffect(() => {
     if (typeof window !== 'undefined' && mounted) {
       localStorage.setItem('pokerClubTvRules', tvRules);
@@ -2120,9 +2124,13 @@ const PokerClubDashboard = () => {
                     const endDate = new Date(promotion.end_date);
                     const now = new Date();
                     const isActive = now >= startDate && now <= endDate;
+                    const isUpcoming = now < startDate;
+                    const isEnded = now > endDate;
                     
-                    // Calculate days remaining
-                    const daysRemaining = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+                    // Calculate days remaining or days until start
+                    const daysRemaining = isUpcoming 
+                      ? Math.ceil((startDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+                      : Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
                     
                     // Calculate leaderboard
                     const promotionSessions = cashGameHistory.filter(session => {
@@ -2175,9 +2183,21 @@ const PokerClubDashboard = () => {
                                   <div className="text-white font-semibold">{endDate.toLocaleDateString()}</div>
                                 </div>
                                 <div className="text-center">
-                                  <div className="text-cyan-300">Days Remaining</div>
-                                  <div className={`text-2xl font-bold ${daysRemaining > 7 ? 'text-green-400' : daysRemaining > 3 ? 'text-yellow-400' : 'text-red-400'}`}>
-                                    {isActive ? (daysRemaining > 0 ? daysRemaining : 'Final Day!') : 'Ended'}
+                                  <div className="text-cyan-300">
+                                    {isUpcoming ? 'Days Until Start' : 'Days Remaining'}
+                                  </div>
+                                  <div className={`text-2xl font-bold ${
+                                    isUpcoming ? 'text-blue-400' :
+                                    daysRemaining > 7 ? 'text-green-400' : 
+                                    daysRemaining > 3 ? 'text-yellow-400' : 
+                                    'text-red-400'
+                                  }`}>
+                                    {isUpcoming ? 
+                                      (daysRemaining > 0 ? daysRemaining : 'Starts Today!') :
+                                      isActive ? 
+                                        (daysRemaining > 0 ? daysRemaining : 'Final Day!') :
+                                        'Ended'
+                                    }
                                   </div>
                                 </div>
                                 <div className="text-center">
@@ -2187,12 +2207,16 @@ const PokerClubDashboard = () => {
                               </div>
                               <Badge 
                                 className={`text-lg px-4 py-2 ${
-                                  isActive 
-                                    ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white' 
-                                    : 'bg-gradient-to-r from-gray-500 to-slate-500 text-white'
+                                  isUpcoming 
+                                    ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white' :
+                                    isActive 
+                                      ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white' 
+                                      : 'bg-gradient-to-r from-gray-500 to-slate-500 text-white'
                                 }`}
                               >
-                                {isActive ? '🏆 ACTIVE TOURNAMENT' : '⏰ TOURNAMENT ENDED'}
+                                {isUpcoming ? '📅 UPCOMING TOURNAMENT' : 
+                                 isActive ? '🏆 ACTIVE TOURNAMENT' : 
+                                 '⏰ TOURNAMENT ENDED'}
                               </Badge>
                             </div>
                           </CardContent>
