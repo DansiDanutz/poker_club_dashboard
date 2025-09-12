@@ -5,7 +5,6 @@ import { useRouter, useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
 import { Button } from "../../../components/ui/button";
 import { Badge } from "../../../components/ui/badge";
-import { Separator } from "../../../components/ui/separator";
 import { ArrowLeft, Clock, TrendingUp, Trophy, Calendar, Minus, Plus } from "lucide-react";
 import { useSyncDatabase } from "../../../hooks/use-sync-database";
 import { DatabaseService } from "../../../lib/supabase";
@@ -187,6 +186,100 @@ export default function PlayerDetailPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Promotion Participation */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Promotion Participation</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Hours played in each promotion and status
+          </p>
+        </CardHeader>
+        <CardContent>
+          {promotions.length === 0 ? (
+            <p className="text-muted-foreground text-center py-8">No promotions available</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {promotions.map((promotion) => {
+                // Calculate player's hours in this promotion
+                const promotionStart = new Date(promotion.start_date);
+                const promotionEnd = new Date(promotion.end_date);
+                const now = new Date();
+                const isActive = now >= promotionStart && now <= promotionEnd;
+                
+                // Filter sessions within promotion period
+                const promotionSessions = playerSessions.filter(session => {
+                  const sessionDate = new Date(session.date);
+                  return sessionDate >= promotionStart && sessionDate <= promotionEnd;
+                });
+                
+                // Calculate total hours in this promotion
+                const promotionHours = promotionSessions.reduce((sum, session) => {
+                  const durationMinutes = session.seat_in_time && session.seat_out_time 
+                    ? (new Date(session.seat_out_time).getTime() - new Date(session.seat_in_time).getTime()) / (1000 * 60)
+                    : (session.duration || 0) * 60;
+                  return sum + (durationMinutes / 60);
+                }, 0);
+
+                return (
+                  <Card 
+                    key={promotion.id} 
+                    className={`border-2 ${isActive 
+                      ? 'border-green-200 bg-green-50/30 dark:border-green-800 dark:bg-green-950/20' 
+                      : 'border-gray-200 bg-gray-50/30 dark:border-gray-700 dark:bg-gray-950/20'
+                    }`}
+                  >
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-lg font-semibold">{promotion.name}</CardTitle>
+                        <Badge 
+                          variant={isActive ? "default" : "secondary"}
+                          className={isActive ? "bg-green-600 hover:bg-green-700" : ""}
+                        >
+                          {isActive ? "Active" : "Ended"}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {promotionStart.toLocaleDateString()} - {promotionEnd.toLocaleDateString()}
+                      </p>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium">Hours Played:</span>
+                          <span className={`text-lg font-bold ${
+                            promotionHours > 0 
+                              ? 'text-blue-600 dark:text-blue-400' 
+                              : 'text-muted-foreground'
+                          }`}>
+                            {promotionHours > 0 ? `${promotionHours.toFixed(1)}h` : '0h'}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium">Sessions:</span>
+                          <span className="text-sm text-muted-foreground">
+                            {promotionSessions.length}
+                          </span>
+                        </div>
+                        {promotionHours > 0 && (
+                          <div className="mt-3 pt-3 border-t">
+                            <div className="text-xs text-muted-foreground">
+                              Avg: {promotionSessions.length > 0 
+                                ? `${(promotionHours / promotionSessions.length).toFixed(1)}h per session`
+                                : '0h per session'
+                              }
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Activity History */}
       <Card>
