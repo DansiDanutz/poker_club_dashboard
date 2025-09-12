@@ -387,7 +387,9 @@ export default function PlayerDetailPage() {
                           <div>
                             <p className="font-medium">Session</p>
                             <p className="text-sm text-muted-foreground">
-                              {new Date(session.date).toLocaleDateString()} • {new Date(session.seat_in_time).toLocaleTimeString()} - {new Date(session.seat_out_time).toLocaleTimeString()}
+                              {new Date(session.date).toLocaleDateString()} • {session.seat_in_time && session.seat_out_time 
+                                ? `${new Date(session.seat_in_time).toLocaleTimeString()} - ${new Date(session.seat_out_time).toLocaleTimeString()}`
+                                : 'Times not recorded'}
                             </p>
                           </div>
                         </div>

@@ -57,8 +57,11 @@ export default function PromotionDetailPage() {
               sessions: 0
             };
           }
-          // Convert duration from minutes to hours
-          playerStats[playerId].totalHours += (session.duration || 0) / 60;
+          // Calculate duration from seat_in_time and seat_out_time, fallback to duration field
+          const durationMinutes = session.seat_in_time && session.seat_out_time 
+            ? (new Date(session.seat_out_time).getTime() - new Date(session.seat_in_time).getTime()) / (1000 * 60)
+            : (session.duration || 0) * 60;
+          playerStats[playerId].totalHours += durationMinutes / 60;
           playerStats[playerId].sessions += 1;
         });
 
