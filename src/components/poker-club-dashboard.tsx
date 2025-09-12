@@ -47,6 +47,7 @@ import { ThemeToggle } from "./theme-toggle";
 import { useSyncDatabase } from "../hooks/use-sync-database";
 import { Player, Session, Promotion, ActiveTable, ClubSettings } from "../types";
 import { DatabaseService } from "../lib/supabase";
+import { sanitizeObject, sanitizeTVContent } from "../lib/utils";
 import { BackupService, BackupData } from "../lib/backup-service";
 
 const PokerClubDashboard = () => {
@@ -83,10 +84,22 @@ const PokerClubDashboard = () => {
           DatabaseService.getAddons()
         ]);
         
-        setPenalties(penaltyData);
-        setAddons(addonData);
+        // Sanitize data to prevent JSON encoding issues
+        const sanitizedPenalties = penaltyData.map(p => 
+          sanitizeObject(p, ['reason', 'notes', 'applied_by'])
+        );
+        
+        const sanitizedAddons = addonData.map(a => 
+          sanitizeObject(a, ['reason', 'notes', 'applied_by'])
+        );
+        
+        setPenalties(sanitizedPenalties);
+        setAddons(sanitizedAddons);
       } catch (error) {
         console.error('Error fetching penalty/addon history:', error);
+        // Set empty arrays as fallback to prevent undefined errors
+        setPenalties([]);
+        setAddons([]);
       }
     };
 
@@ -194,8 +207,8 @@ const PokerClubDashboard = () => {
       const storedTvPrices = typeof window !== 'undefined' ? 
         (localStorage.getItem('pokerClubTvPrices') || 'Enter your prizes information here...') : 
         'Enter your prizes information here...';
-      setTvRules(storedTvRules);
-      setTvPrices(storedTvPrices);
+      setTvRules(sanitizeTVContent(storedTvRules));
+      setTvPrices(sanitizeTVContent(storedTvPrices));
       
       // Load active tables from localStorage
       const storedActiveTables = loadFromStorage('pokerClubActiveTables', []);
@@ -358,8 +371,8 @@ const PokerClubDashboard = () => {
   // Save TV settings to localStorage as strings
   useEffect(() => {
     if (typeof window !== 'undefined' && mounted) {
-      localStorage.setItem('pokerClubTvRules', tvRules);
-      localStorage.setItem('pokerClubTvPrices', tvPrices);
+      localStorage.setItem('pokerClubTvRules', sanitizeTVContent(tvRules));
+      localStorage.setItem('pokerClubTvPrices', sanitizeTVContent(tvPrices));
     }
   }, [tvRules, tvPrices, mounted]);
 
@@ -2066,60 +2079,61 @@ const PokerClubDashboard = () => {
                 </Card>
               </TabsContent>
 
-              {/* TV Display Tab */}
+              {/* TV Display Tab - Professional Space Theme */}
               <TabsContent value="tv" className="space-y-6">
-                <div className="min-h-screen bg-slate-900">
-                  {/* Clean TV Display Header */}
-                  <div className="bg-gradient-to-r from-slate-800 to-slate-700 border-b border-slate-600 p-6 shadow-lg">
+                <div className="min-h-screen space-theme-bg relative overflow-hidden">
+                  
+                  {/* Professional Space Theme Header */}
+                  <div className="relative space-theme-card border-0 p-8 m-4 rounded-2xl">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="p-3 bg-blue-600 rounded-full shadow-lg">
-                          <Tv className="h-8 w-8 text-white" />
+                      <div className="flex items-center gap-6">
+                        <div className="p-4 space-neon-border rounded-xl">
+                          <Tv className="h-10 w-10 text-blue-400" />
                         </div>
-                        <div>
-                          <h1 className="text-3xl font-bold text-white">
-                            TV Display Mode
+                        <div className="space-y-1">
+                          <h1 className="text-4xl font-bold text-white">
+                            🎰 POKER TV DISPLAY
                           </h1>
-                          <p className="text-slate-300 font-medium">
-                            Tournament Leaderboard Display
+                          <p className="text-xl text-blue-400 font-medium">
+                            Professional Poker Club Interface
                           </p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className="text-2xl font-bold text-white">
+                      <div className="text-right space-y-1">
+                        <div className="text-3xl font-bold text-green-400">
                           {currentTime.toLocaleTimeString()}
                         </div>
-                        <div className="text-slate-300">
+                        <div className="text-lg text-slate-300">
                           {currentTime.toLocaleDateString()}
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Promotion Selector */}
-                  <div className="p-6">
-                    <Card className="bg-slate-800 border-slate-600">
-                      <CardContent className="p-6">
-                        <div className="flex items-center gap-4">
-                          <Award className="h-6 w-6 text-blue-400" />
-                          <label className="text-lg font-semibold text-white">
-                            Select Tournament to Display:
-                          </label>
-                          <Select value={selectedTvPromotion} onValueChange={setSelectedTvPromotion}>
-                            <SelectTrigger className="w-80 bg-slate-700 border-slate-600 text-white">
-                              <SelectValue placeholder="Choose a promotion..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {promotions.filter((p: any) => !p.deleted).map((promotion: any) => (
-                                <SelectItem key={promotion.id} value={promotion.id.toString()}>
-                                  {promotion.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                  {/* Space Theme Promotion Selector */}
+                  <div className="p-4">
+                    <div className="space-theme-card p-6 rounded-xl">
+                      <div className="flex items-center gap-6">
+                        <div className="p-3 space-neon-border rounded-lg">
+                          <Award className="h-8 w-8 text-green-400" />
                         </div>
-                      </CardContent>
-                    </Card>
+                        <label className="text-xl font-semibold text-white">
+                          🎯 Select Promotion to Display
+                        </label>
+                        <Select value={selectedTvPromotion} onValueChange={setSelectedTvPromotion}>
+                          <SelectTrigger className="w-80 h-12 space-theme-card text-white hover:space-neon-border transition-all">
+                            <SelectValue placeholder="Choose a promotion..." />
+                          </SelectTrigger>
+                          <SelectContent className="space-theme-card border-blue-500/30">
+                            {promotions.filter((p: any) => !p.deleted).map((promotion: any) => (
+                              <SelectItem key={promotion.id} value={promotion.id.toString()} className="text-white hover:bg-blue-600/20">
+                                🚀 {promotion.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
                   </div>
 
                   {selectedTvPromotion && (() => {
@@ -2169,204 +2183,205 @@ const PokerClubDashboard = () => {
                     const totalPlayers = Object.keys(playerStats).length;
 
                     return (
-                      <div className="px-6 space-y-6">
-                        {/* Tournament Header */}
-                        <Card className="bg-slate-800 border-slate-600 mb-8">
-                          <CardContent className="p-8">
-                            <div className="text-center space-y-6">
-                              <h2 className="text-4xl font-bold text-white mb-4">
-                                🏆 {promotion.name}
-                              </h2>
+                      <div className="px-4 space-y-6">
+                        {/* POKER PROMOTION HEADER */}
+                        <div className="space-theme-card p-8 rounded-2xl">
+                          <div className="text-center space-y-6">
+                            <h2 className="text-5xl font-bold text-white mb-6">
+                              🌌 {promotion.name}
+                            </h2>
+                            
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                              <div className="text-center p-4 space-neon-border rounded-xl">
+                                <div className="text-blue-400 font-semibold mb-2">🛸 Launch Date</div>
+                                <div className="text-white text-xl font-bold">{startDate.toLocaleDateString()}</div>
+                              </div>
                               
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                                <div className="text-center p-4 bg-slate-700 rounded-lg">
-                                  <div className="text-blue-400 font-medium mb-2">Start Date</div>
-                                  <div className="text-white text-lg font-bold">{startDate.toLocaleDateString()}</div>
+                              <div className="text-center p-4 space-neon-border rounded-xl">
+                                <div className="text-red-400 font-semibold mb-2">🔚 Promotion End</div>
+                                <div className="text-white text-xl font-bold">{endDate.toLocaleDateString()}</div>
+                              </div>
+                              
+                              <div className="text-center p-4 space-neon-border rounded-xl">
+                                <div className="text-green-400 font-semibold mb-2">
+                                  ⏳ {isUpcoming ? 'T-Minus Days' : 'Days Left'}
                                 </div>
-                                <div className="text-center p-4 bg-slate-700 rounded-lg">
-                                  <div className="text-purple-400 font-medium mb-2">End Date</div>
-                                  <div className="text-white text-lg font-bold">{endDate.toLocaleDateString()}</div>
-                                </div>
-                                <div className="text-center p-4 bg-slate-700 rounded-lg">
-                                  <div className="text-green-400 font-medium mb-2">
-                                    {isUpcoming ? 'Days Until Start' : 'Days Remaining'}
-                                  </div>
-                                  <div className={`text-2xl font-bold ${
-                                    isUpcoming ? 'text-blue-400' :
-                                    daysRemaining > 7 ? 'text-green-400' : 
-                                    daysRemaining > 3 ? 'text-yellow-400' : 
-                                    'text-red-400'
-                                  }`}>
-                                    {isUpcoming ? 
-                                      (daysRemaining > 0 ? `${daysRemaining}` : 'Today!') :
-                                      isActive ? 
-                                        (daysRemaining > 0 ? `${daysRemaining}` : 'Final Day!') :
-                                        'Ended'
-                                    }
-                                  </div>
-                                </div>
-                                <div className="text-center p-4 bg-slate-700 rounded-lg">
-                                  <div className="text-yellow-400 font-medium mb-2">Total Players</div>
-                                  <div className="text-white text-2xl font-bold">{totalPlayers}</div>
+                                <div className={`text-2xl font-bold ${
+                                  isUpcoming ? 'text-cyan-400' :
+                                  daysRemaining > 7 ? 'text-green-400' : 
+                                  daysRemaining > 3 ? 'text-yellow-400' : 
+                                  'text-red-400'
+                                }`}>
+                                  {isUpcoming ? 
+                                    (daysRemaining > 0 ? `${daysRemaining}` : 'LAUNCH!') :
+                                    isActive ? 
+                                      (daysRemaining > 0 ? `${daysRemaining}` : 'FINAL ORBIT!') :
+                                      'PROMOTION COMPLETE'
+                                  }
                                 </div>
                               </div>
                               
-                              <Badge className={`text-lg px-6 py-2 ${
-                                isUpcoming ? 'bg-blue-600 text-white' :
-                                isActive ? 'bg-green-600 text-white' : 
-                                'bg-gray-600 text-white'
+                              <div className="text-center p-4 space-neon-border rounded-xl">
+                                <div className="text-amber-400 font-semibold mb-2">🎰 Players</div>
+                                <div className="text-white text-2xl font-bold">{totalPlayers}</div>
+                              </div>
+                            </div>
+                            
+                            <div className="flex justify-center">
+                              <Badge className={`text-lg px-6 py-2 space-neon-border ${
+                                isUpcoming ? 'text-cyan-400' :
+                                isActive ? 'text-green-400' : 
+                                'text-red-400'
                               }`}>
-                                {isUpcoming ? 'UPCOMING TOURNAMENT' : 
-                                 isActive ? 'ACTIVE TOURNAMENT' : 
-                                 'TOURNAMENT ENDED'}
+                                {isUpcoming ? '🎯 PROMOTION PREPARING' : 
+                                 isActive ? '🎰 PROMOTION ACTIVE' : 
+                                 '✅ PROMOTION COMPLETE'}
                               </Badge>
                             </div>
-                          </CardContent>
-                        </Card>
+                          </div>
+                        </div>
 
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                          {/* Leaderboard */}
+                          {/* SPACE THEME LEADERBOARD */}
                           <div className="lg:col-span-2">
-                            <Card className="bg-slate-800 border-slate-600">
-                              <CardHeader className="bg-slate-700 border-b border-slate-600">
-                                <CardTitle className="flex items-center gap-3 text-2xl text-white">
-                                  <Trophy className="h-8 w-8 text-yellow-400" />
-                                  🏆 LEADERBOARD
-                                </CardTitle>
-                              </CardHeader>
+                            <div className="space-theme-card rounded-2xl overflow-hidden">
+                              <div className="p-6 space-neon-border border-b">
+                                <h3 className="text-3xl font-bold text-white text-center flex items-center justify-center gap-3">
+                                  🏆 PLAYER RANKINGS 🏆
+                                </h3>
+                              </div>
                               
-                              <CardContent className="p-0">
+                              <div className="p-6">
                                 {leaderboard.length > 0 ? (
-                                  <div className="space-y-0">
+                                  <div className="space-y-4">
                                     {leaderboard.map((player: any, index: number) => (
                                       <div 
                                         key={player.playerId}
-                                        className={`flex items-center justify-between p-6 border-b border-slate-600 ${
-                                          index === 0 ? 'bg-yellow-900/20' :
-                                          index === 1 ? 'bg-gray-700/20' :
-                                          index === 2 ? 'bg-amber-900/20' :
-                                          'hover:bg-slate-700/30'
-                                        }`}
+                                        className="flex items-center justify-between p-4 space-neon-border rounded-xl hover:bg-blue-500/10 transition-all"
                                       >
                                         <div className="flex items-center gap-4">
                                           <div className={`w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold ${
-                                            index === 0 ? 'bg-yellow-500 text-black' :
-                                            index === 1 ? 'bg-gray-400 text-black' :
-                                            index === 2 ? 'bg-amber-600 text-white' :
-                                            'bg-slate-600 text-white'
+                                            index === 0 ? 'bg-yellow-500/20 text-yellow-400 space-neon-border' :
+                                            index === 1 ? 'bg-gray-400/20 text-gray-300 space-neon-border' :
+                                            index === 2 ? 'bg-amber-600/20 text-amber-400 space-neon-border' :
+                                            'bg-blue-500/20 text-blue-400'
                                           }`}>
-                                            {index === 0 ? '👑' : index + 1}
+                                            {index === 0 ? '🥇' :
+                                             index === 1 ? '🥈' :
+                                             index === 2 ? '🥉' :
+                                             (index + 1)
+                                            }
                                           </div>
                                           
                                           <div>
-                                            <div className="text-xl font-bold text-white">{player.name}</div>
+                                            <div className="text-xl font-bold text-white">
+                                              👨‍🚀 {player.name}
+                                            </div>
                                             <div className="text-slate-400">{player.sessions} sessions</div>
                                           </div>
                                         </div>
                                         
                                         <div className="text-right">
-                                          <div className="text-2xl font-bold text-white">{player.totalHours.toFixed(1)}h</div>
-                                          <div className="text-slate-400 text-sm">Total Hours</div>
+                                          <div className="text-2xl font-bold text-green-400">
+                                            {player.totalHours.toFixed(1)}h
+                                          </div>
+                                          <div className="text-slate-400 text-sm">play time</div>
                                         </div>
                                       </div>
                                     ))}
                                   </div>
                                 ) : (
-                                  <div className="p-16 text-center text-slate-400">
-                                    <Trophy className="h-16 w-16 mx-auto mb-4 text-yellow-400/50" />
-                                    <p className="text-xl font-bold text-slate-300 mb-2">No Players Yet</p>
-                                    <p className="text-slate-400">Leaderboard will update as players participate</p>
+                                  <div className="text-center py-12 space-neon-border rounded-xl">
+                                    <Trophy className="h-16 w-16 mx-auto mb-4 text-blue-400" />
+                                    <p className="text-2xl font-bold text-white mb-2">🎰 Awaiting Players</p>
+                                    <p className="text-slate-400">Player rankings will appear here</p>
                                   </div>
                                 )}
-                              </CardContent>
-                            </Card>
+                              </div>
+                            </div>
                           </div>
 
-                          {/* Rules and Prizes Cards */}
+                          {/* POKER PROMOTION INFO */}
                           <div className="space-y-6">
-                            {/* Rules Card */}
-                            <Card className="bg-blue-900/50 border-blue-600/50">
-                              <CardHeader className="bg-blue-800/50 border-b border-blue-600/50">
-                                <CardTitle className="flex items-center justify-between text-lg text-white">
-                                  <span className="flex items-center gap-2">
-                                    📋 RULES
-                                  </span>
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => setEditingTvCard(editingTvCard === 'rules' ? null : 'rules')}
-                                    className="text-blue-300 hover:text-white hover:bg-blue-600/20"
-                                  >
-                                    <Edit2 className="h-4 w-4" />
-                                  </Button>
-                                </CardTitle>
-                              </CardHeader>
+                            {/* POKER RULES CARD */}
+                            <div className="space-theme-card rounded-xl overflow-hidden">
+                              <div className="p-4 space-neon-border border-b flex items-center justify-between">
+                                <h4 className="text-xl font-bold text-white flex items-center gap-2">
+                                  📋 Promotion Rules
+                                </h4>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => setEditingTvCard(editingTvCard === 'rules' ? null : 'rules')}
+                                  className="text-blue-400 hover:text-white hover:bg-blue-500/20"
+                                >
+                                  <Edit2 className="h-4 w-4" />
+                                </Button>
+                              </div>
                               
-                              <CardContent className="p-6">
+                              <div className="p-4">
                                 {editingTvCard === 'rules' ? (
-                                  <div className="space-y-3">
+                                  <div className="space-y-4">
                                     <textarea
                                       value={tvRules}
-                                      onChange={(e) => setTvRules(e.target.value)}
-                                      className="w-full h-40 p-3 bg-slate-700 border border-blue-500/30 rounded text-white resize-none"
-                                      placeholder="Enter tournament rules..."
+                                      onChange={(e) => setTvRules(sanitizeTVContent(e.target.value))}
+                                      className="w-full h-32 p-3 space-theme-card space-neon-border rounded-lg text-white resize-none"
+                                      placeholder="🎰 Enter promotion rules here..."
                                     />
                                     <Button
                                       onClick={() => setEditingTvCard(null)}
-                                      className="w-full bg-blue-600 hover:bg-blue-700"
+                                      className="w-full space-neon-border bg-blue-600/20 hover:bg-blue-600/30 text-white"
                                     >
-                                      Save Rules
+                                      💾 Save Protocol
                                     </Button>
                                   </div>
                                 ) : (
-                                  <div className="text-white whitespace-pre-wrap text-sm leading-relaxed">
-                                    {tvRules || 'Click edit to add tournament rules...'}
+                                  <div className="text-white whitespace-pre-wrap leading-relaxed">
+                                    {tvRules || '🎰 Click edit to add promotion rules...'}
                                   </div>
                                 )}
-                              </CardContent>
-                            </Card>
+                              </div>
+                            </div>
 
-                            {/* Prizes Card */}
-                            <Card className="bg-green-900/50 border-green-600/50">
-                              <CardHeader className="bg-green-800/50 border-b border-green-600/50">
-                                <CardTitle className="flex items-center justify-between text-lg text-white">
-                                  <span className="flex items-center gap-2">
-                                    💰 PRIZES
-                                  </span>
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => setEditingTvCard(editingTvCard === 'prices' ? null : 'prices')}
-                                    className="text-green-300 hover:text-white hover:bg-green-600/20"
-                                  >
-                                    <Edit2 className="h-4 w-4" />
-                                  </Button>
-                                </CardTitle>
-                              </CardHeader>
+                            {/* POKER REWARDS CARD */}
+                            <div className="space-theme-card rounded-xl overflow-hidden">
+                              <div className="p-4 space-neon-border border-b flex items-center justify-between">
+                                <h4 className="text-xl font-bold text-white flex items-center gap-2">
+                                  🏆 Promotion Prizes
+                                </h4>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => setEditingTvCard(editingTvCard === 'prices' ? null : 'prices')}
+                                  className="text-green-400 hover:text-white hover:bg-green-500/20"
+                                >
+                                  <Edit2 className="h-4 w-4" />
+                                </Button>
+                              </div>
                               
-                              <CardContent className="p-6">
+                              <div className="p-4">
                                 {editingTvCard === 'prices' ? (
-                                  <div className="space-y-3">
+                                  <div className="space-y-4">
                                     <textarea
                                       value={tvPrices}
-                                      onChange={(e) => setTvPrices(e.target.value)}
-                                      className="w-full h-40 p-3 bg-slate-700 border border-green-500/30 rounded text-white resize-none"
-                                      placeholder="Enter prize information..."
+                                      onChange={(e) => setTvPrices(sanitizeTVContent(e.target.value))}
+                                      className="w-full h-32 p-3 space-theme-card space-neon-border rounded-lg text-white resize-none"
+                                      placeholder="🏆 Enter reward details here..."
                                     />
                                     <Button
                                       onClick={() => setEditingTvCard(null)}
-                                      className="w-full bg-green-600 hover:bg-green-700"
+                                      className="w-full space-neon-border bg-green-600/20 hover:bg-green-600/30 text-white"
                                     >
-                                      Save Prizes
+                                      💰 Save Rewards
                                     </Button>
                                   </div>
                                 ) : (
-                                  <div className="text-white whitespace-pre-wrap text-sm leading-relaxed">
-                                    {tvPrices || 'Click edit to add prize information...'}
+                                  <div className="text-white whitespace-pre-wrap leading-relaxed">
+                                    {tvPrices || '🏆 Click edit to add reward information...'}
                                   </div>
                                 )}
-                              </CardContent>
-                            </Card>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>

@@ -8,6 +8,7 @@ import { Badge } from "../../../components/ui/badge";
 import { ArrowLeft, Clock, TrendingUp, Trophy, Calendar, Minus, Plus } from "lucide-react";
 import { useSyncDatabase } from "../../../hooks/use-sync-database";
 import { DatabaseService } from "../../../lib/supabase";
+import { sanitizeObject } from "../../../lib/utils";
 
 export default function PlayerDetailPage() {
   const router = useRouter();
@@ -57,8 +58,18 @@ export default function PlayerDetailPage() {
               DatabaseService.getPenalties().then(all => all.filter(p => p.player_id === foundPlayer.id)),
               DatabaseService.getAddons().then(all => all.filter(a => a.player_id === foundPlayer.id))
             ]);
-            setPlayerPenalties(penalties);
-            setPlayerAddons(addons);
+            
+            // Sanitize data to prevent JSON encoding issues
+            const sanitizedPenalties = penalties.map(p => 
+              sanitizeObject(p, ['reason', 'notes', 'applied_by'])
+            );
+            
+            const sanitizedAddons = addons.map(a => 
+              sanitizeObject(a, ['reason', 'notes', 'applied_by'])
+            );
+            
+            setPlayerPenalties(sanitizedPenalties);
+            setPlayerAddons(sanitizedAddons);
             
             // Calculate detailed stats
             const totalSessions = sessions.length;
