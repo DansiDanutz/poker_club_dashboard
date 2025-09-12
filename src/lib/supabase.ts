@@ -236,19 +236,28 @@ export class DatabaseService {
     try {
       console.log('🔄 Recalculating stats for all players...')
       const players = await this.getPlayers()
+      console.log(`🔍 DEBUG: Found ${players.length} players to recalculate`)
       
       for (const player of players) {
+        console.log(`🔍 DEBUG: Processing player ${player.id} (${player.name})`)
         const stats = await this.calculatePlayerStats(player.id)
-        await this.updatePlayer(player.id, {
+        
+        console.log(`🔍 DEBUG: Calculated stats for ${player.name}:`, stats)
+        console.log(`🔍 DEBUG: Current DB values - Hours: ${player.total_hours}, Sessions: ${player.total_sessions}`)
+        
+        const updateResult = await this.updatePlayer(player.id, {
           total_hours: stats.totalHours,
           total_sessions: stats.totalSessions
         })
+        
+        console.log(`🔍 DEBUG: Update result:`, updateResult)
         console.log(`✅ Updated stats for ${player.name}: ${stats.totalHours}h, ${stats.totalSessions} sessions`)
       }
       
       console.log('🎉 All player stats recalculated successfully')
     } catch (error) {
       console.error('❌ Error recalculating player stats:', error)
+      console.error('❌ Full error details:', error)
     }
   }
 
