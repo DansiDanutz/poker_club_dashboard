@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poker Club TV Display</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .container {
+            padding: 20px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            border: 2px solid #00d4ff;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        }
+
+        .header .subtitle {
+            font-size: 1.2rem;
+            color: #00d4ff;
+        }
+
+        .content {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            border: 2px solid #00d4ff;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: #00d4ff;
+            text-align: center;
+        }
+
+        .promotion-info {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .promotion-name {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #00ff88;
+        }
+
+        .promotion-dates {
+            font-size: 1.1rem;
+            color: #ccc;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .status-active {
+            background: #00ff88;
+            color: #000;
+        }
+
+        .status-upcoming {
+            background: #ffaa00;
+            color: #000;
+        }
+
+        .status-complete {
+            background: #ff4444;
+            color: #fff;
+        }
+
+        .leaderboard {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            border-left: 4px solid #00d4ff;
+        }
+
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .rank {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #00d4ff;
+            min-width: 30px;
+        }
+
+        .player-name {
+            font-weight: bold;
+        }
+
+        .player-hours {
+            font-size: 1.1rem;
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        .rules-content, .prizes-content {
+            white-space: pre-wrap;
+            line-height: 1.6;
+            font-size: 1.1rem;
+        }
+
+        .no-data {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 40px;
+        }
+
+        .loading {
+            text-align: center;
+            color: #00d4ff;
+            font-size: 1.2rem;
+            padding: 40px;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .promotion-name {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Animation for updates */
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .updating {
+            animation: pulse 1s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎰 POKER CLUB DASHBOARD 🎰</h1>
+            <div class="subtitle">Live Tournament Display</div>
+        </div>
+
+        <div class="content">
+            <div class="card">
+                <h2>🏆 Current Promotion</h2>
+                <div id="promotion-info" class="promotion-info">
+                    <div class="loading">Loading promotion data...</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📊 Player Rankings</h2>
+                <div id="leaderboard" class="leaderboard">
+                    <div class="loading">Loading leaderboard...</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📋 Promotion Rules</h2>
+                <div id="rules-content" class="rules-content">
+                    <div class="loading">Loading rules...</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>🏆 Prizes & Rewards</h2>
+                <div id="prizes-content" class="prizes-content">
+                    <div class="loading">Loading prizes...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE_URL = window.location.origin;
+        const REFRESH_INTERVAL = 30000; // 30 seconds
+
+        // State
+        let currentData = {
+            promotions: [],
+            players: [],
+            sessions: [],
+            rules: '',
+            prizes: ''
+        };
+
+        // Utility functions
+        function sanitizeText(text) {
+            if (!text) return '';
+            return String(text)
+                .replace(/[\uD800-\uDFFF]/g, '')
+                .replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
+                .replace(/\uFEFF/g, '')
+                .trim();
+        }
+
+        function formatDate(dateString) {
+            try {
+                return new Date(dateString).toLocaleDateString();
+            } catch {
+                return dateString;
+            }
+        }
+
+        function getPromotionStatus(promotion) {
+            const now = new Date();
+            const start = new Date(promotion.start_date);
+            const end = new Date(promotion.end_date);
+
+            if (now < start) return 'upcoming';
+            if (now > end) return 'complete';
+            return 'active';
+        }
+
+        function calculateLeaderboard(promotion, sessions, players) {
+            if (!promotion || !sessions || !players) return [];
+
+            const startDate = new Date(promotion.start_date);
+            const endDate = new Date(promotion.end_date);
+
+            // Filter sessions within promotion period
+            const promotionSessions = sessions.filter(session => {
+                const sessionDate = new Date(session.date);
+                return sessionDate >= startDate && sessionDate <= endDate;
+            });
+
+            // Calculate player stats
+            const playerStats = {};
+            promotionSessions.forEach(session => {
+                const playerId = session.player_id;
+                if (!playerStats[playerId]) {
+                    const player = players.find(p => p.id === playerId);
+                    playerStats[playerId] = {
+                        playerId,
+                        name: player ? player.name : 'Unknown Player',
+                        totalHours: 0,
+                        sessions: 0
+                    };
+                }
+
+                // Calculate duration from seat_in_time and seat_out_time, fallback to duration field
+                const durationMinutes = session.seat_in_time && session.seat_out_time 
+                    ? (new Date(session.seat_out_time).getTime() - new Date(session.seat_in_time).getTime()) / (1000 * 60)
+                    : (session.duration || 0) * 60;
+                
+                playerStats[playerId].totalHours += durationMinutes / 60;
+                playerStats[playerId].sessions += 1;
+            });
+
+            // Sort by total hours
+            return Object.values(playerStats)
+                .sort((a, b) => b.totalHours - a.totalHours)
+                .slice(0, 10); // Top 10
+        }
+
+        // API functions
+        async function fetchData() {
+            try {
+                // Try to fetch from localStorage first (fallback)
+                const localData = {
+                    promotions: JSON.parse(localStorage.getItem('pokerClubPromotions') || '[]'),
+                    players: JSON.parse(localStorage.getItem('pokerClubPlayers') || '[]'),
+                    sessions: JSON.parse(localStorage.getItem('pokerClubHistory') || '[]'),
+                    rules: localStorage.getItem('pokerClubTvRules') || 'No rules available',
+                    prizes: localStorage.getItem('pokerClubTvPrices') || 'No prizes available'
+                };
+
+                // Sanitize all text data
+                localData.rules = sanitizeText(localData.rules);
+                localData.prizes = sanitizeText(localData.prizes);
+
+                currentData = localData;
+                updateDisplay();
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                showError('Failed to load data');
+            }
+        }
+
+        function updateDisplay() {
+            updatePromotionInfo();
+            updateLeaderboard();
+            updateRules();
+            updatePrizes();
+        }
+
+        function updatePromotionInfo() {
+            const container = document.getElementById('promotion-info');
+            if (!container) return;
+
+            const activePromotion = currentData.promotions.find(p => getPromotionStatus(p) === 'active') ||
+                                  currentData.promotions.find(p => getPromotionStatus(p) === 'upcoming') ||
+                                  currentData.promotions[currentData.promotions.length - 1];
+
+            if (!activePromotion) {
+                container.innerHTML = '<div class="no-data">No active promotion</div>';
+                return;
+            }
+
+            const status = getPromotionStatus(activePromotion);
+            const statusClass = `status-${status}`;
+            const statusText = status === 'active' ? '🎰 ACTIVE' : 
+                             status === 'upcoming' ? '🎯 UPCOMING' : '✅ COMPLETE';
+
+            container.innerHTML = `
+                <div class="promotion-name">${sanitizeText(activePromotion.name)}</div>
+                <div class="promotion-dates">
+                    ${formatDate(activePromotion.start_date)} - ${formatDate(activePromotion.end_date)}
+                </div>
+                <div class="status-badge ${statusClass}">${statusText}</div>
+            `;
+        }
+
+        function updateLeaderboard() {
+            const container = document.getElementById('leaderboard');
+            if (!container) return;
+
+            const activePromotion = currentData.promotions.find(p => getPromotionStatus(p) === 'active') ||
+                                  currentData.promotions.find(p => getPromotionStatus(p) === 'upcoming') ||
+                                  currentData.promotions[currentData.promotions.length - 1];
+
+            if (!activePromotion) {
+                container.innerHTML = '<div class="no-data">No promotion data available</div>';
+                return;
+            }
+
+            const leaderboard = calculateLeaderboard(activePromotion, currentData.sessions, currentData.players);
+
+            if (leaderboard.length === 0) {
+                container.innerHTML = '<div class="no-data">No players yet</div>';
+                return;
+            }
+
+            container.innerHTML = leaderboard.map((player, index) => `
+                <div class="leaderboard-item">
+                    <div class="player-info">
+                        <div class="rank">#${index + 1}</div>
+                        <div class="player-name">${sanitizeText(player.name)}</div>
+                    </div>
+                    <div class="player-hours">${player.totalHours.toFixed(1)}h</div>
+                </div>
+            `).join('');
+        }
+
+        function updateRules() {
+            const container = document.getElementById('rules-content');
+            if (!container) return;
+
+            container.innerHTML = currentData.rules || '<div class="no-data">No rules available</div>';
+        }
+
+        function updatePrizes() {
+            const container = document.getElementById('prizes-content');
+            if (!container) return;
+
+            container.innerHTML = currentData.prizes || '<div class="no-data">No prizes available</div>';
+        }
+
+        function showError(message) {
+            const containers = ['promotion-info', 'leaderboard', 'rules-content', 'prizes-content'];
+            containers.forEach(id => {
+                const container = document.getElementById(id);
+                if (container) {
+                    container.innerHTML = `<div class="no-data">${message}</div>`;
+                }
+            });
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchData();
+            setInterval(fetchData, REFRESH_INTERVAL);
+        });
+
+        // Handle visibility change to refresh when tab becomes visible
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                fetchData();
+            }
+        });
+    </script>
+</body>
+</html>
