@@ -575,9 +575,23 @@ const PokerClubDashboard = () => {
 
   // Format duration
   const formatDuration = (hours: number) => {
-    if (!hours || hours === 0) return '0h 0m';
-    const h = Math.floor(hours);
-    const m = Math.round((hours - h) * 60);
+    // Handle null, undefined, or truly zero values
+    if (hours === null || hours === undefined || hours === 0) return '0h 0m';
+    
+    // Ensure hours is a positive number and handle very small values
+    const safeHours = Math.max(0, Number(hours) || 0);
+    if (safeHours < 0.0167) { // Less than 1 minute
+      return '0h 1m'; // Show at least 1 minute for very small values
+    }
+    
+    const h = Math.floor(safeHours);
+    const m = Math.round((safeHours - h) * 60);
+    
+    // Handle edge case where rounding minutes equals 60
+    if (m === 60) {
+      return `${h + 1}h 0m`;
+    }
+    
     return `${h}h ${m}m`;
   };
 

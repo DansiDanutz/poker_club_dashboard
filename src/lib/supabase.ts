@@ -206,27 +206,14 @@ export class DatabaseService {
     }
 
     const sessions = data || []
-    console.log(`🔍 DEBUG Player ${playerId}: Found ${sessions.length} sessions`)
-    console.log(`🔍 DEBUG Sessions data:`, sessions)
-    
-    const sessionHours = sessions.reduce((sum, session) => {
-      const duration = session.duration || 0
-      console.log(`🔍 DEBUG Session duration: ${duration} (type: ${typeof duration})`)
-      return sum + duration
-    }, 0)
+    const sessionHours = sessions.reduce((sum, session) => sum + (session.duration || 0), 0)
     const totalSessions = sessions.length
-
-    console.log(`🔍 DEBUG Player ${playerId}: Session hours = ${sessionHours}`)
 
     // Subtract penalties and add bonuses
     const penaltyHours = await this.calculatePlayerPenalties(playerId)
     const addonHours = await this.calculatePlayerAddons(playerId)
 
-    console.log(`🔍 DEBUG Player ${playerId}: Penalties = ${penaltyHours}h, Addons = ${addonHours}h`)
-
     const totalHours = Math.max(0, sessionHours - penaltyHours + addonHours) // Don't allow negative hours
-
-    console.log(`🔍 DEBUG Player ${playerId}: Final total = ${totalHours}h`)
 
     return { totalHours, totalSessions }
   }
@@ -236,28 +223,19 @@ export class DatabaseService {
     try {
       console.log('🔄 Recalculating stats for all players...')
       const players = await this.getPlayers()
-      console.log(`🔍 DEBUG: Found ${players.length} players to recalculate`)
       
       for (const player of players) {
-        console.log(`🔍 DEBUG: Processing player ${player.id} (${player.name})`)
         const stats = await this.calculatePlayerStats(player.id)
-        
-        console.log(`🔍 DEBUG: Calculated stats for ${player.name}:`, stats)
-        console.log(`🔍 DEBUG: Current DB values - Hours: ${player.total_hours}, Sessions: ${player.total_sessions}`)
-        
-        const updateResult = await this.updatePlayer(player.id, {
+        await this.updatePlayer(player.id, {
           total_hours: stats.totalHours,
           total_sessions: stats.totalSessions
         })
-        
-        console.log(`🔍 DEBUG: Update result:`, updateResult)
         console.log(`✅ Updated stats for ${player.name}: ${stats.totalHours}h, ${stats.totalSessions} sessions`)
       }
       
       console.log('🎉 All player stats recalculated successfully')
     } catch (error) {
       console.error('❌ Error recalculating player stats:', error)
-      console.error('❌ Full error details:', error)
     }
   }
 
