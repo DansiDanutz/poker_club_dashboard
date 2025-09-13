@@ -209,7 +209,8 @@ const PokerClubDashboard = () => {
   const [selectedTvPromotion, setSelectedTvPromotion] = useState<string>('');
   const [tvRules, setTvRules] = useState<string>('');
   const [tvPrices, setTvPrices] = useState<string>('');
-  const [editingTvCard, setEditingTvCard] = useState<'rules' | 'prices' | null>(null);
+  const [tvPromoImage, setTvPromoImage] = useState<string>('');
+  const [editingTvCard, setEditingTvCard] = useState<'rules' | 'prices' | 'image' | null>(null);
 
   // Helper function to determine promotion status
   const getPromotionStatus = (startDate: string, endDate: string) => {
@@ -236,11 +237,14 @@ const PokerClubDashboard = () => {
       const storedTvRules = typeof window !== 'undefined' ? 
         (localStorage.getItem('pokerClubTvRules') || 'Enter your competition rules here...') : 
         'Enter your competition rules here...';
-      const storedTvPrices = typeof window !== 'undefined' ? 
-        (localStorage.getItem('pokerClubTvPrices') || 'Enter your prizes information here...') : 
+      const storedTvPrices = typeof window !== 'undefined' ?
+        (localStorage.getItem('pokerClubTvPrices') || 'Enter your prizes information here...') :
         'Enter your prizes information here...';
+      const storedTvPromoImage = typeof window !== 'undefined' ?
+        (localStorage.getItem('pokerClubTvPromoImage') || '') : '';
       setTvRules(sanitizeTVContent(storedTvRules));
       setTvPrices(sanitizeTVContent(storedTvPrices));
+      setTvPromoImage(storedTvPromoImage);
       
       // Load active tables from localStorage
       const storedActiveTables = loadFromStorage('pokerClubActiveTables', []);
@@ -405,8 +409,9 @@ const PokerClubDashboard = () => {
     if (typeof window !== 'undefined' && mounted) {
       localStorage.setItem('pokerClubTvRules', sanitizeTVContent(tvRules));
       localStorage.setItem('pokerClubTvPrices', sanitizeTVContent(tvPrices));
+      localStorage.setItem('pokerClubTvPromoImage', tvPromoImage);
     }
-  }, [tvRules, tvPrices, mounted]);
+  }, [tvRules, tvPrices, tvPromoImage, mounted]);
 
   // Save active tables to localStorage whenever they change (client-side only)
   useEffect(() => {
@@ -2468,6 +2473,82 @@ const PokerClubDashboard = () => {
                                 ) : (
                                   <div className="text-white whitespace-pre-wrap leading-relaxed">
                                     {tvPrices || '🏆 Click edit to add reward information...'}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* TV PROMO IMAGE CARD */}
+                            <div className="space-theme-card rounded-xl overflow-hidden">
+                              <div className="p-4 space-neon-border border-b flex items-center justify-between">
+                                <h4 className="text-xl font-bold text-white flex items-center gap-2">
+                                  🖼️ Promotion Image
+                                </h4>
+                                <Button
+                                  size="sm"
+                                  onClick={() => setEditingTvCard(editingTvCard === 'image' ? null : 'image')}
+                                  className="space-neon-border bg-purple-600/20 hover:bg-purple-600/30 text-white"
+                                >
+                                  {editingTvCard === 'image' ? <X className="h-4 w-4" /> : <Edit2 className="h-4 w-4" />}
+                                </Button>
+                              </div>
+                              <div className="p-4">
+                                {editingTvCard === 'image' ? (
+                                  <div className="space-y-4">
+                                    <div className="text-sm text-blue-300 mb-2">
+                                      Enter an image URL to display on TV (JPEG, PNG, GIF supported)
+                                    </div>
+                                    <input
+                                      type="url"
+                                      value={tvPromoImage}
+                                      onChange={(e) => setTvPromoImage(e.target.value)}
+                                      className="w-full p-3 space-theme-card space-neon-border rounded-lg text-white"
+                                      placeholder="https://example.com/promo-image.jpg"
+                                    />
+                                    {tvPromoImage && (
+                                      <div className="w-full h-48 space-theme-card rounded-lg overflow-hidden">
+                                        <img
+                                          src={tvPromoImage}
+                                          alt="Promotion Preview"
+                                          className="w-full h-full object-contain"
+                                          onError={(e) => {
+                                            e.currentTarget.src = '';
+                                            e.currentTarget.style.display = 'none';
+                                          }}
+                                        />
+                                      </div>
+                                    )}
+                                    <Button
+                                      onClick={() => setEditingTvCard(null)}
+                                      className="w-full space-neon-border bg-purple-600/20 hover:bg-purple-600/30 text-white"
+                                    >
+                                      💾 Save Image
+                                    </Button>
+                                    {tvPromoImage && (
+                                      <Button
+                                        onClick={() => setTvPromoImage('')}
+                                        className="w-full space-neon-border bg-red-600/20 hover:bg-red-600/30 text-red-400"
+                                      >
+                                        🗑️ Remove Image
+                                      </Button>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <div className="text-white">
+                                    {tvPromoImage ? (
+                                      <div className="space-y-2">
+                                        <div className="w-full h-32 space-theme-card rounded-lg overflow-hidden">
+                                          <img
+                                            src={tvPromoImage}
+                                            alt="Promotion"
+                                            className="w-full h-full object-contain"
+                                          />
+                                        </div>
+                                        <div className="text-xs text-blue-300 truncate">{tvPromoImage}</div>
+                                      </div>
+                                    ) : (
+                                      <div className="text-slate-400">🖼️ Click edit to add promotion image...</div>
+                                    )}
                                   </div>
                                 )}
                               </div>
