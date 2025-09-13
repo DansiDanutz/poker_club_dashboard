@@ -210,7 +210,18 @@ const PokerClubDashboard = () => {
   const [tvRules, setTvRules] = useState<string>('');
   const [tvPrices, setTvPrices] = useState<string>('');
   const [tvPromoImage, setTvPromoImage] = useState<string>('');
-  const [editingTvCard, setEditingTvCard] = useState<'rules' | 'prices' | 'image' | null>(null);
+  const [tvCardBackgrounds, setTvCardBackgrounds] = useState<{
+    promotion: string;
+    rankings: string;
+    rules: string;
+    prizes: string;
+  }>({
+    promotion: '',
+    rankings: '',
+    rules: '',
+    prizes: ''
+  });
+  const [editingTvCard, setEditingTvCard] = useState<'rules' | 'prices' | 'image' | 'backgrounds' | null>(null);
 
   // Helper function to determine promotion status
   const getPromotionStatus = (startDate: string, endDate: string) => {
@@ -246,7 +257,17 @@ const PokerClubDashboard = () => {
       setTvRules(sanitizeTVContent(storedTvRules));
       setTvPrices(sanitizeTVContent(storedTvPrices));
       setTvPromoImage(storedTvPromoImage);
-      
+
+      // Load card backgrounds
+      const storedCardBackgrounds = typeof window !== 'undefined' ?
+        JSON.parse(localStorage.getItem('pokerClubTvCardBackgrounds') || '{}') : {};
+      setTvCardBackgrounds({
+        promotion: storedCardBackgrounds.promotion || '',
+        rankings: storedCardBackgrounds.rankings || '',
+        rules: storedCardBackgrounds.rules || '',
+        prizes: storedCardBackgrounds.prizes || ''
+      });
+
       // Load active tables from localStorage
       const storedActiveTables = loadFromStorage('pokerClubActiveTables', []);
       if (storedActiveTables && Array.isArray(storedActiveTables)) {
@@ -411,8 +432,9 @@ const PokerClubDashboard = () => {
       localStorage.setItem('pokerClubTvRules', sanitizeTVContent(tvRules));
       localStorage.setItem('pokerClubTvPrices', sanitizeTVContent(tvPrices));
       localStorage.setItem('pokerClubTvPromoImage', tvPromoImage);
+      localStorage.setItem('pokerClubTvCardBackgrounds', JSON.stringify(tvCardBackgrounds));
     }
-  }, [tvRules, tvPrices, tvPromoImage, mounted]);
+  }, [tvRules, tvPrices, tvPromoImage, tvCardBackgrounds, mounted]);
 
   // Save active tables to localStorage whenever they change (client-side only)
   useEffect(() => {
@@ -2637,6 +2659,123 @@ const PokerClubDashboard = () => {
                                     </ul>
                                   </div>
                                 </div>
+                              </div>
+                            </div>
+
+                            {/* TV CARD BACKGROUNDS */}
+                            <div className="space-theme-card rounded-xl overflow-hidden">
+                              <div className="p-4 space-neon-border border-b flex items-center justify-between">
+                                <h4 className="text-xl font-bold text-white flex items-center gap-2">
+                                  🎨 Card Background Images
+                                </h4>
+                                <Button
+                                  size="sm"
+                                  onClick={() => setEditingTvCard(editingTvCard === 'backgrounds' ? null : 'backgrounds')}
+                                  className="space-neon-border bg-indigo-600/20 hover:bg-indigo-600/30 text-white"
+                                >
+                                  {editingTvCard === 'backgrounds' ? <X className="h-4 w-4" /> : <Edit2 className="h-4 w-4" />}
+                                </Button>
+                              </div>
+                              <div className="p-4">
+                                {editingTvCard === 'backgrounds' ? (
+                                  <div className="space-y-4">
+                                    <div className="text-sm text-blue-300 mb-2">
+                                      Set background images for each TV display card (URLs only)
+                                    </div>
+
+                                    <div className="space-y-3">
+                                      <div>
+                                        <label className="text-xs text-slate-400">Current Promotion Background (16:9 ratio, ~1920x1080)</label>
+                                        <input
+                                          type="url"
+                                          value={tvCardBackgrounds.promotion}
+                                          onChange={(e) => setTvCardBackgrounds({...tvCardBackgrounds, promotion: e.target.value})}
+                                          className="w-full p-2 mt-1 space-theme-card space-neon-border rounded-lg text-white text-sm"
+                                          placeholder="https://example.com/promotion-bg.jpg"
+                                        />
+                                      </div>
+
+                                      <div>
+                                        <label className="text-xs text-slate-400">Player Rankings Background (16:9 ratio, ~1920x1080)</label>
+                                        <input
+                                          type="url"
+                                          value={tvCardBackgrounds.rankings}
+                                          onChange={(e) => setTvCardBackgrounds({...tvCardBackgrounds, rankings: e.target.value})}
+                                          className="w-full p-2 mt-1 space-theme-card space-neon-border rounded-lg text-white text-sm"
+                                          placeholder="https://example.com/rankings-bg.jpg"
+                                        />
+                                      </div>
+
+                                      <div>
+                                        <label className="text-xs text-slate-400">Promotion Rules Background (16:9 ratio, ~1920x1080)</label>
+                                        <input
+                                          type="url"
+                                          value={tvCardBackgrounds.rules}
+                                          onChange={(e) => setTvCardBackgrounds({...tvCardBackgrounds, rules: e.target.value})}
+                                          className="w-full p-2 mt-1 space-theme-card space-neon-border rounded-lg text-white text-sm"
+                                          placeholder="https://example.com/rules-bg.jpg"
+                                        />
+                                      </div>
+
+                                      <div>
+                                        <label className="text-xs text-slate-400">Prizes & Rewards Background (32:9 ratio wide, ~3840x1080)</label>
+                                        <input
+                                          type="url"
+                                          value={tvCardBackgrounds.prizes}
+                                          onChange={(e) => setTvCardBackgrounds({...tvCardBackgrounds, prizes: e.target.value})}
+                                          className="w-full p-2 mt-1 space-theme-card space-neon-border rounded-lg text-white text-sm"
+                                          placeholder="https://example.com/prizes-bg.jpg"
+                                        />
+                                      </div>
+                                    </div>
+
+                                    <Button
+                                      onClick={() => setEditingTvCard(null)}
+                                      className="w-full space-neon-border bg-indigo-600/20 hover:bg-indigo-600/30 text-white"
+                                    >
+                                      💾 Save Backgrounds
+                                    </Button>
+
+                                    <Button
+                                      onClick={() => setTvCardBackgrounds({ promotion: '', rankings: '', rules: '', prizes: '' })}
+                                      className="w-full space-neon-border bg-red-600/20 hover:bg-red-600/30 text-red-400"
+                                    >
+                                      🗑️ Clear All Backgrounds
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <div className="text-white">
+                                    <div className="space-y-2 text-sm">
+                                      <div className="flex justify-between">
+                                        <span className="text-slate-400">Promotion:</span>
+                                        <span className="text-xs truncate max-w-[200px]">
+                                          {tvCardBackgrounds.promotion || 'No background set'}
+                                        </span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span className="text-slate-400">Rankings:</span>
+                                        <span className="text-xs truncate max-w-[200px]">
+                                          {tvCardBackgrounds.rankings || 'No background set'}
+                                        </span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span className="text-slate-400">Rules:</span>
+                                        <span className="text-xs truncate max-w-[200px]">
+                                          {tvCardBackgrounds.rules || 'No background set'}
+                                        </span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span className="text-slate-400">Prizes:</span>
+                                        <span className="text-xs truncate max-w-[200px]">
+                                          {tvCardBackgrounds.prizes || 'No background set'}
+                                        </span>
+                                      </div>
+                                    </div>
+                                    <div className="text-xs text-slate-400 mt-3">
+                                      🎨 Click edit to set background images for TV display cards
+                                    </div>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </div>

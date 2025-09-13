@@ -118,6 +118,27 @@
             display: flex;
             flex-direction: column;
             height: 100%;
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1;
+            border-radius: 1vh;
+        }
+
+        .card > * {
+            position: relative;
+            z-index: 2;
         }
 
         .card h2 {
@@ -428,7 +449,8 @@
                     sessions: JSON.parse(localStorage.getItem('pokerClubHistory') || '[]'),
                     rules: localStorage.getItem('pokerClubTvRules') || 'No rules available',
                     prizes: localStorage.getItem('pokerClubTvPrices') || 'No prizes available',
-                    promoImage: localStorage.getItem('pokerClubTvPromoImage') || '/default-promo-image.jpg'
+                    promoImage: localStorage.getItem('pokerClubTvPromoImage') || '/default-promo-image.jpg',
+                    cardBackgrounds: JSON.parse(localStorage.getItem('pokerClubTvCardBackgrounds') || '{}')
                 };
 
                 // Sanitize all text data
@@ -448,6 +470,32 @@
             updateRules();
             updatePrizes();
             updatePromoImage();
+            updateCardBackgrounds();
+        }
+
+        function updateCardBackgrounds() {
+            const backgrounds = currentData.cardBackgrounds || {};
+
+            // Get all card elements
+            const cards = document.querySelectorAll('.card');
+
+            // Apply backgrounds to specific cards
+            cards.forEach(card => {
+                const h2 = card.querySelector('h2');
+                if (h2) {
+                    const title = h2.textContent;
+
+                    if (title.includes('Current Promotion') && backgrounds.promotion) {
+                        card.style.backgroundImage = `url('${backgrounds.promotion}')`;
+                    } else if (title.includes('Player Rankings') && backgrounds.rankings) {
+                        card.style.backgroundImage = `url('${backgrounds.rankings}')`;
+                    } else if (title.includes('Promotion Rules') && backgrounds.rules) {
+                        card.style.backgroundImage = `url('${backgrounds.rules}')`;
+                    } else if (title.includes('Prizes') && backgrounds.prizes) {
+                        card.style.backgroundImage = `url('${backgrounds.prizes}')`;
+                    }
+                }
+            });
         }
 
         function setupPromotionRotation() {
