@@ -721,8 +721,19 @@
             }
         }
 
+        // Promotion rotation state
+        let currentPromotionIndex = 0;
+        let activePromotions = [];
+        let rotationTimer = null;
+
+        // Get rotation settings from localStorage
+        function getPromotionRotationTime(promotionId) {
+            const settings = JSON.parse(localStorage.getItem('pokerClubTvRotationSettings') || '{}');
+            return settings[promotionId] || 10000; // Default 10 seconds
+        }
+
         // Fetch and update data
-        async function updateData() {
+        async function updateData(skipRotation = false) {
             try {
                 // Get data from localStorage
                 const clubSettings = JSON.parse(localStorage.getItem('pokerClubSettings') || '{}');
@@ -736,15 +747,64 @@
                     document.getElementById('club-name').textContent = clubSettings.clubName.toUpperCase();
                 }
 
-                // Find active promotion
+                // Find all active and upcoming promotions
                 const now = new Date();
-                const activePromotion = promotions.find(p => {
+                const allActivePromotions = promotions.filter(p => {
                     const start = new Date(p.start_date);
                     const end = new Date(p.end_date);
-                    return now >= start && now <= end && !p.deleted;
-                }) || promotions[0];
+                    return !p.deleted && (
+                        (now >= start && now <= end) || // Active
+                        (now < start) // Upcoming
+                    );
+                });
+
+                // Filter out promotions with rotation time set to 0
+                activePromotions = allActivePromotions.filter(p => getPromotionRotationTime(p.id) > 0);
+
+                // If no rotatable promotions, show first available
+                if (activePromotions.length === 0 && allActivePromotions.length > 0) {
+                    activePromotions = [allActivePromotions[0]];
+                }
+
+                // Setup rotation if needed and not skipping
+                if (!skipRotation && activePromotions.length > 1) {
+                    setupPromotionRotation();
+                }
+
+                // Get current promotion to display
+                const activePromotion = activePromotions[currentPromotionIndex] || promotions[0];
 
                 if (activePromotion) {
+                    // Update promotion status badge
+                    const statusBadge = document.querySelector('.status-badge');
+                    const now = new Date();
+                    const start = new Date(activePromotion.start_date);
+                    const end = new Date(activePromotion.end_date);
+
+                    if (now < start) {
+                        statusBadge.textContent = 'UPCOMING';
+                        statusBadge.style.background = 'linear-gradient(90deg, #f59e0b, #d97706)';
+                    } else if (now > end) {
+                        statusBadge.textContent = 'ENDED';
+                        statusBadge.style.background = 'linear-gradient(90deg, #ef4444, #dc2626)';
+                    } else {
+                        statusBadge.textContent = 'ACTIVE';
+                        statusBadge.style.background = 'linear-gradient(90deg, #10b981, #059669)';
+                    }
+
+                    // Show rotation indicator if multiple promotions
+                    if (activePromotions.length > 1) {
+                        const promotionHeader = document.querySelector('.promotion-header');
+                        let indicator = document.getElementById('rotation-indicator');
+                        if (!indicator) {
+                            indicator = document.createElement('div');
+                            indicator.id = 'rotation-indicator';
+                            indicator.style.cssText = 'position: absolute; bottom: -10px; left: 0; right: 0; text-align: center; font-size: 0.8rem; color: #94a3b8;';
+                            promotionHeader.parentElement.appendChild(indicator);
+                        }
+                        indicator.textContent = `${currentPromotionIndex + 1} / ${activePromotions.length}`;
+                    }
+
                     document.getElementById('promotion-name').textContent = activePromotion.name.toUpperCase();
                     document.getElementById('start-date').textContent = formatDate(activePromotion.start_date);
                     document.getElementById('end-date').textContent = formatDate(activePromotion.end_date);
@@ -825,6 +885,36 @@
             }
         }
 
+        // Setup promotion rotation
+        function setupPromotionRotation() {
+            // Clear existing timer
+            if (rotationTimer) {
+                clearTimeout(rotationTimer);
+            }
+
+            function rotateToNext() {
+                currentPromotionIndex = (currentPromotionIndex + 1) % activePromotions.length;
+                updateData(true); // Skip rotation setup to avoid infinite loop
+                scheduleNextRotation();
+            }
+
+            function scheduleNextRotation() {
+                if (activePromotions.length <= 1) return;
+
+                const currentPromotion = activePromotions[currentPromotionIndex];
+                if (currentPromotion) {
+                    const rotationTime = getPromotionRotationTime(currentPromotion.id);
+
+                    if (rotationTime > 0) {
+                        rotationTimer = setTimeout(rotateToNext, rotationTime);
+                    }
+                }
+            }
+
+            // Start rotation
+            scheduleNextRotation();
+        }
+
         // Initialize
         createParticles();
         updateClock();
@@ -832,7 +922,7 @@
 
         // Set intervals
         setInterval(updateClock, 1000);
-        setInterval(updateData, 30000); // Update every 30 seconds
+        setInterval(() => updateData(true), 30000); // Update every 30 seconds without resetting rotation
     </script>
 </body>
 </html>
