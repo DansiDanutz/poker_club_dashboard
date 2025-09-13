@@ -240,8 +240,9 @@ const PokerClubDashboard = () => {
       const storedTvPrices = typeof window !== 'undefined' ?
         (localStorage.getItem('pokerClubTvPrices') || 'Enter your prizes information here...') :
         'Enter your prizes information here...';
+      const defaultPromoImage = '/default-promo-image.jpg';
       const storedTvPromoImage = typeof window !== 'undefined' ?
-        (localStorage.getItem('pokerClubTvPromoImage') || '') : '';
+        (localStorage.getItem('pokerClubTvPromoImage') || defaultPromoImage) : defaultPromoImage;
       setTvRules(sanitizeTVContent(storedTvRules));
       setTvPrices(sanitizeTVContent(storedTvPrices));
       setTvPromoImage(storedTvPromoImage);
@@ -2496,14 +2497,14 @@ const PokerClubDashboard = () => {
                                 {editingTvCard === 'image' ? (
                                   <div className="space-y-4">
                                     <div className="text-sm text-blue-300 mb-2">
-                                      Enter an image URL to display on TV (JPEG, PNG, GIF supported)
+                                      Enter an image URL to display on TV (JPEG, PNG, GIF supported) or use the default image
                                     </div>
                                     <input
                                       type="url"
                                       value={tvPromoImage}
                                       onChange={(e) => setTvPromoImage(e.target.value)}
                                       className="w-full p-3 space-theme-card space-neon-border rounded-lg text-white"
-                                      placeholder="https://example.com/promo-image.jpg"
+                                      placeholder="https://example.com/promo-image.jpg or use default"
                                     />
                                     {tvPromoImage && (
                                       <div className="w-full h-48 space-theme-card rounded-lg overflow-hidden">
@@ -2512,24 +2513,34 @@ const PokerClubDashboard = () => {
                                           alt="Promotion Preview"
                                           className="w-full h-full object-contain"
                                           onError={(e) => {
-                                            e.currentTarget.src = '';
-                                            e.currentTarget.style.display = 'none';
+                                            e.currentTarget.src = '/default-promo-image.jpg';
                                           }}
                                         />
                                       </div>
                                     )}
+                                    <div className="text-xs text-slate-400 text-center">
+                                      Image dimensions: 357x200 (16:9 aspect ratio recommended)
+                                    </div>
                                     <Button
                                       onClick={() => setEditingTvCard(null)}
                                       className="w-full space-neon-border bg-purple-600/20 hover:bg-purple-600/30 text-white"
                                     >
                                       💾 Save Image
                                     </Button>
-                                    {tvPromoImage && (
+                                    {tvPromoImage !== '/default-promo-image.jpg' && (
+                                      <Button
+                                        onClick={() => setTvPromoImage('/default-promo-image.jpg')}
+                                        className="w-full space-neon-border bg-blue-600/20 hover:bg-blue-600/30 text-blue-400"
+                                      >
+                                        🔄 Reset to Default Image
+                                      </Button>
+                                    )}
+                                    {tvPromoImage && tvPromoImage !== '/default-promo-image.jpg' && (
                                       <Button
                                         onClick={() => setTvPromoImage('')}
                                         className="w-full space-neon-border bg-red-600/20 hover:bg-red-600/30 text-red-400"
                                       >
-                                        🗑️ Remove Image
+                                        🗑️ Clear Custom Image
                                       </Button>
                                     )}
                                   </div>

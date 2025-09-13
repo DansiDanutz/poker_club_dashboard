@@ -392,7 +392,7 @@
                     sessions: JSON.parse(localStorage.getItem('pokerClubHistory') || '[]'),
                     rules: localStorage.getItem('pokerClubTvRules') || 'No rules available',
                     prizes: localStorage.getItem('pokerClubTvPrices') || 'No prizes available',
-                    promoImage: localStorage.getItem('pokerClubTvPromoImage') || null
+                    promoImage: localStorage.getItem('pokerClubTvPromoImage') || '/default-promo-image.jpg'
                 };
 
                 // Sanitize all text data
@@ -590,12 +590,9 @@
             const container = document.getElementById('promo-image');
             if (!container) return;
 
-            const imageUrl = currentData.promoImage;
-            if (imageUrl) {
-                container.innerHTML = `<img src="${imageUrl}" alt="Promotion Image" />`;
-            } else {
-                container.innerHTML = '<div class="image-placeholder">No image uploaded</div>';
-            }
+            const defaultImage = window.location.hostname === 'localhost' ? '/default-promo-image.jpg' : 'https://hammerhead-app-f4ysx.ondigitalocean.app/default-promo-image.jpg';
+            const imageUrl = currentData.promoImage || defaultImage;
+            container.innerHTML = `<img src="${imageUrl}" alt="Promotion Image" onerror="this.src='${defaultImage}'" />`;
         }
 
         // Initialize
