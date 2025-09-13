@@ -179,6 +179,18 @@
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
             position: relative;
             overflow: hidden;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
         .promotion-card::before {
@@ -399,6 +411,19 @@
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            animation: slideIn 0.5s ease-out forwards;
+            opacity: 0;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
 
         .player-row::before {
@@ -843,7 +868,7 @@
 
                     document.getElementById('total-players').textContent = leaderboard.length;
 
-                    // Render leaderboard
+                    // Render leaderboard with staggered animations
                     const leaderboardHTML = leaderboard.map((player, index) => {
                         const hours = Math.floor(player.totalMinutes / 60);
                         const minutes = player.totalMinutes % 60;
@@ -851,18 +876,32 @@
 
                         let rankClass = '';
                         let badgeClass = '';
-                        if (index === 0) { rankClass = 'gold'; badgeClass = 'gold'; }
-                        else if (index === 1) { rankClass = 'silver'; badgeClass = 'silver'; }
-                        else if (index === 2) { rankClass = 'bronze'; badgeClass = 'bronze'; }
+                        let trophy = '';
+                        if (index === 0) {
+                            rankClass = 'gold';
+                            badgeClass = 'gold';
+                            trophy = '👑';
+                        }
+                        else if (index === 1) {
+                            rankClass = 'silver';
+                            badgeClass = 'silver';
+                            trophy = '🥈';
+                        }
+                        else if (index === 2) {
+                            rankClass = 'bronze';
+                            badgeClass = 'bronze';
+                            trophy = '🥉';
+                        }
 
                         return `
-                            <div class="player-row ${rankClass}">
+                            <div class="player-row ${rankClass}" style="animation-delay: ${index * 0.1}s">
                                 <div class="player-info">
                                     <div class="rank-badge ${badgeClass}">${index + 1}</div>
                                     <div class="player-details">
-                                        <div class="player-name">${player.name}</div>
+                                        <div class="player-name">${player.name} ${trophy}</div>
                                         <div class="player-meta">
-                                            <span>📍 ${player.sessions} sessions</span>
+                                            <span>📍 ${player.sessions} session${player.sessions !== 1 ? 's' : ''}</span>
+                                            <span>⚡ ${hours > 0 ? `${(player.totalMinutes / player.sessions / 60).toFixed(1)}h avg` : `${Math.floor(player.totalMinutes / player.sessions)}m avg`}</span>
                                         </div>
                                     </div>
                                 </div>
