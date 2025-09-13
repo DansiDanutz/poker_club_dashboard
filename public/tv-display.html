@@ -150,11 +150,9 @@
         }
 
         .card {
-            background: rgba(255, 255, 255, 0.1);
             border-radius: 1vh;
             border: 2px solid #00d4ff;
             box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
-            padding: 1.5vh 1.5vw;
             overflow: hidden;
             display: flex;
             flex-direction: column;
@@ -165,21 +163,15 @@
             background-repeat: no-repeat;
         }
 
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 1;
-            border-radius: 1vh;
-        }
-
-        .card > * {
+        .card-content {
             position: relative;
             z-index: 2;
+            padding: 1.5vh 1.5vw;
+            background: rgba(0, 0, 0, 0.85);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
         }
 
         .card h2 {
@@ -339,10 +331,12 @@
 
         <div class="content">
             <div class="left-section">
-                <div class="card" style="flex: 1;">
-                    <h2>📊 Player Rankings</h2>
-                    <div id="leaderboard" class="leaderboard">
-                        <div class="loading">Loading leaderboard...</div>
+                <div class="card" style="flex: 1;" id="rankings-card">
+                    <div class="card-content">
+                        <h2>📊 Player Rankings</h2>
+                        <div id="leaderboard" class="leaderboard">
+                            <div class="loading">Loading leaderboard...</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -352,25 +346,29 @@
                     <div class="image-placeholder">No image uploaded</div>
                 </div>
 
-                <div class="card combined-card">
-                    <h2>🏆 Current Promotion & Rules</h2>
-                    <div style="display: flex; flex-direction: column; gap: 2vh; flex: 1;">
-                        <div id="promotion-info" class="promotion-info" style="flex: 0 0 auto;">
-                            <div class="loading">Loading promotion data...</div>
-                        </div>
-                        <div style="flex: 1; overflow-y: auto;">
-                            <h3 style="font-size: clamp(0.9rem, 2vw, 1.4rem); color: #00d4ff; margin-bottom: 1vh;">📋 Promotion Rules</h3>
-                            <div id="rules-content" class="rules-content">
-                                <div class="loading">Loading rules...</div>
+                <div class="card combined-card" id="promotion-rules-card">
+                    <div class="card-content">
+                        <h2>🏆 Current Promotion & Rules</h2>
+                        <div style="display: flex; flex-direction: column; gap: 2vh; flex: 1;">
+                            <div id="promotion-info" class="promotion-info" style="flex: 0 0 auto;">
+                                <div class="loading">Loading promotion data...</div>
+                            </div>
+                            <div style="flex: 1; overflow-y: auto;">
+                                <h3 style="font-size: clamp(0.9rem, 2vw, 1.4rem); color: #00d4ff; margin-bottom: 1vh;">📋 Promotion Rules</h3>
+                                <div id="rules-content" class="rules-content">
+                                    <div class="loading">Loading rules...</div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="card">
-                    <h2>🏆 Prizes & Rewards</h2>
-                    <div id="prizes-content" class="prizes-content">
-                        <div class="loading">Loading prizes...</div>
+                <div class="card" id="prizes-card">
+                    <div class="card-content">
+                        <h2>🏆 Prizes & Rewards</h2>
+                        <div id="prizes-content" class="prizes-content">
+                            <div class="loading">Loading prizes...</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -551,37 +549,42 @@
                 console.log('Applied promo image background');
             }
 
-            // Apply backgrounds to specific cards
-            const cards = document.querySelectorAll('.card');
-            cards.forEach(card => {
-                const h2 = card.querySelector('h2');
-                if (h2) {
-                    const title = h2.textContent;
-
-                    if (title.includes('Player Rankings') && backgrounds.rankings) {
-                        if (backgrounds.rankings.startsWith('data:')) {
-                            card.style.backgroundImage = `url(${backgrounds.rankings})`;
-                        } else {
-                            card.style.backgroundImage = `url('${backgrounds.rankings}')`;
-                        }
-                        console.log('Applied rankings background');
-                    } else if (title.includes('Current Promotion & Rules') && backgrounds.promotionRules) {
-                        if (backgrounds.promotionRules.startsWith('data:')) {
-                            card.style.backgroundImage = `url(${backgrounds.promotionRules})`;
-                        } else {
-                            card.style.backgroundImage = `url('${backgrounds.promotionRules}')`;
-                        }
-                        console.log('Applied promotion rules background');
-                    } else if (title.includes('Prizes') && backgrounds.prizes) {
-                        if (backgrounds.prizes.startsWith('data:')) {
-                            card.style.backgroundImage = `url(${backgrounds.prizes})`;
-                        } else {
-                            card.style.backgroundImage = `url('${backgrounds.prizes}')`;
-                        }
-                        console.log('Applied prizes background');
+            // Apply backgrounds to specific cards using IDs
+            if (backgrounds.rankings) {
+                const rankingsCard = document.getElementById('rankings-card');
+                if (rankingsCard) {
+                    if (backgrounds.rankings.startsWith('data:')) {
+                        rankingsCard.style.backgroundImage = `url(${backgrounds.rankings})`;
+                    } else {
+                        rankingsCard.style.backgroundImage = `url('${backgrounds.rankings}')`;
                     }
+                    console.log('Applied rankings background');
                 }
-            });
+            }
+
+            if (backgrounds.promotionRules) {
+                const promoRulesCard = document.getElementById('promotion-rules-card');
+                if (promoRulesCard) {
+                    if (backgrounds.promotionRules.startsWith('data:')) {
+                        promoRulesCard.style.backgroundImage = `url(${backgrounds.promotionRules})`;
+                    } else {
+                        promoRulesCard.style.backgroundImage = `url('${backgrounds.promotionRules}')`;
+                    }
+                    console.log('Applied promotion rules background');
+                }
+            }
+
+            if (backgrounds.prizes) {
+                const prizesCard = document.getElementById('prizes-card');
+                if (prizesCard) {
+                    if (backgrounds.prizes.startsWith('data:')) {
+                        prizesCard.style.backgroundImage = `url(${backgrounds.prizes})`;
+                    } else {
+                        prizesCard.style.backgroundImage = `url('${backgrounds.prizes}')`;
+                    }
+                    console.log('Applied prizes background');
+                }
+            }
         }
 
         function setupPromotionRotation() {
