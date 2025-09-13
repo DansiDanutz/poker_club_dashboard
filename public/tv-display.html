@@ -358,9 +358,10 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 2vh;
-            padding-bottom: 1.5vh;
+            margin-bottom: 1vh;
+            padding-bottom: 1vh;
             border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            flex-shrink: 0;
         }
 
         .leaderboard-title {
@@ -396,15 +397,16 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 1vh;
+            gap: 0.5%;
             overflow: hidden;
+            justify-content: space-between;
         }
 
         .player-row {
             background: rgba(255, 255, 255, 0.02);
             border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 16px;
-            padding: 1.5vh 1.5vw;
+            border-radius: 12px;
+            padding: 0.8% 1.5vw;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -413,6 +415,9 @@
             overflow: hidden;
             animation: slideIn 0.5s ease-out forwards;
             opacity: 0;
+            flex: 1;
+            max-height: 9%;
+            min-height: 0;
         }
 
         @keyframes slideIn {
@@ -471,17 +476,18 @@
         }
 
         .rank-badge {
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
+            width: clamp(35px, 4vw, 50px);
+            height: clamp(35px, 4vw, 50px);
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 900;
-            font-size: 1.5rem;
+            font-size: clamp(1rem, 1.5vw, 1.5rem);
             font-family: 'Bebas Neue', sans-serif;
             background: linear-gradient(135deg, #3b82f6, #2563eb);
             box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+            flex-shrink: 0;
         }
 
         .rank-badge.gold {
@@ -504,36 +510,44 @@
         }
 
         .player-name {
-            font-size: 1.3rem;
+            font-size: clamp(0.9rem, 1.3vw, 1.3rem);
             font-weight: 700;
             color: #fff;
-            margin-bottom: 0.3vh;
+            line-height: 1.2;
+            margin-bottom: 2px;
         }
 
         .player-meta {
             display: flex;
             gap: 1vw;
             color: #64748b;
-            font-size: 0.9rem;
+            font-size: clamp(0.6rem, 0.9vw, 0.9rem);
+            line-height: 1;
         }
 
         .player-stats {
             text-align: right;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .player-hours {
-            font-size: 1.5rem;
+            font-size: clamp(1rem, 1.5vw, 1.5rem);
             font-weight: 800;
             color: #10b981;
             font-family: 'Bebas Neue', sans-serif;
             letter-spacing: 1px;
+            line-height: 1;
         }
 
         .hours-label {
             color: #64748b;
-            font-size: 0.8rem;
+            font-size: clamp(0.5rem, 0.7vw, 0.8rem);
             text-transform: uppercase;
             letter-spacing: 1px;
+            line-height: 1;
+            margin-top: 2px;
         }
 
         /* Footer */
