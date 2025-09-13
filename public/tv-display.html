@@ -50,6 +50,24 @@
 
         .content {
             flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .top-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .middle-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .bottom-section {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
@@ -64,8 +82,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 300px;
+            height: 200px;
             overflow: hidden;
+            width: 100%;
         }
 
         .image-card img {
@@ -231,35 +250,41 @@
         </div>
 
         <div class="content">
-            <div class="card">
-                <h2>🏆 Current Promotion</h2>
-                <div id="promotion-info" class="promotion-info">
-                    <div class="loading">Loading promotion data...</div>
+            <div class="top-section">
+                <div class="card">
+                    <h2>🏆 Current Promotion</h2>
+                    <div id="promotion-info" class="promotion-info">
+                        <div class="loading">Loading promotion data...</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>📋 Promotion Rules</h2>
+                    <div id="rules-content" class="rules-content">
+                        <div class="loading">Loading rules...</div>
+                    </div>
                 </div>
             </div>
 
-            <div class="image-card" id="promo-image">
-                <div class="image-placeholder">No image uploaded</div>
-            </div>
+            <div class="middle-section">
+                <div class="image-card" id="promo-image">
+                    <div class="image-placeholder">No image uploaded</div>
+                </div>
 
-            <div class="card">
-                <h2>📊 Player Rankings</h2>
-                <div id="leaderboard" class="leaderboard">
-                    <div class="loading">Loading leaderboard...</div>
+                <div class="card">
+                    <h2>📊 Player Rankings</h2>
+                    <div id="leaderboard" class="leaderboard">
+                        <div class="loading">Loading leaderboard...</div>
+                    </div>
                 </div>
             </div>
 
-            <div class="card">
-                <h2>📋 Promotion Rules</h2>
-                <div id="rules-content" class="rules-content">
-                    <div class="loading">Loading rules...</div>
-                </div>
-            </div>
-
-            <div class="card">
-                <h2>🏆 Prizes & Rewards</h2>
-                <div id="prizes-content" class="prizes-content">
-                    <div class="loading">Loading prizes...</div>
+            <div class="bottom-section">
+                <div class="card">
+                    <h2>🏆 Prizes & Rewards</h2>
+                    <div id="prizes-content" class="prizes-content">
+                        <div class="loading">Loading prizes...</div>
+                    </div>
                 </div>
             </div>
         </div>
