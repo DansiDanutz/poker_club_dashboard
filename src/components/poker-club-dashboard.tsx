@@ -2522,15 +2522,29 @@ const PokerClubDashboard = () => {
                                 {editingTvCard === 'image' ? (
                                   <div className="space-y-4">
                                     <div className="text-sm text-blue-300 mb-2">
-                                      Enter an image URL to display on TV (JPEG, PNG, GIF supported) or use the default image
+                                      Upload an image to display on TV (JPEG, PNG, GIF supported) or use the default image
                                     </div>
-                                    <input
-                                      type="url"
-                                      value={tvPromoImage}
-                                      onChange={(e) => setTvPromoImage(e.target.value)}
-                                      className="w-full p-3 space-theme-card space-neon-border rounded-lg text-white"
-                                      placeholder="https://example.com/promo-image.jpg or use default"
-                                    />
+                                    <div className="flex gap-2">
+                                      <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) => {
+                                          const file = e.target.files?.[0];
+                                          if (file) {
+                                            const reader = new FileReader();
+                                            reader.onload = (event) => {
+                                              setTvPromoImage(event.target?.result as string);
+                                            };
+                                            reader.readAsDataURL(file);
+                                          }
+                                        }}
+                                        className="hidden"
+                                        id="tv-promo-image-upload"
+                                      />
+                                      <label htmlFor="tv-promo-image-upload" className="flex-1 p-3 space-theme-card space-neon-border rounded-lg text-white text-center cursor-pointer hover:bg-indigo-600/20">
+                                        {tvPromoImage && tvPromoImage !== '/default-promo-image.jpg' ? '✅ Image uploaded' : '📁 Choose file'}
+                                      </label>
+                                    </div>
                                     {tvPromoImage && (
                                       <div className="w-full h-48 space-theme-card rounded-lg overflow-hidden">
                                         <img
@@ -2683,63 +2697,178 @@ const PokerClubDashboard = () => {
                                 {editingTvCard === 'backgrounds' ? (
                                   <div className="space-y-4">
                                     <div className="text-sm text-blue-300 mb-2">
-                                      Set background images for each TV display card (URLs only)
+                                      Upload background images for each TV display card
                                     </div>
 
                                     <div className="space-y-3">
                                       <div>
                                         <label className="text-xs text-slate-400">Header Background (Full width, ~1920x200)</label>
-                                        <input
-                                          type="url"
-                                          value={tvCardBackgrounds.header}
-                                          onChange={(e) => setTvCardBackgrounds({...tvCardBackgrounds, header: e.target.value})}
-                                          className="w-full p-2 mt-1 space-theme-card space-neon-border rounded-lg text-white text-sm"
-                                          placeholder="https://example.com/header-bg.jpg"
-                                        />
+                                        <div className="flex gap-2 mt-1">
+                                          <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={(e) => {
+                                              const file = e.target.files?.[0];
+                                              if (file) {
+                                                const reader = new FileReader();
+                                                reader.onload = (event) => {
+                                                  setTvCardBackgrounds({...tvCardBackgrounds, header: event.target?.result as string});
+                                                };
+                                                reader.readAsDataURL(file);
+                                              }
+                                            }}
+                                            className="hidden"
+                                            id="header-bg-upload"
+                                          />
+                                          <label htmlFor="header-bg-upload" className="flex-1 p-2 space-theme-card space-neon-border rounded-lg text-white text-sm cursor-pointer hover:bg-indigo-600/20 text-center">
+                                            {tvCardBackgrounds.header ? '✅ Image uploaded' : '📁 Choose file'}
+                                          </label>
+                                          {tvCardBackgrounds.header && (
+                                            <Button
+                                              size="sm"
+                                              onClick={() => setTvCardBackgrounds({...tvCardBackgrounds, header: ''})}
+                                              className="space-neon-border bg-red-600/20 hover:bg-red-600/30 text-red-400"
+                                            >
+                                              Clear
+                                            </Button>
+                                          )}
+                                        </div>
                                       </div>
 
                                       <div>
                                         <label className="text-xs text-slate-400">Player Rankings Background (Portrait, ~640x1080)</label>
-                                        <input
-                                          type="url"
-                                          value={tvCardBackgrounds.rankings}
-                                          onChange={(e) => setTvCardBackgrounds({...tvCardBackgrounds, rankings: e.target.value})}
-                                          className="w-full p-2 mt-1 space-theme-card space-neon-border rounded-lg text-white text-sm"
-                                          placeholder="https://example.com/rankings-bg.jpg"
-                                        />
+                                        <div className="flex gap-2 mt-1">
+                                          <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={(e) => {
+                                              const file = e.target.files?.[0];
+                                              if (file) {
+                                                const reader = new FileReader();
+                                                reader.onload = (event) => {
+                                                  setTvCardBackgrounds({...tvCardBackgrounds, rankings: event.target?.result as string});
+                                                };
+                                                reader.readAsDataURL(file);
+                                              }
+                                            }}
+                                            className="hidden"
+                                            id="rankings-bg-upload"
+                                          />
+                                          <label htmlFor="rankings-bg-upload" className="flex-1 p-2 space-theme-card space-neon-border rounded-lg text-white text-sm cursor-pointer hover:bg-indigo-600/20 text-center">
+                                            {tvCardBackgrounds.rankings ? '✅ Image uploaded' : '📁 Choose file'}
+                                          </label>
+                                          {tvCardBackgrounds.rankings && (
+                                            <Button
+                                              size="sm"
+                                              onClick={() => setTvCardBackgrounds({...tvCardBackgrounds, rankings: ''})}
+                                              className="space-neon-border bg-red-600/20 hover:bg-red-600/30 text-red-400"
+                                            >
+                                              Clear
+                                            </Button>
+                                          )}
+                                        </div>
                                       </div>
 
                                       <div>
                                         <label className="text-xs text-slate-400">Promotion Image Card Background (16:9, ~1280x720)</label>
-                                        <input
-                                          type="url"
-                                          value={tvCardBackgrounds.promoImage}
-                                          onChange={(e) => setTvCardBackgrounds({...tvCardBackgrounds, promoImage: e.target.value})}
-                                          className="w-full p-2 mt-1 space-theme-card space-neon-border rounded-lg text-white text-sm"
-                                          placeholder="https://example.com/promo-image-bg.jpg"
-                                        />
+                                        <div className="flex gap-2 mt-1">
+                                          <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={(e) => {
+                                              const file = e.target.files?.[0];
+                                              if (file) {
+                                                const reader = new FileReader();
+                                                reader.onload = (event) => {
+                                                  setTvCardBackgrounds({...tvCardBackgrounds, promoImage: event.target?.result as string});
+                                                };
+                                                reader.readAsDataURL(file);
+                                              }
+                                            }}
+                                            className="hidden"
+                                            id="promo-image-bg-upload"
+                                          />
+                                          <label htmlFor="promo-image-bg-upload" className="flex-1 p-2 space-theme-card space-neon-border rounded-lg text-white text-sm cursor-pointer hover:bg-indigo-600/20 text-center">
+                                            {tvCardBackgrounds.promoImage ? '✅ Image uploaded' : '📁 Choose file'}
+                                          </label>
+                                          {tvCardBackgrounds.promoImage && (
+                                            <Button
+                                              size="sm"
+                                              onClick={() => setTvCardBackgrounds({...tvCardBackgrounds, promoImage: ''})}
+                                              className="space-neon-border bg-red-600/20 hover:bg-red-600/30 text-red-400"
+                                            >
+                                              Clear
+                                            </Button>
+                                          )}
+                                        </div>
                                       </div>
 
                                       <div>
                                         <label className="text-xs text-slate-400">Promotion & Rules Background (16:9, ~1280x720)</label>
-                                        <input
-                                          type="url"
-                                          value={tvCardBackgrounds.promotionRules}
-                                          onChange={(e) => setTvCardBackgrounds({...tvCardBackgrounds, promotionRules: e.target.value})}
-                                          className="w-full p-2 mt-1 space-theme-card space-neon-border rounded-lg text-white text-sm"
-                                          placeholder="https://example.com/promo-rules-bg.jpg"
-                                        />
+                                        <div className="flex gap-2 mt-1">
+                                          <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={(e) => {
+                                              const file = e.target.files?.[0];
+                                              if (file) {
+                                                const reader = new FileReader();
+                                                reader.onload = (event) => {
+                                                  setTvCardBackgrounds({...tvCardBackgrounds, promotionRules: event.target?.result as string});
+                                                };
+                                                reader.readAsDataURL(file);
+                                              }
+                                            }}
+                                            className="hidden"
+                                            id="promo-rules-bg-upload"
+                                          />
+                                          <label htmlFor="promo-rules-bg-upload" className="flex-1 p-2 space-theme-card space-neon-border rounded-lg text-white text-sm cursor-pointer hover:bg-indigo-600/20 text-center">
+                                            {tvCardBackgrounds.promotionRules ? '✅ Image uploaded' : '📁 Choose file'}
+                                          </label>
+                                          {tvCardBackgrounds.promotionRules && (
+                                            <Button
+                                              size="sm"
+                                              onClick={() => setTvCardBackgrounds({...tvCardBackgrounds, promotionRules: ''})}
+                                              className="space-neon-border bg-red-600/20 hover:bg-red-600/30 text-red-400"
+                                            >
+                                              Clear
+                                            </Button>
+                                          )}
+                                        </div>
                                       </div>
 
                                       <div>
                                         <label className="text-xs text-slate-400">Prizes & Rewards Background (16:9, ~1280x720)</label>
-                                        <input
-                                          type="url"
-                                          value={tvCardBackgrounds.prizes}
-                                          onChange={(e) => setTvCardBackgrounds({...tvCardBackgrounds, prizes: e.target.value})}
-                                          className="w-full p-2 mt-1 space-theme-card space-neon-border rounded-lg text-white text-sm"
-                                          placeholder="https://example.com/prizes-bg.jpg"
-                                        />
+                                        <div className="flex gap-2 mt-1">
+                                          <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={(e) => {
+                                              const file = e.target.files?.[0];
+                                              if (file) {
+                                                const reader = new FileReader();
+                                                reader.onload = (event) => {
+                                                  setTvCardBackgrounds({...tvCardBackgrounds, prizes: event.target?.result as string});
+                                                };
+                                                reader.readAsDataURL(file);
+                                              }
+                                            }}
+                                            className="hidden"
+                                            id="prizes-bg-upload"
+                                          />
+                                          <label htmlFor="prizes-bg-upload" className="flex-1 p-2 space-theme-card space-neon-border rounded-lg text-white text-sm cursor-pointer hover:bg-indigo-600/20 text-center">
+                                            {tvCardBackgrounds.prizes ? '✅ Image uploaded' : '📁 Choose file'}
+                                          </label>
+                                          {tvCardBackgrounds.prizes && (
+                                            <Button
+                                              size="sm"
+                                              onClick={() => setTvCardBackgrounds({...tvCardBackgrounds, prizes: ''})}
+                                              className="space-neon-border bg-red-600/20 hover:bg-red-600/30 text-red-400"
+                                            >
+                                              Clear
+                                            </Button>
+                                          )}
+                                        </div>
                                       </div>
                                     </div>
 
