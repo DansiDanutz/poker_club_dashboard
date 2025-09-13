@@ -32,7 +32,7 @@
         .header {
             text-align: center;
             padding: 1.5vh 2vw;
-            background: rgba(255, 255, 255, 0.1);
+            /* No default background - show image as-is */
             border-radius: 1vh;
             border: 2px solid #00d4ff;
             box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
@@ -41,23 +41,6 @@
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-        }
-
-        .header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 1;
-            border-radius: 1vh;
-        }
-
-        .header > * {
-            position: relative;
-            z-index: 2;
         }
 
         .header h1 {
@@ -97,7 +80,7 @@
         }
 
         .image-card {
-            background: rgba(255, 255, 255, 0.1);
+            /* No default background - show image as-is */
             border-radius: 1vh;
             border: 2px solid #00d4ff;
             box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
@@ -114,27 +97,7 @@
             background-repeat: no-repeat;
         }
 
-        .image-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.3);
-            z-index: 1;
-            border-radius: 1vh;
-            display: none;
-        }
-
-        .image-card.has-background::before {
-            display: block;
-        }
-
-        .image-card > * {
-            position: relative;
-            z-index: 2;
-        }
+        /* Removed image card overlay - show background as-is */
 
         .image-card img {
             width: 100%;
@@ -161,14 +124,14 @@
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            background-color: rgba(255, 255, 255, 0.05);
+            /* No default background - show image as-is */
         }
 
         .card-content {
             position: relative;
             z-index: 2;
             padding: 1.5vh 1.5vw;
-            background: rgba(0, 0, 0, 0.6);
+            /* No background overlay - show image as-is */
             height: 100%;
             display: flex;
             flex-direction: column;
@@ -239,7 +202,7 @@
             align-items: center;
             padding: 0.8vh 1vw;
             margin: 0.5vh 0;
-            background: rgba(0, 0, 0, 0.5);
+            /* No background overlay for items */
             border-radius: 0.5vh;
             border-left: 0.3vw solid #00d4ff;
         }
