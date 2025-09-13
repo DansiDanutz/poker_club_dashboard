@@ -17,34 +17,37 @@
             color: white;
             overflow: hidden;
             height: 100vh;
+            width: 100vw;
         }
 
         .container {
-            padding: 20px;
+            padding: 1vh;
             height: 100vh;
+            width: 100vw;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 1vh;
         }
 
         .header {
             text-align: center;
-            padding: 20px;
+            padding: 1.5vh 2vw;
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
+            border-radius: 1vh;
             border: 2px solid #00d4ff;
             box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+            flex-shrink: 0;
         }
 
         .header h1 {
-            font-size: 3rem;
+            font-size: clamp(1.5rem, 4vw, 3rem);
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 0.5vh;
             text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
         }
 
         .header .subtitle {
-            font-size: 1.2rem;
+            font-size: clamp(0.8rem, 2vw, 1.2rem);
             color: #00d4ff;
         }
 
@@ -52,37 +55,42 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 1vh;
+            min-height: 0;
         }
 
         .top-section {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            gap: 1vw;
+            height: 25vh;
         }
 
         .middle-section {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 1vh;
+            flex: 1;
+            min-height: 0;
         }
 
         .bottom-section {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            gap: 1vw;
+            height: 20vh;
         }
 
         .image-card {
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
+            border-radius: 1vh;
             border: 2px solid #00d4ff;
             box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
             padding: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 200px;
+            height: 15vh;
             overflow: hidden;
             width: 100%;
         }
@@ -91,7 +99,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            border-radius: 15px;
+            border-radius: 1vh;
         }
 
         .image-placeholder {
@@ -102,43 +110,52 @@
 
         .card {
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
+            border-radius: 1vh;
             border: 2px solid #00d4ff;
             box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
-            padding: 20px;
+            padding: 1.5vh 1.5vw;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
 
         .card h2 {
-            font-size: 1.8rem;
-            margin-bottom: 15px;
+            font-size: clamp(1rem, 2.5vw, 1.8rem);
+            margin-bottom: 1vh;
             color: #00d4ff;
             text-align: center;
+            flex-shrink: 0;
         }
 
         .promotion-info {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 1vh;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .promotion-name {
-            font-size: 2rem;
+            font-size: clamp(1.2rem, 3vw, 2rem);
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 0.5vh;
             color: #00ff88;
         }
 
         .promotion-dates {
-            font-size: 1.1rem;
+            font-size: clamp(0.8rem, 1.5vw, 1.1rem);
             color: #ccc;
         }
 
         .status-badge {
             display: inline-block;
-            padding: 8px 16px;
-            border-radius: 20px;
+            padding: 0.5vh 1vw;
+            border-radius: 2vh;
             font-weight: bold;
-            margin: 10px 0;
+            margin: 0.5vh 0;
+            font-size: clamp(0.7rem, 1.2vw, 1rem);
         }
 
         .status-active {
@@ -157,77 +174,86 @@
         }
 
         .leaderboard {
-            max-height: 400px;
+            flex: 1;
             overflow-y: auto;
+            overflow-x: hidden;
         }
 
         .leaderboard-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px;
-            margin: 5px 0;
+            padding: 0.8vh 1vw;
+            margin: 0.5vh 0;
             background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-            border-left: 4px solid #00d4ff;
+            border-radius: 0.5vh;
+            border-left: 0.3vw solid #00d4ff;
         }
 
         .player-info {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 0.5vw;
         }
 
         .rank {
-            font-size: 1.2rem;
+            font-size: clamp(0.9rem, 1.5vw, 1.2rem);
             font-weight: bold;
             color: #00d4ff;
-            min-width: 30px;
+            min-width: 2vw;
         }
 
         .player-name {
             font-weight: bold;
+            font-size: clamp(0.8rem, 1.3vw, 1rem);
         }
 
         .player-hours {
-            font-size: 1.1rem;
+            font-size: clamp(0.9rem, 1.4vw, 1.1rem);
             color: #00ff88;
             font-weight: bold;
         }
 
         .rules-content, .prizes-content {
             white-space: pre-wrap;
-            line-height: 1.6;
-            font-size: 1.1rem;
+            line-height: 1.4;
+            font-size: clamp(0.8rem, 1.3vw, 1.1rem);
+            flex: 1;
+            overflow-y: auto;
         }
 
         .no-data {
             text-align: center;
             color: #666;
             font-style: italic;
-            padding: 40px;
+            padding: 2vh;
+            font-size: clamp(0.8rem, 1.3vw, 1rem);
         }
 
         .loading {
             text-align: center;
             color: #00d4ff;
-            font-size: 1.2rem;
-            padding: 40px;
+            font-size: clamp(0.9rem, 1.5vw, 1.2rem);
+            padding: 2vh;
         }
 
-        /* Responsive design */
-        @media (max-width: 768px) {
-            .content {
-                grid-template-columns: 1fr;
-            }
-            
-            .header h1 {
-                font-size: 2rem;
-            }
-            
-            .promotion-name {
-                font-size: 1.5rem;
-            }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 0.5vw;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 0.5vh;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #00d4ff;
+            border-radius: 0.5vh;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00ff88;
         }
 
         /* Animation for updates */
