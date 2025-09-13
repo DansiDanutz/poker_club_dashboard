@@ -2561,7 +2561,10 @@ const PokerClubDashboard = () => {
                                       Image dimensions: 357x200 (16:9 aspect ratio recommended)
                                     </div>
                                     <Button
-                                      onClick={() => setEditingTvCard(null)}
+                                      onClick={() => {
+                                        localStorage.setItem('pokerClubTvPromoImage', tvPromoImage);
+                                        setEditingTvCard(null);
+                                      }}
                                       className="w-full space-neon-border bg-purple-600/20 hover:bg-purple-600/30 text-white"
                                     >
                                       💾 Save Image
@@ -2873,7 +2876,10 @@ const PokerClubDashboard = () => {
                                     </div>
 
                                     <Button
-                                      onClick={() => setEditingTvCard(null)}
+                                      onClick={() => {
+                                        localStorage.setItem('pokerClubTvCardBackgrounds', JSON.stringify(tvCardBackgrounds));
+                                        setEditingTvCard(null);
+                                      }}
                                       className="w-full space-neon-border bg-indigo-600/20 hover:bg-indigo-600/30 text-white"
                                     >
                                       💾 Save Backgrounds
