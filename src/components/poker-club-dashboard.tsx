@@ -2142,7 +2142,7 @@ const PokerClubDashboard = () => {
                       <div className="flex items-center gap-6">
                         <Button
                           onClick={() => {
-                            const tvUrl = `${window.location.origin}/tv-display.html`;
+                            const tvUrl = `https://hammerhead-app-f4ysx.ondigitalocean.app/tv-display.html`;
                             window.open(tvUrl, '_blank');
                           }}
                           className="space-theme-card space-neon-border bg-green-600/20 hover:bg-green-600/30 text-green-400 hover:text-white border-green-400/50 hover:border-green-400 transition-all duration-300 px-6 py-3 text-lg font-semibold"
@@ -2198,14 +2198,14 @@ const PokerClubDashboard = () => {
                           </h3>
                           <div className="p-3 space-neon-border rounded-lg bg-slate-800/50">
                             <code className="text-green-400 text-sm break-all">
-                              {typeof window !== 'undefined' ? `${window.location.origin}/tv-display.html` : 'https://your-domain.com/tv-display.html'}
+                              https://hammerhead-app-f4ysx.ondigitalocean.app/tv-display.html
                             </code>
                           </div>
                         </div>
                         <div className="ml-4">
                           <Button
                             onClick={async () => {
-                              const tvUrl = `${window.location.origin}/tv-display.html`;
+                              const tvUrl = `https://hammerhead-app-f4ysx.ondigitalocean.app/tv-display.html`;
                               try {
                                 await navigator.clipboard.writeText(tvUrl);
                                 // Could add toast notification here
