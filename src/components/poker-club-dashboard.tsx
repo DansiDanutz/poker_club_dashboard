@@ -44,6 +44,25 @@ import { Separator } from "./ui/separator";
 import { AddPlayerDialog } from "./add-player-dialog";
 import { AddPromotionDialog } from "./add-promotion-dialog";
 import { ThemeToggle } from "./theme-toggle";
+import { 
+  PlayerTableErrorBoundary, 
+  ActiveTablesErrorBoundary, 
+  PromotionsErrorBoundary, 
+  HistoryErrorBoundary, 
+  SettingsErrorBoundary, 
+  TVDisplayErrorBoundary 
+} from "./section-error-boundary";
+import { 
+  PlayersDataErrorBoundary, 
+  SessionsDataErrorBoundary, 
+  PromotionsDataErrorBoundary 
+} from "./data-error-boundary";
+import { 
+  AddPlayerFormErrorBoundary, 
+  AddPromotionFormErrorBoundary, 
+  PenaltyFormErrorBoundary, 
+  AddonFormErrorBoundary 
+} from "./form-error-boundary";
 import { useSyncDatabase } from "../hooks/use-sync-database";
 import { Player, Session, Promotion, ActiveTable, ClubSettings } from "../types";
 import { DatabaseService } from "../lib/supabase";
@@ -189,6 +208,17 @@ const PokerClubDashboard = () => {
   const [tvRules, setTvRules] = useState<string>('');
   const [tvPrices, setTvPrices] = useState<string>('');
   const [editingTvCard, setEditingTvCard] = useState<'rules' | 'prices' | null>(null);
+
+  // Helper function to determine promotion status
+  const getPromotionStatus = (startDate: string, endDate: string) => {
+    const now = new Date();
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    if (now < start) return 'upcoming';
+    if (now > end) return 'complete';
+    return 'active';
+  };
 
 
   // Set mounted state and load club settings and active tables from localStorage on mount (client-side only)
@@ -1091,24 +1121,28 @@ const PokerClubDashboard = () => {
                         <User />
                         Player Database ({players.length})
                       </CardTitle>
-                      <AddPlayerDialog onAddPlayer={addNewPlayer} />
+                      <AddPlayerFormErrorBoundary onRetry={() => window.location.reload()}>
+                        <AddPlayerDialog onAddPlayer={addNewPlayer} />
+                      </AddPlayerFormErrorBoundary>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="overflow-x-auto">
-                      <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Rank</TableHead>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Total Hours</TableHead>
-                          <TableHead>Sessions</TableHead>
-                          <TableHead>Avg Session</TableHead>
-                          <TableHead>Last Played</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
+                    <PlayersDataErrorBoundary isOnline={isOnline} onRetry={refreshData}>
+                      <PlayerTableErrorBoundary>
+                        <div className="overflow-x-auto">
+                          <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Rank</TableHead>
+                              <TableHead>Name</TableHead>
+                              <TableHead>Total Hours</TableHead>
+                              <TableHead>Sessions</TableHead>
+                              <TableHead>Avg Session</TableHead>
+                              <TableHead>Last Played</TableHead>
+                              <TableHead>Status</TableHead>
+                              <TableHead>Actions</TableHead>
+                            </TableRow>
+                          </TableHeader>
                       <TableBody>
                         {players
                           .map((player: any) => ({
@@ -1196,7 +1230,9 @@ const PokerClubDashboard = () => {
                           })}
                       </TableBody>
                       </Table>
-                    </div>
+                        </div>
+                      </PlayerTableErrorBoundary>
+                    </PlayersDataErrorBoundary>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -1247,7 +1283,9 @@ const PokerClubDashboard = () => {
                         <Award />
                         Promotion Periods
                       </CardTitle>
-                      <AddPromotionDialog onAddPromotion={addNewPromotion} />
+                      <AddPromotionFormErrorBoundary onRetry={() => window.location.reload()}>
+                        <AddPromotionDialog onAddPromotion={addNewPromotion} />
+                      </AddPromotionFormErrorBoundary>
                     </div>
                   </CardHeader>
                   <CardContent>
@@ -2380,6 +2418,81 @@ const PokerClubDashboard = () => {
                                     {tvPrices || '🏆 Click edit to add reward information...'}
                                   </div>
                                 )}
+                              </div>
+                            </div>
+
+                            {/* TV ROTATION SETTINGS CARD */}
+                            <div className="space-theme-card rounded-xl overflow-hidden">
+                              <div className="p-4 space-neon-border border-b">
+                                <h4 className="text-xl font-bold text-white flex items-center gap-2">
+                                  ⏰ Promotion Rotation Settings
+                                </h4>
+                              </div>
+                              
+                              <div className="p-4 space-y-4">
+                                <div className="text-sm text-blue-300 mb-4">
+                                  Configure how long each promotion displays on TV (in seconds). Set to 0 to exclude from rotation.
+                                </div>
+                                
+                                {promotions.filter((p: any) => !p.deleted && (
+                                  getPromotionStatus(p.start_date, p.end_date) === 'active' ||
+                                  getPromotionStatus(p.start_date, p.end_date) === 'upcoming'
+                                )).map((promotion: any) => {
+                                  const rotationSettings = JSON.parse(localStorage.getItem('pokerClubTvRotationSettings') || '{}');
+                                  const currentTimeMs = rotationSettings[promotion.id] || 10000; // Default 10 seconds in ms
+                                  const currentTime = Math.floor(currentTimeMs / 1000); // Convert to seconds for display
+                                  
+                                  return (
+                                    <div key={promotion.id} className="flex items-center justify-between p-3 space-theme-card rounded-lg space-neon-border">
+                                      <div className="flex-1">
+                                        <div className="text-white font-medium">{promotion.name}</div>
+                                        <div className="text-sm text-slate-400">
+                                          {getPromotionStatus(promotion.start_date, promotion.end_date) === 'active' ? '🎰 Active' : '🎯 Upcoming'}
+                                        </div>
+                                      </div>
+                                      
+                                      <div className="flex items-center gap-3">
+                                        <Input
+                                          type="number"
+                                          min="0"
+                                          max="300"
+                                          value={currentTime}
+                                          onChange={(e) => {
+                                            const newTime = parseInt(e.target.value) || 0;
+                                            const settings = JSON.parse(localStorage.getItem('pokerClubTvRotationSettings') || '{}');
+                                            settings[promotion.id] = newTime * 1000; // Convert to milliseconds
+                                            localStorage.setItem('pokerClubTvRotationSettings', JSON.stringify(settings));
+                                          }}
+                                          className="w-20 h-8 space-theme-card space-neon-border text-center text-white"
+                                          placeholder="10"
+                                        />
+                                        <span className="text-blue-300 text-sm min-w-[60px]">
+                                          {currentTime === 0 ? 'Disabled' : `${currentTime}s`}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                                
+                                {promotions.filter((p: any) => !p.deleted && (
+                                  getPromotionStatus(p.start_date, p.end_date) === 'active' ||
+                                  getPromotionStatus(p.start_date, p.end_date) === 'upcoming'
+                                )).length === 0 && (
+                                  <div className="text-center text-slate-400 py-8">
+                                    No active or upcoming promotions to configure
+                                  </div>
+                                )}
+                                
+                                <div className="mt-4 p-3 bg-blue-500/10 rounded-lg space-neon-border">
+                                  <div className="text-sm text-blue-300">
+                                    💡 <strong>Tips:</strong>
+                                    <ul className="mt-2 space-y-1 text-xs">
+                                      <li>• Set time to 0 to exclude a promotion from TV rotation</li>
+                                      <li>• Recommended: 10-30 seconds per promotion</li>
+                                      <li>• Changes apply immediately to the TV display</li>
+                                    </ul>
+                                  </div>
+                                </div>
                               </div>
                             </div>
                           </div>

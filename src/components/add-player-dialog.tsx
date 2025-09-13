@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, Button, Input, Label } from "./ui";
 import { Plus } from 'lucide-react';
 
@@ -8,7 +8,7 @@ interface AddPlayerDialogProps {
   onAddPlayer: (player: { name: string; email: string; phone: string }) => void;
 }
 
-export function AddPlayerDialog({ onAddPlayer }: AddPlayerDialogProps) {
+export const AddPlayerDialog = memo(function AddPlayerDialog({ onAddPlayer }: AddPlayerDialogProps) {
   const [open, setOpen] = useState(false);
   const [player, setPlayer] = useState({ name: '', email: '', phone: '' });
 
@@ -38,7 +38,7 @@ export function AddPlayerDialog({ onAddPlayer }: AddPlayerDialogProps) {
             Add a new player to the poker club database. Name is required.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" role="form" aria-label="Add new player form">
           <div className="space-y-2">
             <Label htmlFor="name">Player Name *</Label>
             <Input
@@ -47,7 +47,10 @@ export function AddPlayerDialog({ onAddPlayer }: AddPlayerDialogProps) {
               onChange={(e) => setPlayer({ ...player, name: e.target.value })}
               placeholder="Enter player name"
               required
+              aria-describedby="name-help"
+              aria-required="true"
             />
+            <div id="name-help" className="sr-only">Player name is required and must be unique</div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
@@ -57,7 +60,9 @@ export function AddPlayerDialog({ onAddPlayer }: AddPlayerDialogProps) {
               value={player.email}
               onChange={(e) => setPlayer({ ...player, email: e.target.value })}
               placeholder="Enter email address"
+              aria-describedby="email-help"
             />
+            <div id="email-help" className="sr-only">Optional email address for player contact</div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="phone">Phone</Label>
@@ -67,16 +72,28 @@ export function AddPlayerDialog({ onAddPlayer }: AddPlayerDialogProps) {
               value={player.phone}
               onChange={(e) => setPlayer({ ...player, phone: e.target.value })}
               placeholder="Enter phone number"
+              aria-describedby="phone-help"
             />
+            <div id="phone-help" className="sr-only">Optional phone number for player contact</div>
           </div>
-          <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+          <div className="flex justify-end space-x-2" role="group" aria-label="Form actions">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => setOpen(false)}
+              aria-label="Cancel adding new player"
+            >
               Cancel
             </Button>
-            <Button type="submit">Add Player</Button>
+            <Button 
+              type="submit"
+              aria-label="Add new player to database"
+            >
+              Add Player
+            </Button>
           </div>
         </form>
       </DialogContent>
     </Dialog>
   );
-}
+});

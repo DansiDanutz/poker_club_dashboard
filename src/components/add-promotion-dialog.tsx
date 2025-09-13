@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, Button, Input, Label } from "./ui";
 import { Plus } from 'lucide-react';
 
@@ -8,7 +8,7 @@ interface AddPromotionDialogProps {
   onAddPromotion: (promotion: { name: string; startDate: string; endDate: string }) => void;
 }
 
-export function AddPromotionDialog({ onAddPromotion }: AddPromotionDialogProps) {
+export const AddPromotionDialog = memo(function AddPromotionDialog({ onAddPromotion }: AddPromotionDialogProps) {
   const [open, setOpen] = useState(false);
   const [promotion, setPromotion] = useState({ name: '', startDate: '', endDate: '' });
 
@@ -38,7 +38,7 @@ export function AddPromotionDialog({ onAddPromotion }: AddPromotionDialogProps) 
             Create a new promotion period to track player hours within specific date ranges.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" role="form" aria-label="Create new promotion form">
           <div className="space-y-2">
             <Label htmlFor="name">Promotion Name *</Label>
             <Input
@@ -47,7 +47,10 @@ export function AddPromotionDialog({ onAddPromotion }: AddPromotionDialogProps) 
               onChange={(e) => setPromotion({ ...promotion, name: e.target.value })}
               placeholder="Enter promotion name"
               required
+              aria-describedby="promotion-name-help"
+              aria-required="true"
             />
+            <div id="promotion-name-help" className="sr-only">Enter a descriptive name for the promotion period</div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -58,7 +61,10 @@ export function AddPromotionDialog({ onAddPromotion }: AddPromotionDialogProps) 
                 value={promotion.startDate}
                 onChange={(e) => setPromotion({ ...promotion, startDate: e.target.value })}
                 required
+                aria-describedby="start-date-help"
+                aria-required="true"
               />
+              <div id="start-date-help" className="sr-only">Select the start date for the promotion period</div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="endDate">End Date *</Label>
@@ -68,17 +74,30 @@ export function AddPromotionDialog({ onAddPromotion }: AddPromotionDialogProps) 
                 value={promotion.endDate}
                 onChange={(e) => setPromotion({ ...promotion, endDate: e.target.value })}
                 required
+                aria-describedby="end-date-help"
+                aria-required="true"
               />
+              <div id="end-date-help" className="sr-only">Select the end date for the promotion period</div>
             </div>
           </div>
-          <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+          <div className="flex justify-end space-x-2" role="group" aria-label="Form actions">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => setOpen(false)}
+              aria-label="Cancel creating new promotion"
+            >
               Cancel
             </Button>
-            <Button type="submit">Create Promotion</Button>
+            <Button 
+              type="submit"
+              aria-label="Create new promotion period"
+            >
+              Create Promotion
+            </Button>
           </div>
         </form>
       </DialogContent>
     </Dialog>
   );
-}
+});
