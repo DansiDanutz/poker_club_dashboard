@@ -53,32 +53,26 @@
 
         .content {
             flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 1vh;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 1vw;
             min-height: 0;
         }
 
-        .top-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1vw;
-            height: 25vh;
-        }
-
-        .middle-section {
+        .left-section {
             display: flex;
             flex-direction: column;
             gap: 1vh;
+        }
+
+        .right-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1vh;
+        }
+
+        .combined-card {
             flex: 1;
-            min-height: 0;
-        }
-
-        .bottom-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1vw;
-            height: 20vh;
         }
 
         .image-card {
@@ -292,33 +286,13 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎰 POKER CLUB DASHBOARD 🎰</h1>
-            <div class="subtitle">Live Tournament Display</div>
+            <h1 id="club-name">🎰 Player's Poker Club 🎰</h1>
+            <div class="subtitle">Cash Game Promotion</div>
         </div>
 
         <div class="content">
-            <div class="top-section">
-                <div class="card">
-                    <h2>🏆 Current Promotion</h2>
-                    <div id="promotion-info" class="promotion-info">
-                        <div class="loading">Loading promotion data...</div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <h2>📋 Promotion Rules</h2>
-                    <div id="rules-content" class="rules-content">
-                        <div class="loading">Loading rules...</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="middle-section">
-                <div class="image-card" id="promo-image">
-                    <div class="image-placeholder">No image uploaded</div>
-                </div>
-
-                <div class="card">
+            <div class="left-section">
+                <div class="card" style="flex: 1;">
                     <h2>📊 Player Rankings</h2>
                     <div id="leaderboard" class="leaderboard">
                         <div class="loading">Loading leaderboard...</div>
@@ -326,7 +300,26 @@
                 </div>
             </div>
 
-            <div class="bottom-section">
+            <div class="right-section">
+                <div class="image-card" id="promo-image">
+                    <div class="image-placeholder">No image uploaded</div>
+                </div>
+
+                <div class="card combined-card">
+                    <h2>🏆 Current Promotion & Rules</h2>
+                    <div style="display: flex; flex-direction: column; gap: 2vh; flex: 1;">
+                        <div id="promotion-info" class="promotion-info" style="flex: 0 0 auto;">
+                            <div class="loading">Loading promotion data...</div>
+                        </div>
+                        <div style="flex: 1; overflow-y: auto;">
+                            <h3 style="font-size: clamp(0.9rem, 2vw, 1.4rem); color: #00d4ff; margin-bottom: 1vh;">📋 Promotion Rules</h3>
+                            <div id="rules-content" class="rules-content">
+                                <div class="loading">Loading rules...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="card">
                     <h2>🏆 Prizes & Rewards</h2>
                     <div id="prizes-content" class="prizes-content">
@@ -443,6 +436,7 @@
         async function fetchData() {
             try {
                 // Try to fetch from localStorage first (fallback)
+                const clubSettings = JSON.parse(localStorage.getItem('pokerClubSettings') || '{}');
                 const localData = {
                     promotions: JSON.parse(localStorage.getItem('pokerClubPromotions') || '[]'),
                     players: JSON.parse(localStorage.getItem('pokerClubPlayers') || '[]'),
@@ -450,7 +444,8 @@
                     rules: localStorage.getItem('pokerClubTvRules') || 'No rules available',
                     prizes: localStorage.getItem('pokerClubTvPrices') || 'No prizes available',
                     promoImage: localStorage.getItem('pokerClubTvPromoImage') || '/default-promo-image.jpg',
-                    cardBackgrounds: JSON.parse(localStorage.getItem('pokerClubTvCardBackgrounds') || '{}')
+                    cardBackgrounds: JSON.parse(localStorage.getItem('pokerClubTvCardBackgrounds') || '{}'),
+                    clubName: clubSettings.clubName || "Player's Poker Club"
                 };
 
                 // Sanitize all text data
@@ -466,11 +461,19 @@
         }
 
         function updateDisplay() {
+            updateClubName();
             setupPromotionRotation();
             updateRules();
             updatePrizes();
             updatePromoImage();
             updateCardBackgrounds();
+        }
+
+        function updateClubName() {
+            const clubNameElement = document.getElementById('club-name');
+            if (clubNameElement && currentData.clubName) {
+                clubNameElement.textContent = `🎰 ${currentData.clubName} 🎰`;
+            }
         }
 
         function updateCardBackgrounds() {
@@ -485,12 +488,13 @@
                 if (h2) {
                     const title = h2.textContent;
 
-                    if (title.includes('Current Promotion') && backgrounds.promotion) {
-                        card.style.backgroundImage = `url('${backgrounds.promotion}')`;
+                    if (title.includes('Current Promotion & Rules')) {
+                        // Combined card uses promotion background
+                        if (backgrounds.promotion) {
+                            card.style.backgroundImage = `url('${backgrounds.promotion}')`;
+                        }
                     } else if (title.includes('Player Rankings') && backgrounds.rankings) {
                         card.style.backgroundImage = `url('${backgrounds.rankings}')`;
-                    } else if (title.includes('Promotion Rules') && backgrounds.rules) {
-                        card.style.backgroundImage = `url('${backgrounds.rules}')`;
                     } else if (title.includes('Prizes') && backgrounds.prizes) {
                         card.style.backgroundImage = `url('${backgrounds.prizes}')`;
                     }
