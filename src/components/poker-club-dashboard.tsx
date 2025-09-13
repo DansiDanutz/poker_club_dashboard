@@ -211,14 +211,16 @@ const PokerClubDashboard = () => {
   const [tvPrices, setTvPrices] = useState<string>('');
   const [tvPromoImage, setTvPromoImage] = useState<string>('');
   const [tvCardBackgrounds, setTvCardBackgrounds] = useState<{
-    promotion: string;
+    header: string;
     rankings: string;
-    rules: string;
+    promoImage: string;
+    promotionRules: string;
     prizes: string;
   }>({
-    promotion: '',
+    header: '',
     rankings: '',
-    rules: '',
+    promoImage: '',
+    promotionRules: '',
     prizes: ''
   });
   const [editingTvCard, setEditingTvCard] = useState<'rules' | 'prices' | 'image' | 'backgrounds' | null>(null);
@@ -262,9 +264,10 @@ const PokerClubDashboard = () => {
       const storedCardBackgrounds = typeof window !== 'undefined' ?
         JSON.parse(localStorage.getItem('pokerClubTvCardBackgrounds') || '{}') : {};
       setTvCardBackgrounds({
-        promotion: storedCardBackgrounds.promotion || '',
+        header: storedCardBackgrounds.header || '',
         rankings: storedCardBackgrounds.rankings || '',
-        rules: storedCardBackgrounds.rules || '',
+        promoImage: storedCardBackgrounds.promoImage || '',
+        promotionRules: storedCardBackgrounds.promotionRules || '',
         prizes: storedCardBackgrounds.prizes || ''
       });
 
@@ -2685,18 +2688,18 @@ const PokerClubDashboard = () => {
 
                                     <div className="space-y-3">
                                       <div>
-                                        <label className="text-xs text-slate-400">Current Promotion Background (16:9 ratio, ~1920x1080)</label>
+                                        <label className="text-xs text-slate-400">Header Background (Full width, ~1920x200)</label>
                                         <input
                                           type="url"
-                                          value={tvCardBackgrounds.promotion}
-                                          onChange={(e) => setTvCardBackgrounds({...tvCardBackgrounds, promotion: e.target.value})}
+                                          value={tvCardBackgrounds.header}
+                                          onChange={(e) => setTvCardBackgrounds({...tvCardBackgrounds, header: e.target.value})}
                                           className="w-full p-2 mt-1 space-theme-card space-neon-border rounded-lg text-white text-sm"
-                                          placeholder="https://example.com/promotion-bg.jpg"
+                                          placeholder="https://example.com/header-bg.jpg"
                                         />
                                       </div>
 
                                       <div>
-                                        <label className="text-xs text-slate-400">Player Rankings Background (16:9 ratio, ~1920x1080)</label>
+                                        <label className="text-xs text-slate-400">Player Rankings Background (Portrait, ~640x1080)</label>
                                         <input
                                           type="url"
                                           value={tvCardBackgrounds.rankings}
@@ -2707,18 +2710,29 @@ const PokerClubDashboard = () => {
                                       </div>
 
                                       <div>
-                                        <label className="text-xs text-slate-400">Promotion Rules Background (16:9 ratio, ~1920x1080)</label>
+                                        <label className="text-xs text-slate-400">Promotion Image Card Background (16:9, ~1280x720)</label>
                                         <input
                                           type="url"
-                                          value={tvCardBackgrounds.rules}
-                                          onChange={(e) => setTvCardBackgrounds({...tvCardBackgrounds, rules: e.target.value})}
+                                          value={tvCardBackgrounds.promoImage}
+                                          onChange={(e) => setTvCardBackgrounds({...tvCardBackgrounds, promoImage: e.target.value})}
                                           className="w-full p-2 mt-1 space-theme-card space-neon-border rounded-lg text-white text-sm"
-                                          placeholder="https://example.com/rules-bg.jpg"
+                                          placeholder="https://example.com/promo-image-bg.jpg"
                                         />
                                       </div>
 
                                       <div>
-                                        <label className="text-xs text-slate-400">Prizes & Rewards Background (32:9 ratio wide, ~3840x1080)</label>
+                                        <label className="text-xs text-slate-400">Promotion & Rules Background (16:9, ~1280x720)</label>
+                                        <input
+                                          type="url"
+                                          value={tvCardBackgrounds.promotionRules}
+                                          onChange={(e) => setTvCardBackgrounds({...tvCardBackgrounds, promotionRules: e.target.value})}
+                                          className="w-full p-2 mt-1 space-theme-card space-neon-border rounded-lg text-white text-sm"
+                                          placeholder="https://example.com/promo-rules-bg.jpg"
+                                        />
+                                      </div>
+
+                                      <div>
+                                        <label className="text-xs text-slate-400">Prizes & Rewards Background (16:9, ~1280x720)</label>
                                         <input
                                           type="url"
                                           value={tvCardBackgrounds.prizes}
@@ -2737,7 +2751,7 @@ const PokerClubDashboard = () => {
                                     </Button>
 
                                     <Button
-                                      onClick={() => setTvCardBackgrounds({ promotion: '', rankings: '', rules: '', prizes: '' })}
+                                      onClick={() => setTvCardBackgrounds({ header: '', rankings: '', promoImage: '', promotionRules: '', prizes: '' })}
                                       className="w-full space-neon-border bg-red-600/20 hover:bg-red-600/30 text-red-400"
                                     >
                                       🗑️ Clear All Backgrounds
@@ -2747,9 +2761,9 @@ const PokerClubDashboard = () => {
                                   <div className="text-white">
                                     <div className="space-y-2 text-sm">
                                       <div className="flex justify-between">
-                                        <span className="text-slate-400">Promotion:</span>
+                                        <span className="text-slate-400">Header:</span>
                                         <span className="text-xs truncate max-w-[200px]">
-                                          {tvCardBackgrounds.promotion || 'No background set'}
+                                          {tvCardBackgrounds.header || 'No background set'}
                                         </span>
                                       </div>
                                       <div className="flex justify-between">
@@ -2759,9 +2773,15 @@ const PokerClubDashboard = () => {
                                         </span>
                                       </div>
                                       <div className="flex justify-between">
-                                        <span className="text-slate-400">Rules:</span>
+                                        <span className="text-slate-400">Promo Image:</span>
                                         <span className="text-xs truncate max-w-[200px]">
-                                          {tvCardBackgrounds.rules || 'No background set'}
+                                          {tvCardBackgrounds.promoImage || 'No background set'}
+                                        </span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span className="text-slate-400">Promotion & Rules:</span>
+                                        <span className="text-xs truncate max-w-[200px]">
+                                          {tvCardBackgrounds.promotionRules || 'No background set'}
                                         </span>
                                       </div>
                                       <div className="flex justify-between">
