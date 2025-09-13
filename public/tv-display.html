@@ -50,9 +50,11 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.6));
             z-index: 1;
             border-radius: 1vh;
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
         }
 
         .header > * {
@@ -161,17 +163,19 @@
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
+            background-color: rgba(255, 255, 255, 0.05);
         }
 
         .card-content {
             position: relative;
             z-index: 2;
             padding: 1.5vh 1.5vw;
-            background: rgba(0, 0, 0, 0.5);
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.5));
             height: 100%;
             display: flex;
             flex-direction: column;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
         }
 
         .card h2 {
@@ -572,12 +576,19 @@
             if (backgrounds.promotionRules) {
                 const promoRulesCard = document.getElementById('promotion-rules-card');
                 if (promoRulesCard) {
-                    if (backgrounds.promotionRules.startsWith('data:')) {
-                        promoRulesCard.style.backgroundImage = `url(${backgrounds.promotionRules})`;
-                    } else {
-                        promoRulesCard.style.backgroundImage = `url('${backgrounds.promotionRules}')`;
+                    try {
+                        if (backgrounds.promotionRules.startsWith('data:')) {
+                            // For base64, truncate for logging but use full for styling
+                            console.log('Applying base64 promotion rules background');
+                            promoRulesCard.style.backgroundImage = `url(${backgrounds.promotionRules})`;
+                        } else {
+                            promoRulesCard.style.backgroundImage = `url('${backgrounds.promotionRules}')`;
+                        }
+                        console.log('Applied promotion rules background to element:', promoRulesCard);
+                        console.log('Background style:', promoRulesCard.style.backgroundImage.substring(0, 100));
+                    } catch (e) {
+                        console.error('Error applying promotion rules background:', e);
                     }
-                    console.log('Applied promotion rules background');
                 }
             }
 
