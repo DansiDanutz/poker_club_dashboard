@@ -2897,32 +2897,32 @@ const PokerClubDashboard = () => {
                                     <div className="space-y-2 text-sm">
                                       <div className="flex justify-between">
                                         <span className="text-slate-400">Header:</span>
-                                        <span className="text-xs truncate max-w-[200px]">
-                                          {tvCardBackgrounds.header || 'No background set'}
+                                        <span className="text-xs">
+                                          {tvCardBackgrounds.header ? '✅ Image set' : 'No background set'}
                                         </span>
                                       </div>
                                       <div className="flex justify-between">
                                         <span className="text-slate-400">Rankings:</span>
-                                        <span className="text-xs truncate max-w-[200px]">
-                                          {tvCardBackgrounds.rankings || 'No background set'}
+                                        <span className="text-xs">
+                                          {tvCardBackgrounds.rankings ? '✅ Image set' : 'No background set'}
                                         </span>
                                       </div>
                                       <div className="flex justify-between">
                                         <span className="text-slate-400">Promo Image:</span>
-                                        <span className="text-xs truncate max-w-[200px]">
-                                          {tvCardBackgrounds.promoImage || 'No background set'}
+                                        <span className="text-xs">
+                                          {tvCardBackgrounds.promoImage ? '✅ Image set' : 'No background set'}
                                         </span>
                                       </div>
                                       <div className="flex justify-between">
                                         <span className="text-slate-400">Promotion & Rules:</span>
-                                        <span className="text-xs truncate max-w-[200px]">
-                                          {tvCardBackgrounds.promotionRules || 'No background set'}
+                                        <span className="text-xs">
+                                          {tvCardBackgrounds.promotionRules ? '✅ Image set' : 'No background set'}
                                         </span>
                                       </div>
                                       <div className="flex justify-between">
                                         <span className="text-slate-400">Prizes:</span>
-                                        <span className="text-xs truncate max-w-[200px]">
-                                          {tvCardBackgrounds.prizes || 'No background set'}
+                                        <span className="text-xs">
+                                          {tvCardBackgrounds.prizes ? '✅ Image set' : 'No background set'}
                                         </span>
                                       </div>
                                     </div>

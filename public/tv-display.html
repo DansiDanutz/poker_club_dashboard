@@ -525,18 +525,30 @@
 
         function updateCardBackgrounds() {
             const backgrounds = currentData.cardBackgrounds || {};
+            console.log('Applying backgrounds:', backgrounds);
 
             // Apply header background
             const header = document.querySelector('.header');
             if (header && backgrounds.header) {
-                header.style.backgroundImage = `url('${backgrounds.header}')`;
+                // For base64 data URLs, they already include the data: prefix
+                if (backgrounds.header.startsWith('data:')) {
+                    header.style.backgroundImage = `url(${backgrounds.header})`;
+                } else {
+                    header.style.backgroundImage = `url('${backgrounds.header}')`;
+                }
+                console.log('Applied header background');
             }
 
             // Apply promo image card background
             const promoImageCard = document.querySelector('.image-card');
             if (promoImageCard && backgrounds.promoImage) {
-                promoImageCard.style.backgroundImage = `url('${backgrounds.promoImage}')`;
+                if (backgrounds.promoImage.startsWith('data:')) {
+                    promoImageCard.style.backgroundImage = `url(${backgrounds.promoImage})`;
+                } else {
+                    promoImageCard.style.backgroundImage = `url('${backgrounds.promoImage}')`;
+                }
                 promoImageCard.classList.add('has-background');
+                console.log('Applied promo image background');
             }
 
             // Apply backgrounds to specific cards
@@ -547,11 +559,26 @@
                     const title = h2.textContent;
 
                     if (title.includes('Player Rankings') && backgrounds.rankings) {
-                        card.style.backgroundImage = `url('${backgrounds.rankings}')`;
+                        if (backgrounds.rankings.startsWith('data:')) {
+                            card.style.backgroundImage = `url(${backgrounds.rankings})`;
+                        } else {
+                            card.style.backgroundImage = `url('${backgrounds.rankings}')`;
+                        }
+                        console.log('Applied rankings background');
                     } else if (title.includes('Current Promotion & Rules') && backgrounds.promotionRules) {
-                        card.style.backgroundImage = `url('${backgrounds.promotionRules}')`;
+                        if (backgrounds.promotionRules.startsWith('data:')) {
+                            card.style.backgroundImage = `url(${backgrounds.promotionRules})`;
+                        } else {
+                            card.style.backgroundImage = `url('${backgrounds.promotionRules}')`;
+                        }
+                        console.log('Applied promotion rules background');
                     } else if (title.includes('Prizes') && backgrounds.prizes) {
-                        card.style.backgroundImage = `url('${backgrounds.prizes}')`;
+                        if (backgrounds.prizes.startsWith('data:')) {
+                            card.style.backgroundImage = `url(${backgrounds.prizes})`;
+                        } else {
+                            card.style.backgroundImage = `url('${backgrounds.prizes}')`;
+                        }
+                        console.log('Applied prizes background');
                     }
                 }
             });
