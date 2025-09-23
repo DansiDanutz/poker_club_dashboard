@@ -87,6 +87,8 @@ export function useSyncDatabase() {
   const [players, setPlayers] = useState<Player[]>([])
   const [sessions, setSessions] = useState<Session[]>([])
   const [promotions, setPromotions] = useState<Promotion[]>([])
+  const [penalties, setPenalties] = useState<any[]>([])
+  const [addons, setAddons] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isOnline, setIsOnline] = useState(true)
@@ -226,23 +228,27 @@ export function useSyncDatabase() {
 
   // Load from localStorage with enhanced error handling
   const loadFromLocalStorage = useCallback(() => {
-    if (typeof window === 'undefined') return { players: [], sessions: [], promotions: [], queue: [] }
+    if (typeof window === 'undefined') return { players: [], sessions: [], promotions: [], penalties: [], addons: [], queue: [] }
 
     try {
       const storedPlayers = localStorage.getItem('pokerClubPlayers')
       const storedSessions = localStorage.getItem('pokerClubHistory')
       const storedPromotions = localStorage.getItem('pokerClubPromotions')
+      const storedPenalties = localStorage.getItem('pokerClubPenalties')
+      const storedAddons = localStorage.getItem('pokerClubAddons')
       const storedQueue = localStorage.getItem('offlineQueue')
 
       return {
         players: storedPlayers ? JSON.parse(storedPlayers) : [],
         sessions: storedSessions ? JSON.parse(storedSessions) : [],
         promotions: storedPromotions ? JSON.parse(storedPromotions) : [],
+        penalties: storedPenalties ? JSON.parse(storedPenalties) : [],
+        addons: storedAddons ? JSON.parse(storedAddons) : [],
         queue: storedQueue ? JSON.parse(storedQueue) : []
       }
     } catch (error) {
       console.warn('Failed to load data from localStorage:', error)
-      return { players: [], sessions: [], promotions: [], queue: [] }
+      return { players: [], sessions: [], promotions: [], penalties: [], addons: [], queue: [] }
     }
   }, [])
 
@@ -257,15 +263,19 @@ export function useSyncDatabase() {
       setPlayers(localData.players)
       setSessions(localData.sessions)
       setPromotions(localData.promotions)
+      setPenalties(localData.penalties)
+      setAddons(localData.addons)
       setOfflineQueue(localData.queue)
 
       // Try to sync with database if online
       if (isOnline) {
         try {
-          const [dbPlayers, dbSessions, dbPromotions] = await Promise.all([
+          const [dbPlayers, dbSessions, dbPromotions, dbPenalties, dbAddons] = await Promise.all([
             DatabaseService.getPlayers(),
             DatabaseService.getSessions(),
-            DatabaseService.getPromotions()
+            DatabaseService.getPromotions(),
+            DatabaseService.getPenalties(),
+            DatabaseService.getAddons()
           ])
 
           // Convert DB types to App types
@@ -273,16 +283,33 @@ export function useSyncDatabase() {
           const appSessions = dbSessions.map(dbSessionToAppSession)
           const appPromotions = dbPromotions.map(dbPromotionToAppPromotion)
 
-          // Add sessions to players
+          // Add sessions to players and calculate total hours including addons/penalties
           appPlayers.forEach(player => {
             player.sessions = appSessions.filter(session => session.player_id === player.id)
+
+            // Calculate addon hours for this player
+            const playerAddons = dbAddons.filter((addon: any) => addon.player_id === player.id)
+            const addonMinutes = playerAddons.reduce((sum: number, addon: any) => sum + (addon.bonus_minutes || 0), 0)
+
+            // Calculate penalty hours for this player (subtract from total)
+            const playerPenalties = dbPenalties.filter((penalty: any) => penalty.player_id === player.id)
+            const penaltyMinutes = playerPenalties.reduce((sum: number, penalty: any) => sum + (penalty.penalty_minutes || 0), 0)
+
+            // Add addon hours and subtract penalty hours from total
+            player.totalHours = player.totalHours + (addonMinutes / 60) - (penaltyMinutes / 60)
           })
 
           // Update state with fresh database data
           setPlayers(appPlayers)
           setSessions(appSessions)
           setPromotions(appPromotions)
+          setPenalties(dbPenalties)
+          setAddons(dbAddons)
           setLastSyncTime(Date.now())
+
+          // Save to localStorage
+          localStorage.setItem('pokerClubPenalties', JSON.stringify(dbPenalties))
+          localStorage.setItem('pokerClubAddons', JSON.stringify(dbAddons))
 
           console.log('✅ Successfully synced with database')
         } catch (dbError) {
@@ -597,6 +624,8 @@ export function useSyncDatabase() {
     players,
     sessions,
     promotions,
+    penalties,
+    addons,
     loading,
     error,
     isOnline,

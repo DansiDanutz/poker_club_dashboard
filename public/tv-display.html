@@ -779,6 +779,8 @@
                 const promotions = JSON.parse(localStorage.getItem('pokerClubPromotions') || '[]');
                 const players = JSON.parse(localStorage.getItem('pokerClubPlayers') || '[]');
                 const sessions = JSON.parse(localStorage.getItem('pokerClubHistory') || '[]');
+                const penalties = JSON.parse(localStorage.getItem('pokerClubPenalties') || '[]');
+                const addons = JSON.parse(localStorage.getItem('pokerClubAddons') || '[]');
                 const prizes = localStorage.getItem('pokerClubTvPrices') || 'Grand Prize Awaits!';
 
                 // Update club name
@@ -873,6 +875,33 @@
                         }
                         playerStats[playerId].totalMinutes += (session.duration || 0) * 60;
                         playerStats[playerId].sessions += 1;
+                    });
+
+                    // Add addon minutes and subtract penalty minutes for each player
+                    // Only count addons/penalties that were applied during the promotion period
+                    Object.keys(playerStats).forEach(playerId => {
+                        const playerAddons = addons.filter(a => {
+                            if (a.player_id != playerId) return false;
+                            const addonDate = new Date(a.date_applied);
+                            return addonDate >= startDate && addonDate <= endDate;
+                        });
+
+                        const playerPenalties = penalties.filter(p => {
+                            if (p.player_id != playerId) return false;
+                            const penaltyDate = new Date(p.date_applied);
+                            return penaltyDate >= startDate && penaltyDate <= endDate;
+                        });
+
+                        const addonMinutes = playerAddons.reduce((sum, addon) => sum + (addon.bonus_minutes || 0), 0);
+                        const penaltyMinutes = playerPenalties.reduce((sum, penalty) => sum + (penalty.penalty_minutes || 0), 0);
+
+                        playerStats[playerId].totalMinutes += addonMinutes;
+                        playerStats[playerId].totalMinutes -= penaltyMinutes;
+
+                        // Ensure minutes don't go negative
+                        if (playerStats[playerId].totalMinutes < 0) {
+                            playerStats[playerId].totalMinutes = 0;
+                        }
                     });
 
                     // Get all players for total count

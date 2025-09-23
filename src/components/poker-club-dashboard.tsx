@@ -115,6 +115,10 @@ const PokerClubDashboard = () => {
         
         setPenalties(sanitizedPenalties);
         setAddons(sanitizedAddons);
+
+        // Save to localStorage for TV display
+        localStorage.setItem('pokerClubPenalties', JSON.stringify(sanitizedPenalties));
+        localStorage.setItem('pokerClubAddons', JSON.stringify(sanitizedAddons));
       } catch (error) {
         console.error('Error fetching penalty/addon history:', error);
         // Set empty arrays as fallback to prevent undefined errors
@@ -1534,6 +1538,8 @@ const PokerClubDashboard = () => {
                                 ]);
                                 setPenalties(penaltyData);
                                 setAddons(addonData);
+                                localStorage.setItem('pokerClubPenalties', JSON.stringify(penaltyData));
+                                localStorage.setItem('pokerClubAddons', JSON.stringify(addonData));
                                 // Redirect to home tab
                                 setActiveTab('tables');
                               } else {
@@ -1751,6 +1757,8 @@ const PokerClubDashboard = () => {
                                 ]);
                                 setPenalties(penaltyData);
                                 setAddons(addonData);
+                                localStorage.setItem('pokerClubPenalties', JSON.stringify(penaltyData));
+                                localStorage.setItem('pokerClubAddons', JSON.stringify(addonData));
                                 // Redirect to home tab
                                 setActiveTab('tables');
                               } else {

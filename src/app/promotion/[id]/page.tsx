@@ -13,10 +13,12 @@ export default function PromotionDetailPage() {
   const params = useParams();
   const promotionId = parseInt(params.id as string);
   
-  const { 
-    players, 
-    sessions: allSessions, 
-    promotions 
+  const {
+    players,
+    sessions: allSessions,
+    promotions,
+    penalties,
+    addons
   } = useSyncDatabase();
   
   const [promotion, setPromotion] = useState<any>(null);
@@ -58,11 +60,44 @@ export default function PromotionDetailPage() {
             };
           }
           // Calculate duration from seat_in_time and seat_out_time, fallback to duration field
-          const durationMinutes = session.seat_in_time && session.seat_out_time 
+          const durationMinutes = session.seat_in_time && session.seat_out_time
             ? (new Date(session.seat_out_time).getTime() - new Date(session.seat_in_time).getTime()) / (1000 * 60)
             : (session.duration || 0) * 60;
           playerStats[playerId].totalHours += durationMinutes / 60;
           playerStats[playerId].sessions += 1;
+        });
+
+        // Add addon hours and subtract penalty hours for players in this promotion
+        const startDate = new Date(foundPromotion.start_date);
+        const endDate = new Date(foundPromotion.end_date);
+
+        Object.keys(playerStats).forEach((playerIdStr) => {
+          const playerId = parseInt(playerIdStr);
+
+          // Filter addons and penalties within promotion dates
+          const playerAddons = (addons || []).filter((a: any) => {
+            if (a.player_id !== playerId) return false;
+            const addonDate = new Date(a.date_applied);
+            return addonDate >= startDate && addonDate <= endDate;
+          });
+
+          const playerPenalties = (penalties || []).filter((p: any) => {
+            if (p.player_id !== playerId) return false;
+            const penaltyDate = new Date(p.date_applied);
+            return penaltyDate >= startDate && penaltyDate <= endDate;
+          });
+
+          // Calculate addon and penalty minutes
+          const addonMinutes = playerAddons.reduce((sum: number, addon: any) => sum + (addon.bonus_minutes || 0), 0);
+          const penaltyMinutes = playerPenalties.reduce((sum: number, penalty: any) => sum + (penalty.penalty_minutes || 0), 0);
+
+          // Adjust total hours
+          playerStats[playerId].totalHours += (addonMinutes / 60) - (penaltyMinutes / 60);
+
+          // Ensure hours don't go negative
+          if (playerStats[playerId].totalHours < 0) {
+            playerStats[playerId].totalHours = 0;
+          }
         });
 
         const sortedLeaderboard = Object.values(playerStats)
