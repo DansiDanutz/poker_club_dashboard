@@ -156,6 +156,7 @@ const PokerClubDashboard = () => {
   const [isProcessingEndSession, setIsProcessingEndSession] = useState(false);
   const [isProcessingPenalty, setIsProcessingPenalty] = useState(false);
   const [isProcessingAddon, setIsProcessingAddon] = useState(false);
+  const [clickedEndButton, setClickedEndButton] = useState<number | null>(null);
   
   // Session history filters
   const [historyDateFrom, setHistoryDateFrom] = useState('');
@@ -507,6 +508,7 @@ const PokerClubDashboard = () => {
   const handleEndSessionClick = (tableId: number) => {
     const table = activeTables.find(t => t.id === tableId);
     if (table) {
+      setClickedEndButton(tableId); // Mark this button as clicked
       setConfirmEndSession({ tableId, playerName: table.player.name });
     }
   };
@@ -528,7 +530,8 @@ const PokerClubDashboard = () => {
       // Clear the confirmation dialog immediately to prevent double-processing
       const sessionInfo = confirmEndSession;
       setConfirmEndSession(null);
-      
+      setClickedEndButton(null); // Reset button state after processing
+
       try {
         // Process the session
         await sitOutPlayer(sessionInfo.tableId);
@@ -1125,11 +1128,25 @@ const PokerClubDashboard = () => {
 
                               <Button
                                 variant="destructive"
-                                className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 shadow-lg transition-all duration-200"
+                                className={`w-full shadow-lg transition-all duration-200 ${
+                                  clickedEndButton === table.id
+                                    ? 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 animate-pulse'
+                                    : 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800'
+                                }`}
                                 onClick={() => handleEndSessionClick(table.id)}
+                                disabled={clickedEndButton === table.id}
                               >
-                                <X size={18} className="mr-2" />
-                                End Session
+                                {clickedEndButton === table.id ? (
+                                  <>
+                                    <Loader2 size={18} className="mr-2 animate-spin" />
+                                    Processing...
+                                  </>
+                                ) : (
+                                  <>
+                                    <X size={18} className="mr-2" />
+                                    End Session
+                                  </>
+                                )}
                               </Button>
                             </CardContent>
                           </Card>
@@ -3289,18 +3306,39 @@ const PokerClubDashboard = () => {
       </div>
 
       {/* End Session Confirmation Dialog */}
-      <Dialog open={confirmEndSession !== null} onOpenChange={(open) => !open && setConfirmEndSession(null)}>
+      <Dialog
+        open={confirmEndSession !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setConfirmEndSession(null);
+            setClickedEndButton(null); // Reset the clicked button state
+          }
+        }}
+      >
         <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <X className="h-5 w-5 text-red-500" />
-              End Session Confirmation
-            </DialogTitle>
-            <DialogDescription>
-              Are you sure you want to end the session for {confirmEndSession?.playerName}?
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col gap-4 pt-4">
+          {isProcessingEndSession ? (
+            <div className="flex flex-col items-center justify-center py-8">
+              <Loader2 className="h-12 w-12 animate-spin text-orange-500 mb-4" />
+              <p className="text-lg font-semibold">Closing Session...</p>
+              <p className="text-sm text-muted-foreground mt-2">Please wait while we save the session data</p>
+              <div className="mt-4 p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg border border-orange-300 dark:border-orange-700">
+                <p className="text-sm font-medium text-orange-800 dark:text-orange-300 text-center">
+                  ⏳ We are closing the session - JUST WAIT!
+                </p>
+              </div>
+            </div>
+          ) : (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <X className="h-5 w-5 text-red-500" />
+                  End Session Confirmation
+                </DialogTitle>
+                <DialogDescription>
+                  Are you sure you want to end the session for {confirmEndSession?.playerName}?
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex flex-col gap-4 pt-4">
             <div className="text-sm text-muted-foreground">
               This action will:
               <ul className="list-disc list-inside mt-2 space-y-1">
@@ -3326,12 +3364,17 @@ const PokerClubDashboard = () => {
               <Button
                 variant="outline"
                 className="flex-1"
-                onClick={() => setConfirmEndSession(null)}
+                onClick={() => {
+                  setConfirmEndSession(null);
+                  setClickedEndButton(null);
+                }}
               >
                 Cancel
               </Button>
             </div>
           </div>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </div>
