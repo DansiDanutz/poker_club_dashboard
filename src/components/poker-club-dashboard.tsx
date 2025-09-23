@@ -602,7 +602,8 @@ const PokerClubDashboard = () => {
       // Remove from active tables
       setActiveTables(prevTables => prevTables.filter(t => t.id !== tableId));
 
-      alert(`Session recorded for ${table.player.name}\nDuration: ${formatDuration(sessionDuration)}`);
+      // Remove the alert - we already showed confirmation in the dialog
+      console.log(`Session recorded for ${table.player.name}, Duration: ${formatDuration(sessionDuration)}`);
       console.log('Sit out completed successfully');
     } catch (error) {
       console.error('Error recording session to database:', error);
@@ -1139,13 +1140,13 @@ const PokerClubDashboard = () => {
 
                               <Button
                                 variant="destructive"
-                                className={`w-full shadow-lg transition-all duration-200 ${
+                                className={`w-full shadow-lg transition-all duration-300 ${
                                   clickedEndButton === table.id
                                     ? 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 animate-pulse'
                                     : 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800'
                                 }`}
                                 onClick={() => handleEndSessionClick(table.id)}
-                                disabled={clickedEndButton === table.id}
+                                disabled={clickedEndButton === table.id || isProcessingEndSession}
                               >
                                 {clickedEndButton === table.id ? (
                                   <>
