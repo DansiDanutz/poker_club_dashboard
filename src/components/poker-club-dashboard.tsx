@@ -152,7 +152,7 @@ const PokerClubDashboard = () => {
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [activeTables, setActiveTables] = useState<ActiveTable[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [confirmEndSession, setConfirmEndSession] = useState<{tableId: number, playerName: string} | null>(null);
+  const [confirmEndSession, setConfirmEndSession] = useState<{tableId: number, playerName: string, duration: string} | null>(null);
   const [isProcessingEndSession, setIsProcessingEndSession] = useState(false);
   const [isProcessingPenalty, setIsProcessingPenalty] = useState(false);
   const [isProcessingAddon, setIsProcessingAddon] = useState(false);
@@ -509,7 +509,18 @@ const PokerClubDashboard = () => {
     const table = activeTables.find(t => t.id === tableId);
     if (table) {
       setClickedEndButton(tableId); // Mark this button as clicked
-      setConfirmEndSession({ tableId, playerName: table.player.name });
+
+      // Calculate session duration for display
+      const duration = (new Date().getTime() - table.seatTime.getTime()) / 1000 / 60; // minutes
+      const hours = Math.floor(duration / 60);
+      const minutes = Math.floor(duration % 60);
+      const durationText = hours > 0 ? `${hours}h ${minutes}m` : `${minutes} minutes`;
+
+      setConfirmEndSession({
+        tableId,
+        playerName: table.player.name,
+        duration: durationText
+      });
     }
   };
 
@@ -554,11 +565,11 @@ const PokerClubDashboard = () => {
     }
 
     const sessionDuration = (new Date().getTime() - table.seatTime.getTime()) / 1000 / 60 / 60; // hours
-    
+
+    // Don't show secondary confirmation - we already confirmed in the dialog
+    // Just log if it's a very short session
     if (sessionDuration < 0.0167) {
-      if (!confirm(`Session is less than 1 minute (${Math.round(sessionDuration * 60)} seconds). Do you still want to record it?`)) {
-        return;
-      }
+      console.log(`Recording short session of ${Math.round(sessionDuration * 60)} seconds for ${table.player.name}`);
     }
 
     const now = new Date();
@@ -2191,7 +2202,7 @@ const PokerClubDashboard = () => {
                       <div className="flex items-center gap-6">
                         <Button
                           onClick={() => {
-                            const tvUrl = `https://hammerhead-app-f4ysx.ondigitalocean.app/tv-display.html`;
+                            const tvUrl = `https://bit.ly/players-tv`;
                             window.open(tvUrl, '_blank');
                           }}
                           className="space-theme-card space-neon-border bg-green-600/20 hover:bg-green-600/30 text-green-400 hover:text-white border-green-400/50 hover:border-green-400 transition-all duration-300 px-6 py-3 text-lg font-semibold"
@@ -2246,15 +2257,18 @@ const PokerClubDashboard = () => {
                             🌐 TV Display URL
                           </h3>
                           <div className="p-3 space-neon-border rounded-lg bg-slate-800/50">
-                            <code className="text-green-400 text-sm break-all">
-                              https://hammerhead-app-f4ysx.ondigitalocean.app/tv-display.html
+                            <code className="text-green-400 text-lg font-bold break-all">
+                              https://bit.ly/players-tv
                             </code>
                           </div>
+                          <p className="text-xs text-muted-foreground mt-2">
+                            Short URL for easy access on any device
+                          </p>
                         </div>
                         <div className="ml-4">
                           <Button
                             onClick={async () => {
-                              const tvUrl = `https://hammerhead-app-f4ysx.ondigitalocean.app/tv-display.html`;
+                              const tvUrl = `https://bit.ly/players-tv`;
                               try {
                                 await navigator.clipboard.writeText(tvUrl);
                                 // Could add toast notification here
@@ -3335,16 +3349,21 @@ const PokerClubDashboard = () => {
                   End Session Confirmation
                 </DialogTitle>
                 <DialogDescription>
-                  Are you sure you want to end the session for {confirmEndSession?.playerName}?
+                  End session for <strong>{confirmEndSession?.playerName}</strong>?
                 </DialogDescription>
               </DialogHeader>
               <div className="flex flex-col gap-4 pt-4">
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <p className="text-sm font-medium text-blue-900 dark:text-blue-300">
+                Session Duration: <strong>{confirmEndSession?.duration}</strong>
+              </p>
+            </div>
             <div className="text-sm text-muted-foreground">
-              This action will:
+              This will:
               <ul className="list-disc list-inside mt-2 space-y-1">
-                <li>Record the session duration</li>
+                <li>Save the session to history</li>
                 <li>Update player statistics</li>
-                <li>End the active session</li>
+                <li>Free up the table</li>
               </ul>
             </div>
             <div className="flex gap-3">
