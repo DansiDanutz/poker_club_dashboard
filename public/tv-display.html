@@ -72,8 +72,8 @@
             position: relative;
             z-index: 10;
             height: 100vh;
-            display: grid;
-            grid-template-rows: auto 1fr auto;
+            display: flex;
+            flex-direction: column;
             gap: 2vh;
             padding: 2vh 2vw;
         }
@@ -155,12 +155,23 @@
             margin-top: 0.5vh;
         }
 
-        /* Main Content */
+        /* Main Content - Simplified for TV compatibility */
         .main-content {
-            display: grid;
-            grid-template-columns: 35% 65%;
+            display: flex;
             gap: 2vw;
-            height: 100%;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        .left-column {
+            width: 35%;
+            flex-shrink: 0;
+        }
+
+        .leaderboard {
+            flex: 1;
+            min-width: 0;
         }
 
         /* Left Column */
@@ -774,14 +785,62 @@
         // Fetch and update data
         async function updateData(skipRotation = false) {
             try {
-                // Get data from localStorage
-                const clubSettings = JSON.parse(localStorage.getItem('pokerClubSettings') || '{}');
-                const promotions = JSON.parse(localStorage.getItem('pokerClubPromotions') || '[]');
-                const players = JSON.parse(localStorage.getItem('pokerClubPlayers') || '[]');
-                const sessions = JSON.parse(localStorage.getItem('pokerClubHistory') || '[]');
-                const penalties = JSON.parse(localStorage.getItem('pokerClubPenalties') || '[]');
-                const addons = JSON.parse(localStorage.getItem('pokerClubAddons') || '[]');
-                const prizes = localStorage.getItem('pokerClubTvPrices') || 'Grand Prize Awaits!';
+                let clubSettings, promotions, players, sessions, penalties, addons, prizes;
+
+                // Always try API first for Samsung TV compatibility
+                let dataSource = 'none';
+
+                try {
+                    console.log('Fetching data from server API...');
+                    const response = await fetch('/api/tv-data', {
+                        method: 'GET',
+                        cache: 'no-cache',
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        clubSettings = data.clubSettings || {};
+                        promotions = data.promotions || [];
+                        players = data.players || [];
+                        sessions = data.sessions || [];
+                        penalties = data.penalties || [];
+                        addons = data.addons || [];
+                        prizes = data.prizes || 'Grand Prize Awaits!';
+                        dataSource = 'API';
+                        console.log('Successfully loaded data from API');
+                        console.log(`Players count: ${players.length}`);
+                        console.log(`Sessions count: ${sessions.length}`);
+                    } else {
+                        throw new Error('API request failed');
+                    }
+                } catch (apiError) {
+                    console.log('API failed, trying localStorage fallback...', apiError);
+                    // Fallback to localStorage if API fails
+                    try {
+                        const testStorage = localStorage.getItem('pokerClubPlayers');
+                        if (testStorage && testStorage !== '[]') {
+                            clubSettings = JSON.parse(localStorage.getItem('pokerClubSettings') || '{}');
+                            promotions = JSON.parse(localStorage.getItem('pokerClubPromotions') || '[]');
+                            players = JSON.parse(localStorage.getItem('pokerClubPlayers') || '[]');
+                            sessions = JSON.parse(localStorage.getItem('pokerClubHistory') || '[]');
+                            penalties = JSON.parse(localStorage.getItem('pokerClubPenalties') || '[]');
+                            addons = JSON.parse(localStorage.getItem('pokerClubAddons') || '[]');
+                            prizes = localStorage.getItem('pokerClubTvPrices') || 'Grand Prize Awaits!';
+                            dataSource = 'localStorage';
+                            console.log('Using localStorage fallback');
+                        } else {
+                            console.error('No data available from API or localStorage');
+                            // Show error message on display
+                            document.getElementById('leaderboard').innerHTML = '<div style="text-align: center; color: #ef4444; padding: 20px;">Unable to load data. Please check connection.</div>';
+                        }
+                    } catch (storageError) {
+                        console.error('localStorage not available:', storageError);
+                        document.getElementById('leaderboard').innerHTML = '<div style="text-align: center; color: #ef4444; padding: 20px;">Data loading error. Please refresh.</div>';
+                    }
+                }
 
                 // Update club name
                 if (clubSettings.clubName) {
