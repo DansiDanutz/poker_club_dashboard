@@ -613,7 +613,7 @@
             <div class="logo-section">
                 <div class="logo">🎰</div>
                 <div class="club-info">
-                    <h1 id="club-name">POKER CLUB</h1>
+                    <h1 id="club-name">PLAYER'S POKER CLUB</h1>
                     <p>Premium Cash Game Experience</p>
                 </div>
             </div>
@@ -775,6 +775,13 @@
         let currentPromotionIndex = 0;
         let activePromotions = [];
         let rotationTimer = null;
+
+        // Leaderboard pagination state
+        let currentLeaderboardPage = 0;
+        let totalLeaderboardPages = 1;
+        let leaderboardRotationTimer = null;
+        const PLAYERS_PER_PAGE = 10;
+        const LEADERBOARD_ROTATION_INTERVAL = 8000; // 8 seconds per page
 
         // Get rotation settings from localStorage
         function getPromotionRotationTime(promotionId) {
@@ -964,45 +971,62 @@
                     });
 
                     // Get all players for total count
-                    const allPromotionPlayers = Object.values(playerStats);
+                    const allPromotionPlayers = Object.values(playerStats)
+                        .sort((a, b) => b.totalMinutes - a.totalMinutes);
 
-                    // Sort and display top 10
-                    const leaderboard = allPromotionPlayers
-                        .sort((a, b) => b.totalMinutes - a.totalMinutes)
-                        .slice(0, 10);
+                    // Calculate total pages
+                    totalLeaderboardPages = Math.ceil(allPromotionPlayers.length / PLAYERS_PER_PAGE);
 
-                    // Show total unique players (not just top 10)
+                    // Get current page of players
+                    const startIndex = currentLeaderboardPage * PLAYERS_PER_PAGE;
+                    const endIndex = Math.min(startIndex + PLAYERS_PER_PAGE, allPromotionPlayers.length);
+                    const leaderboard = allPromotionPlayers.slice(startIndex, endIndex);
+
+                    // Show total unique players and current page
                     document.getElementById('total-players').textContent = allPromotionPlayers.length;
 
+                    // Add page indicator with animation if multiple pages
+                    if (totalLeaderboardPages > 1) {
+                        const pageIndicator = document.getElementById('page-indicator') || createPageIndicator();
+                        pageIndicator.innerHTML = `
+                            <div style="animation: fadeInOut 0.5s ease-in-out;">
+                                Page <span style="color: #fbbf24; font-weight: bold;">${currentLeaderboardPage + 1}</span> / ${totalLeaderboardPages}
+                            </div>
+                        `;
+                    }
+
                     // Render leaderboard with staggered animations
-                    const leaderboardHTML = leaderboard.map((player, index) => {
+                    const leaderboardHTML = leaderboard.map((player, localIndex) => {
                         const hours = Math.floor(player.totalMinutes / 60);
                         const minutes = Math.floor(player.totalMinutes % 60);
                         const timeStr = hours > 0 ? `${hours}H ${minutes}M` : `${minutes}M`;
 
+                        // Calculate actual rank based on position in full list
+                        const actualRank = startIndex + localIndex;
+
                         let rankClass = '';
                         let badgeClass = '';
                         let trophy = '';
-                        if (index === 0) {
+                        if (actualRank === 0) {
                             rankClass = 'gold';
                             badgeClass = 'gold';
                             trophy = '👑';
                         }
-                        else if (index === 1) {
+                        else if (actualRank === 1) {
                             rankClass = 'silver';
                             badgeClass = 'silver';
                             trophy = '🥈';
                         }
-                        else if (index === 2) {
+                        else if (actualRank === 2) {
                             rankClass = 'bronze';
                             badgeClass = 'bronze';
                             trophy = '🥉';
                         }
 
                         return `
-                            <div class="player-row ${rankClass}" style="animation-delay: ${index * 0.1}s">
+                            <div class="player-row ${rankClass}" style="animation-delay: ${localIndex * 0.05}s">
                                 <div class="player-info">
-                                    <div class="rank-badge ${badgeClass}">${index + 1}</div>
+                                    <div class="rank-badge ${badgeClass}">${actualRank + 1}</div>
                                     <div class="player-details">
                                         <div class="player-name">${player.name} ${trophy}</div>
                                         <div class="player-meta">
@@ -1025,8 +1049,87 @@
                 // Update prize
                 document.getElementById('prize-amount').textContent = prizes || 'TBD';
 
+                // Setup leaderboard pagination if needed
+                if (!skipRotation) {
+                    setupLeaderboardPagination();
+                }
             } catch (error) {
                 console.error('Error updating data:', error);
+            }
+        }
+
+        // Create page indicator element with animation
+        function createPageIndicator() {
+            const indicator = document.createElement('div');
+            indicator.id = 'page-indicator';
+            indicator.style.cssText = `
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                font-size: 0.9rem;
+                color: #94a3b8;
+                background: linear-gradient(135deg, rgba(0,0,0,0.7), rgba(30,30,30,0.7));
+                padding: 8px 15px;
+                border-radius: 10px;
+                border: 1px solid rgba(251, 191, 36, 0.3);
+                backdrop-filter: blur(10px);
+                animation: slideIn 0.5s ease-out;
+            `;
+
+            // Add animation styles if not already present
+            if (!document.getElementById('page-animation-styles')) {
+                const style = document.createElement('style');
+                style.id = 'page-animation-styles';
+                style.textContent = `
+                    @keyframes slideIn {
+                        from { transform: translateX(100px); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                    @keyframes fadeInOut {
+                        0% { opacity: 0; transform: scale(0.9); }
+                        50% { opacity: 1; transform: scale(1); }
+                        100% { opacity: 1; transform: scale(1); }
+                    }
+                    @keyframes pageTransition {
+                        0% { transform: translateX(0); opacity: 1; }
+                        45% { transform: translateX(-50px); opacity: 0; }
+                        55% { transform: translateX(50px); opacity: 0; }
+                        100% { transform: translateX(0); opacity: 1; }
+                    }
+                    .leaderboard-transition {
+                        animation: pageTransition 0.8s ease-in-out;
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
+            document.querySelector('.leaderboard').style.position = 'relative';
+            document.querySelector('.leaderboard').appendChild(indicator);
+            return indicator;
+        }
+
+        // Setup leaderboard pagination with smooth transitions
+        function setupLeaderboardPagination() {
+            if (leaderboardRotationTimer) {
+                clearInterval(leaderboardRotationTimer);
+            }
+
+            if (totalLeaderboardPages > 1) {
+                leaderboardRotationTimer = setInterval(() => {
+                    // Add transition animation to leaderboard
+                    const leaderboardEl = document.getElementById('leaderboard');
+                    leaderboardEl.classList.add('leaderboard-transition');
+
+                    setTimeout(() => {
+                        currentLeaderboardPage = (currentLeaderboardPage + 1) % totalLeaderboardPages;
+                        updateData(true); // Skip promotion rotation during leaderboard update
+
+                        // Remove animation class after update
+                        setTimeout(() => {
+                            leaderboardEl.classList.remove('leaderboard-transition');
+                        }, 100);
+                    }, 400); // Wait for fade out before updating
+                }, LEADERBOARD_ROTATION_INTERVAL);
             }
         }
 

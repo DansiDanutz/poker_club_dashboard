@@ -34,7 +34,7 @@ export async function GET() {
       penalties: penaltiesResult.data || [],
       addons: addonsResult.data || [],
       clubSettings: {
-        clubName: 'POKER CLUB'
+        clubName: "PLAYER'S POKER CLUB"
       },
       prizes: 'Grand Prize Awaits!'
     }, {
