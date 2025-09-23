@@ -45,6 +45,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { Separator } from "./ui/separator";
 import { AddPlayerDialog } from "./add-player-dialog";
 import { AddPromotionDialog } from "./add-promotion-dialog";
+import { EditPromotionDialog } from "./edit-promotion-dialog";
 import { ThemeToggle } from "./theme-toggle";
 import { 
   PlayerTableErrorBoundary, 
@@ -59,11 +60,9 @@ import {
   SessionsDataErrorBoundary, 
   PromotionsDataErrorBoundary 
 } from "./data-error-boundary";
-import { 
-  AddPlayerFormErrorBoundary, 
-  AddPromotionFormErrorBoundary, 
-  PenaltyFormErrorBoundary, 
-  AddonFormErrorBoundary 
+import {
+  AddPlayerFormErrorBoundary,
+  AddPromotionFormErrorBoundary
 } from "./form-error-boundary";
 import { useSyncDatabase } from "../hooks/use-sync-database";
 import { Player, Session, Promotion, ActiveTable, ClubSettings } from "../types";
@@ -1345,16 +1344,10 @@ const PokerClubDashboard = () => {
                                   </div>
                                 </div>
                                 <div className="flex gap-2">
-                                  <Button 
-                                    variant="ghost" 
-                                    size="icon"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      // Edit functionality can be added here
-                                    }}
-                                  >
-                                    <Edit2 size={18} />
-                                  </Button>
+                                  <EditPromotionDialog
+                                    promotion={promotion}
+                                    onUpdate={refreshData}
+                                  />
                                   <Button 
                                     variant="ghost" 
                                     size="icon"
@@ -1980,7 +1973,7 @@ const PokerClubDashboard = () => {
                                   </div>
                                 </div>
                                 <div className="text-right">
-                                  <p className="font-medium text-blue-600">+{hours.toFixed(1)}h</p>
+                                  <p className="font-medium text-blue-600">+{Math.floor(hours)}h</p>
                                   <p className="text-xs text-muted-foreground">Playing time</p>
                                 </div>
                               </div>
@@ -2008,7 +2001,7 @@ const PokerClubDashboard = () => {
                                   </div>
                                 </div>
                                 <div className="text-right">
-                                  <p className="font-medium text-red-600">-{hours.toFixed(1)}h</p>
+                                  <p className="font-medium text-red-600">-{Math.floor(hours)}h</p>
                                   <p className="text-xs text-muted-foreground">Time penalty</p>
                                 </div>
                               </div>
@@ -2036,7 +2029,7 @@ const PokerClubDashboard = () => {
                                   </div>
                                 </div>
                                 <div className="text-right">
-                                  <p className="font-medium text-green-600">+{hours.toFixed(1)}h</p>
+                                  <p className="font-medium text-green-600">+{Math.floor(hours)}h</p>
                                   <p className="text-xs text-muted-foreground">Bonus time</p>
                                 </div>
                               </div>
@@ -2404,7 +2397,7 @@ const PokerClubDashboard = () => {
                                         
                                         <div className="text-right">
                                           <div className="text-2xl font-bold text-green-400">
-                                            {player.totalHours.toFixed(1)}h
+                                            {Math.floor(player.totalHours)}h
                                           </div>
                                           <div className="text-slate-400 text-sm">play time</div>
                                         </div>

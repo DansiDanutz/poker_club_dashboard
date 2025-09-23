@@ -85,8 +85,8 @@ export default function PlayerDetailPage() {
             
             setPlayerStats({
               totalSessions,
-              totalHours: finalTotalHours.toFixed(1),
-              averageHours: totalSessions > 0 ? (rawSessionHours / totalSessions).toFixed(1) : '0',
+              totalHours: Math.floor(finalTotalHours).toString(),
+              averageHours: totalSessions > 0 ? Math.floor(rawSessionHours / totalSessions).toString() : '0',
               rawSessionHours: rawSessionHours,
               penaltyHours: penaltyHours,
               addonHours: addonHours
@@ -159,7 +159,7 @@ export default function PlayerDetailPage() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{playerStats.rawSessionHours?.toFixed(1) || 0}</div>
+            <div className="text-2xl font-bold">{Math.floor(playerStats.rawSessionHours || 0)}</div>
             <p className="text-xs text-muted-foreground">From active sessions</p>
           </CardContent>
         </Card>
@@ -170,7 +170,7 @@ export default function PlayerDetailPage() {
             <Minus className="h-4 w-4 text-red-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">-{playerStats.penaltyHours?.toFixed(1) || 0}</div>
+            <div className="text-2xl font-bold text-red-600">-{Math.floor(playerStats.penaltyHours || 0)}</div>
             <p className="text-xs text-muted-foreground">{playerPenalties.length} penalties</p>
           </CardContent>
         </Card>
@@ -181,7 +181,7 @@ export default function PlayerDetailPage() {
             <Plus className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">+{playerStats.addonHours?.toFixed(1) || 0}</div>
+            <div className="text-2xl font-bold text-green-600">+{Math.floor(playerStats.addonHours || 0)}</div>
             <p className="text-xs text-muted-foreground">{playerAddons.length} bonuses</p>
           </CardContent>
         </Card>
@@ -291,7 +291,7 @@ export default function PlayerDetailPage() {
                               ? 'text-blue-600 dark:text-blue-400' 
                               : 'text-muted-foreground'
                           }`}>
-                            {promotionHours > 0 ? `${promotionHours.toFixed(1)}h` : '0h'}
+                            {promotionHours > 0 ? `${Math.floor(promotionHours)}h` : '0h'}
                           </span>
                         </div>
                         <div className="flex items-center justify-between">
@@ -307,7 +307,7 @@ export default function PlayerDetailPage() {
                             <div className="flex items-center justify-between">
                               <span className="text-xs font-medium text-purple-600 dark:text-purple-400">Total Hours:</span>
                               <span className="text-xs font-semibold text-purple-600 dark:text-purple-400">
-                                {totalPromotionHours.toFixed(1)}h
+                                {Math.floor(totalPromotionHours)}h
                               </span>
                             </div>
                             <div className="flex items-center justify-between">
@@ -319,7 +319,7 @@ export default function PlayerDetailPage() {
                             <div className="flex items-center justify-between">
                               <span className="text-xs font-medium text-purple-600 dark:text-purple-400">Avg/Player/Day:</span>
                               <span className="text-xs font-semibold text-purple-600 dark:text-purple-400">
-                                {avgHoursPerPlayerPerDay.toFixed(1)}h
+                                {Math.floor(avgHoursPerPlayerPerDay)}h
                               </span>
                             </div>
                           </div>
@@ -405,7 +405,7 @@ export default function PlayerDetailPage() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="font-medium text-blue-600">+{hours.toFixed(1)}h</p>
+                          <p className="font-medium text-blue-600">+{Math.floor(hours)}h</p>
                           <Badge variant="secondary">Session</Badge>
                         </div>
                       </div>
@@ -430,7 +430,7 @@ export default function PlayerDetailPage() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="font-medium text-red-600">-{hours.toFixed(1)}h</p>
+                          <p className="font-medium text-red-600">-{Math.floor(hours)}h</p>
                           <Badge variant="destructive">Penalty</Badge>
                         </div>
                       </div>
@@ -455,7 +455,7 @@ export default function PlayerDetailPage() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="font-medium text-green-600">+{hours.toFixed(1)}h</p>
+                          <p className="font-medium text-green-600">+{Math.floor(hours)}h</p>
                           <Badge className="bg-green-600 hover:bg-green-700">Bonus</Badge>
                         </div>
                       </div>

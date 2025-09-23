@@ -170,7 +170,7 @@ export default function PromotionDetailPage() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{(promotionStats.totalHours || 0).toFixed(1)}</div>
+            <div className="text-2xl font-bold">{Math.floor(promotionStats.totalHours || 0)}</div>
           </CardContent>
         </Card>
       </div>
@@ -200,7 +200,7 @@ export default function PromotionDetailPage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-lg">{player.totalHours.toFixed(1)}h</p>
+                    <p className="font-bold text-lg">{Math.floor(player.totalHours)}h</p>
                   </div>
                 </div>
               ))}

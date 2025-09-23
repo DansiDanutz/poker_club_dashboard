@@ -71,21 +71,21 @@ export const MemoizedPlayerTable = memo(function MemoizedPlayerTable({
                     <div className="text-sm text-muted-foreground" aria-label={`Email: ${player.email}`}>{player.email}</div>
                   )}
                 </TableCell>
-                <TableCell className="font-mono" aria-label={`Total hours played: ${player.totalHours.toFixed(1)} hours`}>
-                  {player.totalHours.toFixed(1)}h
+                <TableCell className="font-mono" aria-label={`Total hours played: ${Math.floor(player.totalHours)} hours`}>
+                  {Math.floor(player.totalHours)}h
                 </TableCell>
                 <TableCell aria-label={`Total sessions: ${player.sessions?.length || 0}`}>
                   {player.sessions?.length || 0}
                 </TableCell>
-                <TableCell className="font-mono" aria-label={`Average session duration: ${avgSession.toFixed(1)} hours`}>
-                  {avgSession.toFixed(1)}h
+                <TableCell className="font-mono" aria-label={`Average session duration: ${Math.floor(avgSession)} hours`}>
+                  {Math.floor(avgSession)}h
                 </TableCell>
                 <TableCell aria-label={`Last played: ${lastSession ? new Date(lastSession.date).toLocaleDateString() : 'Never'}`}>
                   {lastSession ? (
                     <div className="text-sm">
                       <div>{new Date(lastSession.date).toLocaleDateString()}</div>
                       <div className="text-muted-foreground">
-                        {lastSession.duration ? `${(lastSession.duration / 60).toFixed(1)}h` : 'N/A'}
+                        {lastSession.duration ? `${Math.floor(lastSession.duration / 60)}h` : 'N/A'}
                       </div>
                     </div>
                   ) : (
