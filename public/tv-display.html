@@ -980,6 +980,15 @@
         // Set intervals
         setInterval(updateClock, 1000);
         setInterval(() => updateData(true), 30000); // Update every 30 seconds without resetting rotation
+
+        // Listen for storage changes for instant updates
+        window.addEventListener('storage', function(e) {
+            // Update when relevant poker club data changes
+            if (e.key && (e.key.includes('pokerClub') || e.key === 'pokerClubHistory' || e.key === 'pokerClubPlayers')) {
+                console.log('Storage changed, updating display...');
+                updateData(true);
+            }
+        });
     </script>
 </body>
 </html>
