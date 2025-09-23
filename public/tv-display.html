@@ -875,17 +875,21 @@
                         playerStats[playerId].sessions += 1;
                     });
 
+                    // Get all players for total count
+                    const allPromotionPlayers = Object.values(playerStats);
+
                     // Sort and display top 10
-                    const leaderboard = Object.values(playerStats)
+                    const leaderboard = allPromotionPlayers
                         .sort((a, b) => b.totalMinutes - a.totalMinutes)
                         .slice(0, 10);
 
-                    document.getElementById('total-players').textContent = leaderboard.length;
+                    // Show total unique players (not just top 10)
+                    document.getElementById('total-players').textContent = allPromotionPlayers.length;
 
                     // Render leaderboard with staggered animations
                     const leaderboardHTML = leaderboard.map((player, index) => {
                         const hours = Math.floor(player.totalMinutes / 60);
-                        const minutes = player.totalMinutes % 60;
+                        const minutes = Math.floor(player.totalMinutes % 60);
                         const timeStr = hours > 0 ? `${hours}H ${minutes}M` : `${minutes}M`;
 
                         let rankClass = '';
@@ -915,7 +919,7 @@
                                         <div class="player-name">${player.name} ${trophy}</div>
                                         <div class="player-meta">
                                             <span>📍 ${player.sessions} session${player.sessions !== 1 ? 's' : ''}</span>
-                                            <span>⚡ ${hours > 0 ? `${(player.totalMinutes / player.sessions / 60).toFixed(1)}h avg` : `${Math.floor(player.totalMinutes / player.sessions)}m avg`}</span>
+                                            <span>⚡ ${hours > 0 ? `${Math.floor(player.totalMinutes / player.sessions / 60)}h avg` : `${Math.floor(player.totalMinutes / player.sessions)}m avg`}</span>
                                         </div>
                                     </div>
                                 </div>
