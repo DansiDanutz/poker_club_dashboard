@@ -30,7 +30,8 @@ import {
   Loader2,
   Tv,
   ExternalLink,
-  Copy
+  Copy,
+  Hourglass
 } from 'lucide-react';
 
 // Import shadcn/ui components
@@ -154,6 +155,7 @@ const PokerClubDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [confirmEndSession, setConfirmEndSession] = useState<{tableId: number, playerName: string, duration: string} | null>(null);
   const [isProcessingEndSession, setIsProcessingEndSession] = useState(false);
+  const [processingTableId, setProcessingTableId] = useState<number | null>(null);
   const [isProcessingPenalty, setIsProcessingPenalty] = useState(false);
   const [isProcessingAddon, setIsProcessingAddon] = useState(false);
   const [clickedEndButton, setClickedEndButton] = useState<number | null>(null);
@@ -537,7 +539,8 @@ const PokerClubDashboard = () => {
 
       // Set processing state to prevent multiple clicks
       setIsProcessingEndSession(true);
-      
+      setProcessingTableId(confirmEndSession.tableId); // Track which table is processing
+
       // Clear the confirmation dialog immediately to prevent double-processing
       const sessionInfo = confirmEndSession;
       setConfirmEndSession(null);
@@ -551,6 +554,7 @@ const PokerClubDashboard = () => {
       } finally {
         // Reset processing state
         setIsProcessingEndSession(false);
+        setProcessingTableId(null);
       }
     }
   };
@@ -1110,7 +1114,17 @@ const PokerClubDashboard = () => {
                       {activeTables.map(table => {
                         const currentDuration = (new Date().getTime() - table.seatTime.getTime()) / 1000 / 60 / 60;
                         return (
-                          <Card key={table.id} className="bg-gradient-to-br from-emerald-900/40 via-teal-800/30 to-emerald-900/40 border-emerald-500/30 shadow-lg hover:shadow-2xl transition-all duration-300">
+                          <Card key={table.id} className="bg-gradient-to-br from-emerald-900/40 via-teal-800/30 to-emerald-900/40 border-emerald-500/30 shadow-lg hover:shadow-2xl transition-all duration-300 relative">
+                            {/* Hourglass overlay when processing */}
+                            {processingTableId === table.id && (
+                              <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-lg z-10 flex items-center justify-center">
+                                <div className="flex flex-col items-center gap-4">
+                                  <Hourglass className="h-16 w-16 text-orange-400 animate-spin" />
+                                  <p className="text-white font-semibold text-lg">Closing session...</p>
+                                  <p className="text-white/70 text-sm">Please wait</p>
+                                </div>
+                              </div>
+                            )}
                             <CardContent className="p-5">
                               <div className="flex justify-between items-start mb-4">
                                 <div className="flex-1">
