@@ -139,8 +139,24 @@ export function useDatabase() {
 
   const addPlayer = async (playerData: { name: string; email: string; phone: string }) => {
     try {
+      const trimmedName = playerData.name.trim()
+
+      // Check if name is empty
+      if (!trimmedName) {
+        throw new Error('Player name cannot be empty')
+      }
+
+      // Check for duplicate in current state (case-insensitive)
+      const existingPlayer = players.find(
+        p => p.name.toLowerCase() === trimmedName.toLowerCase()
+      )
+
+      if (existingPlayer) {
+        throw new Error(`Player "${trimmedName}" already exists. Each player must have a unique name.`)
+      }
+
       const newPlayerData = {
-        name: playerData.name.trim(),
+        name: trimmedName,
         email: playerData.email.trim() || null,
         phone: playerData.phone.trim() || null,
         join_date: new Date().toISOString().split('T')[0],
@@ -151,18 +167,28 @@ export function useDatabase() {
       }
 
       const dbPlayer = await DatabaseService.createPlayer(newPlayerData)
-      
+
       if (dbPlayer) {
         const appPlayer = dbPlayerToAppPlayer(dbPlayer)
         setPlayers(prev => [...prev, appPlayer])
         return appPlayer
       }
-      
+
       throw new Error('Failed to create player')
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error adding player:', err)
-      setError('Failed to add player')
-      return null
+
+      // Set user-friendly error message
+      if (err.message?.includes('already exists')) {
+        setError(err.message)
+      } else if (err.message?.includes('duplicate') || err.message?.includes('unique')) {
+        setError(`Player "${playerData.name.trim()}" already exists. Each player must have a unique name.`)
+      } else {
+        setError(err.message || 'Failed to add player')
+      }
+
+      // Throw the error so the calling component can handle it
+      throw err
     }
   }
 

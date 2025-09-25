@@ -647,30 +647,32 @@ const PokerClubDashboard = () => {
 
   // Add new player
   const addNewPlayer = async (playerData: { name: string; email: string; phone: string }) => {
-    if (dbLoading) return;
-    
+    if (dbLoading) {
+      throw new Error('Database is loading, please wait');
+    }
+
+    // Check for duplicate in current players list
+    const trimmedName = playerData.name.trim();
+    const existingPlayer = players.find(
+      p => p.name.toLowerCase() === trimmedName.toLowerCase()
+    );
+
+    if (existingPlayer) {
+      throw new Error(`Player "${trimmedName}" already exists. Each player must have a unique name.`);
+    }
+
     try {
       await dbAddPlayer(playerData);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding player:', error);
-      // Fallback to localStorage for offline mode
-      const player = {
-        id: Date.now(),
-        name: playerData.name.trim(),
-        email: playerData.email.trim(),
-        phone: playerData.phone.trim(),
-        joinDate: new Date().toISOString().split('T')[0],
-        totalHours: 0,
-        sessions: [],
-        dailyStats: {},
-        promotionHistory: {},
-        achievements: [],
-        lastPlayed: null,
-        lastSessionDuration: 0,
-        totalSessions: 0
-      };
-      // For local fallback, we'd need to manage state differently
-      console.log('Added player locally:', player);
+
+      // Re-throw the error so the AddPlayerDialog can handle it
+      if (error.message?.includes('already exists')) {
+        throw error;
+      }
+
+      // For other errors, provide a generic message
+      throw new Error(error.message || 'Failed to add player. Please try again.');
     }
   };
 

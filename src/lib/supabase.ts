@@ -95,6 +95,17 @@ export class DatabaseService {
   }
 
   static async createPlayer(player: Omit<PlayerDB, 'id' | 'created_at' | 'updated_at'>): Promise<PlayerDB | null> {
+    // First check if player with this name already exists (case-insensitive)
+    const { data: existingPlayer } = await supabase
+      .from('players')
+      .select('*')
+      .ilike('name', player.name.trim())
+      .single()
+
+    if (existingPlayer) {
+      throw new Error(`Player with name "${player.name}" already exists. Each player must have a unique name.`)
+    }
+
     const { data, error } = await supabase
       .from('players')
       .insert([player])
@@ -102,8 +113,12 @@ export class DatabaseService {
       .single()
 
     if (error) {
+      // Check if it's a unique constraint violation
+      if (error.code === '23505' || error.message?.includes('duplicate') || error.message?.includes('unique')) {
+        throw new Error(`Player with name "${player.name}" already exists. Each player must have a unique name.`)
+      }
       console.error('Error creating player:', error)
-      return null
+      throw new Error(error.message || 'Failed to create player')
     }
 
     return data

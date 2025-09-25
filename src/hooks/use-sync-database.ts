@@ -283,20 +283,17 @@ export function useSyncDatabase() {
           const appSessions = dbSessions.map(dbSessionToAppSession)
           const appPromotions = dbPromotions.map(dbPromotionToAppPromotion)
 
-          // Add sessions to players and calculate total hours including addons/penalties
+          // Add sessions to players
+          // NOTE: The database already calculates totalHours including penalties/addons
+          // We should NOT recalculate here to avoid double-counting
           appPlayers.forEach(player => {
             player.sessions = appSessions.filter(session => session.player_id === player.id)
 
-            // Calculate addon hours for this player
-            const playerAddons = dbAddons.filter((addon: any) => addon.player_id === player.id)
-            const addonMinutes = playerAddons.reduce((sum: number, addon: any) => sum + (addon.bonus_minutes || 0), 0)
-
-            // Calculate penalty hours for this player (subtract from total)
-            const playerPenalties = dbPenalties.filter((penalty: any) => penalty.player_id === player.id)
-            const penaltyMinutes = playerPenalties.reduce((sum: number, penalty: any) => sum + (penalty.penalty_minutes || 0), 0)
-
-            // Add addon hours and subtract penalty hours from total
-            player.totalHours = player.totalHours + (addonMinutes / 60) - (penaltyMinutes / 60)
+            // The player.totalHours from the database already includes:
+            // - Session hours
+            // - Minus penalty hours
+            // - Plus addon hours
+            // So we use it as-is without modification
           })
 
           // Update state with fresh database data
