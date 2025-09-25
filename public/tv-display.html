@@ -820,10 +820,17 @@
 
                 try {
                     console.log('Fetching data from server API...');
-                    // Use absolute URL to ensure it works in all contexts
-                    const apiUrl = window.location.hostname === 'localhost'
-                        ? 'http://localhost:3000/api/tv-data'
-                        : '/api/tv-data';
+                    // Use correct URL based on environment
+                    let apiUrl;
+                    if (window.location.hostname === 'localhost') {
+                        apiUrl = 'http://localhost:3000/api/tv-data';
+                    } else if (window.location.hostname.includes('ondigitalocean.app')) {
+                        apiUrl = 'https://hammerhead-app-f4ysx.ondigitalocean.app/api/tv-data';
+                    } else {
+                        // For any other domain, use relative path
+                        apiUrl = '/api/tv-data';
+                    }
+                    console.log('Using API URL:', apiUrl);
 
                     const response = await fetch(apiUrl, {
                         method: 'GET',
