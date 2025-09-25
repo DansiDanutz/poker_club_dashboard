@@ -1028,8 +1028,9 @@
                     // SIMPLIFIED: Just show ALL players with their total hours
                     const playerStats = {};
 
-                    console.log('=== TV DISPLAY PLAYER PROCESSING ===');
+                    console.log('=== TV DISPLAY PLAYER PROCESSING (v2) ===');
                     console.log('Total players received:', players ? players.length : 0);
+                    console.log('Processing ALL players without any deleted check');
 
                     // Process ALL players - no filtering except deleted ones
                     if (players && Array.isArray(players) && players.length > 0) {
