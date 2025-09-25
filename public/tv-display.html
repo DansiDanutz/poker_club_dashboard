@@ -143,16 +143,42 @@
         }
 
         .leaderboard-title {
-            font-size: 1.5rem;
-            color: #fbbf24;
-            margin-bottom: 20px;
+            font-size: 1.8rem;
+            background: linear-gradient(90deg, #ffd700, #fbbf24, #ffd700);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1.5rem;
             text-align: center;
             text-transform: uppercase;
+            font-weight: 900;
+            letter-spacing: 2px;
+            animation: shineTitle 3s linear infinite;
+            text-shadow: 0 0 30px rgba(251, 191, 36, 0.5);
+        }
+
+        @keyframes shineTitle {
+            to {
+                background-position: 200% center;
+            }
         }
 
         .leaderboard-content {
             flex: 1;
             overflow: hidden;
+            padding: 0 0.5rem;
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
         .player-row {
@@ -160,20 +186,67 @@
             justify-content: space-between;
             align-items: center;
             padding: 0.8rem 1rem;
-            margin-bottom: 0.6rem;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 0.5rem;
+            margin-bottom: 0.8rem;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+            border-radius: 0.8rem;
+            border-left: 3px solid transparent;
             transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            animation: slideInLeft 0.5s ease-out forwards;
+            opacity: 0;
+        }
+
+        .player-row:nth-child(1) { animation-delay: 0.1s; }
+        .player-row:nth-child(2) { animation-delay: 0.2s; }
+        .player-row:nth-child(3) { animation-delay: 0.3s; }
+        .player-row:nth-child(4) { animation-delay: 0.4s; }
+        .player-row:nth-child(5) { animation-delay: 0.5s; }
+        .player-row:nth-child(6) { animation-delay: 0.6s; }
+        .player-row:nth-child(7) { animation-delay: 0.7s; }
+        .player-row:nth-child(8) { animation-delay: 0.8s; }
+        .player-row:nth-child(9) { animation-delay: 0.9s; }
+        .player-row:nth-child(10) { animation-delay: 1.0s; }
+
+        .player-row:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.1), transparent);
+            transition: left 0.5s;
         }
 
         .player-row:hover {
-            background: rgba(251, 191, 36, 0.1);
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(251, 191, 36, 0.05) 100%);
             transform: translateX(5px);
+            border-left-color: #fbbf24;
+        }
+
+        .player-row:hover:before {
+            left: 100%;
+        }
+
+        .player-row.gold-winner {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 237, 78, 0.05) 100%);
+            border-left-color: #ffd700;
+        }
+
+        .player-row.silver-winner {
+            background: linear-gradient(135deg, rgba(192, 192, 192, 0.1) 0%, rgba(232, 232, 232, 0.05) 100%);
+            border-left-color: #c0c0c0;
+        }
+
+        .player-row.bronze-winner {
+            background: linear-gradient(135deg, rgba(205, 127, 50, 0.1) 0%, rgba(228, 168, 83, 0.05) 100%);
+            border-left-color: #cd7f32;
         }
 
         .player-rank {
-            width: 40px;
-            height: 40px;
+            width: 3rem;
+            height: 3rem;
             background: #fbbf24;
             color: #1a1a2e;
             border-radius: 50%;
@@ -182,18 +255,29 @@
             justify-content: center;
             font-weight: bold;
             font-size: 1.2rem;
+            box-shadow: 0 4px 8px rgba(251, 191, 36, 0.3);
+            position: relative;
         }
 
         .player-rank.gold {
             background: linear-gradient(135deg, #ffd700, #ffed4e);
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.5);
+            animation: goldPulse 2s ease-in-out infinite;
         }
 
         .player-rank.silver {
             background: linear-gradient(135deg, #c0c0c0, #e8e8e8);
+            box-shadow: 0 6px 15px rgba(192, 192, 192, 0.4);
         }
 
         .player-rank.bronze {
             background: linear-gradient(135deg, #cd7f32, #e4a853);
+            box-shadow: 0 6px 15px rgba(205, 127, 50, 0.4);
+        }
+
+        @keyframes goldPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
 
         .player-info {
@@ -202,9 +286,33 @@
         }
 
         .player-name {
-            font-size: 1.2rem;
-            font-weight: bold;
+            font-size: 1.3rem;
+            font-weight: 800;
             margin-bottom: 5px;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .gold-winner .player-name {
+            background: linear-gradient(90deg, #ffd700, #ffed4e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .silver-winner .player-name {
+            background: linear-gradient(90deg, #c0c0c0, #e8e8e8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .bronze-winner .player-name {
+            background: linear-gradient(90deg, #cd7f32, #e4a853);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .player-sessions {
@@ -213,9 +321,15 @@
         }
 
         .player-hours {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #fbbf24;
+            font-size: 1.4rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: right;
+            min-width: 6rem;
+            text-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
         }
 
         .loading {
@@ -327,7 +441,7 @@
 
         <div class="right-panel">
             <div class="leaderboard">
-                <div class="leaderboard-title">🏆 Player Rankings - Top 10</div>
+                <div class="leaderboard-title">🏆 TOP 10 LEADERBOARD 🏆</div>
                 <div class="leaderboard-content" id="leaderboard-content">
                     <div class="loading">Loading players...</div>
                 </div>
@@ -404,18 +518,31 @@
             pagePlayers.forEach((player, idx) => {
                 const rank = startIdx + idx + 1;
                 let rankClass = '';
-                if (rank === 1) rankClass = 'gold';
-                else if (rank === 2) rankClass = 'silver';
-                else if (rank === 3) rankClass = 'bronze';
+                let rowClass = '';
+                let trophy = '';
+
+                if (rank === 1) {
+                    rankClass = 'gold';
+                    rowClass = 'gold-winner';
+                    trophy = '👑';
+                } else if (rank === 2) {
+                    rankClass = 'silver';
+                    rowClass = 'silver-winner';
+                    trophy = '🥈';
+                } else if (rank === 3) {
+                    rankClass = 'bronze';
+                    rowClass = 'bronze-winner';
+                    trophy = '🥉';
+                }
 
                 const hours = Math.floor(player.total_hours || 0);
                 const minutes = Math.round((player.total_hours || 0) % 1 * 60);
 
                 html += `
-                    <div class="player-row">
+                    <div class="player-row ${rowClass}">
                         <div class="player-rank ${rankClass}">${rank}</div>
                         <div class="player-info">
-                            <div class="player-name">${player.name}</div>
+                            <div class="player-name">${player.name} ${trophy}</div>
                             <div class="player-sessions">${player.total_sessions || 0} sessions</div>
                         </div>
                         <div class="player-hours">${hours}h ${minutes}m</div>
