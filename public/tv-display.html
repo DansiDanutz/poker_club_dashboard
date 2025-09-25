@@ -799,7 +799,12 @@
 
                 try {
                     console.log('Fetching data from server API...');
-                    const response = await fetch('/api/tv-data', {
+                    // Use absolute URL to ensure it works in all contexts
+                    const apiUrl = window.location.hostname === 'localhost'
+                        ? 'http://localhost:3000/api/tv-data'
+                        : '/api/tv-data';
+
+                    const response = await fetch(apiUrl, {
                         method: 'GET',
                         cache: 'no-cache',
                         headers: {
@@ -807,8 +812,17 @@
                         }
                     });
 
+                    console.log('API Response status:', response.status);
+
                     if (response.ok) {
                         const data = await response.json();
+                        console.log('API Data received:', {
+                            hasClubSettings: !!data.clubSettings,
+                            promotionsCount: data.promotions?.length || 0,
+                            playersCount: data.players?.length || 0,
+                            sessionsCount: data.sessions?.length || 0
+                        });
+
                         clubSettings = data.clubSettings || {};
                         promotions = data.promotions || [];
                         players = data.players || [];
@@ -820,8 +834,19 @@
                         console.log('Successfully loaded data from API');
                         console.log(`Players count: ${players.length}`);
                         console.log(`Sessions count: ${sessions.length}`);
+
+                        // Debug first few players
+                        if (players.length > 0) {
+                            console.log('Sample players:', players.slice(0, 3).map(p => ({
+                                name: p.name,
+                                total_hours: p.total_hours,
+                                deleted: p.deleted
+                            })));
+                        }
                     } else {
-                        throw new Error('API request failed');
+                        const errorText = await response.text();
+                        console.error('API request failed:', response.status, errorText);
+                        throw new Error(`API request failed: ${response.status}`);
                     }
                 } catch (apiError) {
                     console.log('API failed, trying localStorage fallback...', apiError);
@@ -970,9 +995,14 @@
 
                     // ALWAYS initialize with ALL players and their total hours from the database
                     if (players && players.length > 0) {
+                        console.log(`Processing ${players.length} total players`);
+
                         players.forEach(player => {
                             // Skip deleted players only
-                            if (player.deleted) return;
+                            if (player.deleted) {
+                                console.log(`Skipping deleted player: ${player.name}`);
+                                return;
+                            }
 
                             // Use the total_hours from the database which represents their overall stats
                             const totalMinutes = (player.total_hours || 0) * 60;
@@ -984,11 +1014,15 @@
                                 sessions: player.total_sessions || 0
                             };
                         });
+
+                        console.log(`Added ${Object.keys(playerStats).length} players to display`);
+                    } else {
+                        console.warn('No players found in the data!');
                     }
 
                     // If there are sessions in the promotion period, we can optionally show promotion-specific stats
                     // But for now, we'll always show the overall leaderboard regardless of promotion
-                    console.log(`Showing ${Object.keys(playerStats).length} players with their overall stats`);
+                    console.log(`Final: Showing ${Object.keys(playerStats).length} players with their overall stats`);
 
                     // Get all players for total count
                     const allPromotionPlayers = Object.values(playerStats)
