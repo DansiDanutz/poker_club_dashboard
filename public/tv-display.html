@@ -962,82 +962,33 @@
                         return sessionDate >= startDate && sessionDate <= endDate;
                     });
 
-                    // Calculate player stats for this specific promotion period
+                    // Calculate player stats - ALWAYS show ALL players with their total hours
                     const playerStats = {};
 
-                    // Always show all players if we have them
                     console.log('Processing players for display. Total players:', players ? players.length : 0);
                     console.log('Sessions in promotion period:', promotionSessions.length);
 
-                    // If no sessions in promotion period OR if we want to always show players, show all players
-                    if (!sessions || sessions.length === 0 || promotionSessions.length === 0) {
-                        console.log('Showing all players with their overall stats');
+                    // ALWAYS initialize with ALL players and their total hours from the database
+                    if (players && players.length > 0) {
+                        players.forEach(player => {
+                            // Skip deleted players only
+                            if (player.deleted) return;
 
-                        // Show all players with their overall stats
-                        if (players && players.length > 0) {
-                            players.forEach(player => {
-                                // Skip deleted players only (show inactive ones too)
-                                if (player.deleted) return;
+                            // Use the total_hours from the database which represents their overall stats
+                            const totalMinutes = (player.total_hours || 0) * 60;
 
-                                const totalMinutes = (player.total_hours || 0) * 60;
-
-                                // Include all players that have any time or are active
-                                playerStats[player.id] = {
-                                    id: player.id,
-                                    name: player.name || 'Unknown',
-                                    totalMinutes: totalMinutes,
-                                    sessions: player.total_sessions || 0
-                                };
-                            });
-                        }
-                    } else {
-                        // Process sessions in the promotion period
-                        promotionSessions.forEach(session => {
-                            const playerId = session.player_id;
-                            const player = players.find(p => p.id === playerId);
-
-                            // Skip deleted players
-                            if (player && player.deleted) return;
-
-                            if (!playerStats[playerId]) {
-                                playerStats[playerId] = {
-                                    id: playerId,
-                                    name: player ? player.name : 'Unknown',
-                                    totalMinutes: 0,
-                                    sessions: 0
-                                };
-                            }
-                            playerStats[playerId].totalMinutes += (session.duration || 0) * 60;
-                            playerStats[playerId].sessions += 1;
-                        });
-
-                        // Add addon minutes and subtract penalty minutes for each player
-                        // Only count addons/penalties that were applied during the promotion period
-                        Object.keys(playerStats).forEach(playerId => {
-                            const playerAddons = addons.filter(a => {
-                                if (a.player_id != playerId) return false;
-                                const addonDate = new Date(a.date_applied);
-                                return addonDate >= startDate && addonDate <= endDate;
-                            });
-
-                            const playerPenalties = penalties.filter(p => {
-                                if (p.player_id != playerId) return false;
-                                const penaltyDate = new Date(p.date_applied);
-                                return penaltyDate >= startDate && penaltyDate <= endDate;
-                            });
-
-                            const addonMinutes = playerAddons.reduce((sum, addon) => sum + (addon.bonus_minutes || 0), 0);
-                            const penaltyMinutes = playerPenalties.reduce((sum, penalty) => sum + (penalty.penalty_minutes || 0), 0);
-
-                            playerStats[playerId].totalMinutes += addonMinutes;
-                            playerStats[playerId].totalMinutes -= penaltyMinutes;
-
-                            // Ensure minutes don't go negative
-                            if (playerStats[playerId].totalMinutes < 0) {
-                                playerStats[playerId].totalMinutes = 0;
-                            }
+                            playerStats[player.id] = {
+                                id: player.id,
+                                name: player.name || 'Unknown',
+                                totalMinutes: totalMinutes,
+                                sessions: player.total_sessions || 0
+                            };
                         });
                     }
+
+                    // If there are sessions in the promotion period, we can optionally show promotion-specific stats
+                    // But for now, we'll always show the overall leaderboard regardless of promotion
+                    console.log(`Showing ${Object.keys(playerStats).length} players with their overall stats`);
 
                     // Get all players for total count
                     const allPromotionPlayers = Object.values(playerStats)
