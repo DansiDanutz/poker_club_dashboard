@@ -21,7 +21,7 @@ export async function GET() {
     const [playersResult, sessionsResult, promotionsResult, penaltiesResult, addonsResult] = await Promise.all([
       supabase.from('players').select('*').order('total_hours', { ascending: false }),
       supabase.from('sessions').select('*').order('date', { ascending: false }),
-      supabase.from('promotions').select('*').eq('active', true),
+      supabase.from('promotions').select('*').order('start_date', { ascending: false }), // Get all promotions, not just active
       supabase.from('penalties').select('*'),
       supabase.from('addons').select('*')
     ]);

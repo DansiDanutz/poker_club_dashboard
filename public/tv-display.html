@@ -849,12 +849,20 @@
                     }
                 }
 
+                // Ensure arrays are defined
+                players = players || [];
+                sessions = sessions || [];
+                promotions = promotions || [];
+                penalties = penalties || [];
+                addons = addons || [];
+                clubSettings = clubSettings || { clubName: "PLAYER'S POKER CLUB" };
+
                 // Log data status
                 console.log('TV Display Data Status:', {
                     dataSource: dataSource,
-                    playersCount: players ? players.length : 0,
-                    sessionsCount: sessions ? sessions.length : 0,
-                    promotionsCount: promotions ? promotions.length : 0,
+                    playersCount: players.length,
+                    sessionsCount: sessions.length,
+                    promotionsCount: promotions.length,
                     hasClubSettings: !!clubSettings
                 });
 
@@ -865,6 +873,19 @@
 
                 // Find all active and upcoming promotions
                 const now = new Date();
+
+                // If no promotions, create a default one
+                if (!promotions || promotions.length === 0) {
+                    console.log('No promotions found, creating default');
+                    promotions = [{
+                        id: 'default',
+                        name: 'Leaderboard',
+                        start_date: new Date(now.getFullYear(), 0, 1).toISOString(), // Start of year
+                        end_date: new Date(now.getFullYear(), 11, 31).toISOString(), // End of year
+                        deleted: false
+                    }];
+                }
+
                 const allActivePromotions = promotions.filter(p => {
                     const start = new Date(p.start_date);
                     const end = new Date(p.end_date);
@@ -878,8 +899,13 @@
                 activePromotions = allActivePromotions.filter(p => getPromotionRotationTime(p.id) > 0);
 
                 // If no rotatable promotions, show first available
-                if (activePromotions.length === 0 && allActivePromotions.length > 0) {
-                    activePromotions = [allActivePromotions[0]];
+                if (activePromotions.length === 0) {
+                    if (allActivePromotions.length > 0) {
+                        activePromotions = [allActivePromotions[0]];
+                    } else {
+                        // Use first promotion regardless of status
+                        activePromotions = [promotions[0]];
+                    }
                 }
 
                 // Setup rotation if needed and not skipping
@@ -888,7 +914,7 @@
                 }
 
                 // Get current promotion to display
-                const activePromotion = activePromotions[currentPromotionIndex] || promotions[0];
+                const activePromotion = activePromotions[currentPromotionIndex] || activePromotions[0] || promotions[0];
 
                 if (activePromotion) {
                     // Update promotion status badge
@@ -939,26 +965,31 @@
                     // Calculate player stats for this specific promotion period
                     const playerStats = {};
 
-                    // If no sessions in promotion period, show all players with their total hours
-                    if (promotionSessions.length === 0) {
-                        console.log('No sessions found in promotion period, showing all players');
-                        console.log('Total players available:', players.length);
+                    // Always show all players if we have them
+                    console.log('Processing players for display. Total players:', players ? players.length : 0);
+                    console.log('Sessions in promotion period:', promotionSessions.length);
+
+                    // If no sessions in promotion period OR if we want to always show players, show all players
+                    if (!sessions || sessions.length === 0 || promotionSessions.length === 0) {
+                        console.log('Showing all players with their overall stats');
 
                         // Show all players with their overall stats
-                        players.forEach(player => {
-                            // Skip deleted players only (show inactive ones too)
-                            if (player.deleted) return;
+                        if (players && players.length > 0) {
+                            players.forEach(player => {
+                                // Skip deleted players only (show inactive ones too)
+                                if (player.deleted) return;
 
-                            const totalMinutes = (player.total_hours || 0) * 60;
+                                const totalMinutes = (player.total_hours || 0) * 60;
 
-                            // Include all players, even with 0 hours
-                            playerStats[player.id] = {
-                                id: player.id,
-                                name: player.name || 'Unknown',
-                                totalMinutes: totalMinutes,
-                                sessions: player.total_sessions || 0
-                            };
-                        });
+                                // Include all players that have any time or are active
+                                playerStats[player.id] = {
+                                    id: player.id,
+                                    name: player.name || 'Unknown',
+                                    totalMinutes: totalMinutes,
+                                    sessions: player.total_sessions || 0
+                                };
+                            });
+                        }
                     } else {
                         // Process sessions in the promotion period
                         promotionSessions.forEach(session => {
