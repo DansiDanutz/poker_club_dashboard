@@ -2418,7 +2418,7 @@ const PokerClubDashboard = () => {
                       <div className="flex items-center gap-6">
                         <Button
                           onClick={() => {
-                            const tvUrl = `https://bit.ly/players-tv`;
+                            const tvUrl = `https://playerstv.short.gy/`;
                             window.open(tvUrl, '_blank');
                           }}
                           className="space-theme-card space-neon-border bg-green-600/20 hover:bg-green-600/30 text-green-400 hover:text-white border-green-400/50 hover:border-green-400 transition-all duration-300 px-6 py-3 text-lg font-semibold"
@@ -2474,7 +2474,7 @@ const PokerClubDashboard = () => {
                           </h3>
                           <div className="p-3 space-neon-border rounded-lg bg-slate-800/50">
                             <code className="text-green-400 text-lg font-bold break-all">
-                              https://bit.ly/players-tv
+                              https://playerstv.short.gy/
                             </code>
                           </div>
                           <p className="text-xs text-muted-foreground mt-2">
@@ -2484,7 +2484,7 @@ const PokerClubDashboard = () => {
                         <div className="ml-4">
                           <Button
                             onClick={async () => {
-                              const tvUrl = `https://bit.ly/players-tv`;
+                              const tvUrl = `https://playerstv.short.gy/`;
                               try {
                                 await navigator.clipboard.writeText(tvUrl);
                                 // Could add toast notification here
