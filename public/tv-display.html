@@ -783,6 +783,12 @@
         const PLAYERS_PER_PAGE = 10;
         const LEADERBOARD_ROTATION_INTERVAL = 8000; // 8 seconds per page
 
+        // Cache player data to prevent loss during rotation
+        let cachedPlayers = null;
+        let cachedSessions = null;
+        let cachedPenalties = null;
+        let cachedAddons = null;
+
         // Get rotation settings from localStorage
         function getPromotionRotationTime(promotionId) {
             const settings = JSON.parse(localStorage.getItem('pokerClubTvRotationSettings') || '{}');
@@ -793,9 +799,24 @@
         async function updateData(skipRotation = false) {
             try {
                 let clubSettings, promotions, players, sessions, penalties, addons, prizes;
+                let dataSource = 'cached'; // Default to cached
 
-                // Always try API first for Samsung TV compatibility
-                let dataSource = 'none';
+                // Use cached data if we're just rotating promotions
+                if (skipRotation && cachedPlayers) {
+                    console.log('Using cached player data for promotion rotation');
+                    players = cachedPlayers;
+                    sessions = cachedSessions;
+                    penalties = cachedPenalties;
+                    addons = cachedAddons;
+
+                    // Still need to get promotions and club settings
+                    clubSettings = JSON.parse(localStorage.getItem('pokerClubSettings') || '{}');
+                    promotions = JSON.parse(localStorage.getItem('pokerClubPromotions') || '[]');
+                    prizes = localStorage.getItem('pokerClubTvPrices') || 'Grand Prize Awaits!';
+                    dataSource = 'cached';
+                } else {
+                    // Fetch new data
+                    dataSource = 'none';
 
                 try {
                     console.log('Fetching data from server API...');
@@ -873,6 +894,7 @@
                         document.getElementById('leaderboard').innerHTML = '<div style="text-align: center; color: #ef4444; padding: 20px;">Data loading error. Please refresh.</div>';
                     }
                 }
+                } // Close the else block for cached data
 
                 // Ensure arrays are defined
                 players = players || [];
@@ -881,6 +903,15 @@
                 penalties = penalties || [];
                 addons = addons || [];
                 clubSettings = clubSettings || { clubName: "PLAYER'S POKER CLUB" };
+
+                // Cache the data for promotion rotation
+                if (players && players.length > 0) {
+                    cachedPlayers = players;
+                    cachedSessions = sessions;
+                    cachedPenalties = penalties;
+                    cachedAddons = addons;
+                    console.log('Cached player data for future rotations');
+                }
 
                 // Log data status
                 console.log('TV Display Data Status:', {
