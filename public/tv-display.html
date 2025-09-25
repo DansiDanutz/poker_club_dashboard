@@ -849,6 +849,15 @@
                     }
                 }
 
+                // Log data status
+                console.log('TV Display Data Status:', {
+                    dataSource: dataSource,
+                    playersCount: players ? players.length : 0,
+                    sessionsCount: sessions ? sessions.length : 0,
+                    promotionsCount: promotions ? promotions.length : 0,
+                    hasClubSettings: !!clubSettings
+                });
+
                 // Update club name
                 if (clubSettings.clubName) {
                     document.getElementById('club-name').textContent = clubSettings.clubName.toUpperCase();
@@ -930,52 +939,74 @@
                     // Calculate player stats for this specific promotion period
                     const playerStats = {};
 
-                    // First, process all sessions in the promotion period
-                    promotionSessions.forEach(session => {
-                        const playerId = session.player_id;
-                        const player = players.find(p => p.id === playerId);
+                    // If no sessions in promotion period, show all players with their total hours
+                    if (promotionSessions.length === 0) {
+                        console.log('No sessions found in promotion period, showing all players');
+                        console.log('Total players available:', players.length);
 
-                        // Skip deleted players
-                        if (player && player.deleted) return;
+                        // Show all players with their overall stats
+                        players.forEach(player => {
+                            // Skip deleted players only (show inactive ones too)
+                            if (player.deleted) return;
 
-                        if (!playerStats[playerId]) {
-                            playerStats[playerId] = {
-                                id: playerId,
-                                name: player ? player.name : 'Unknown',
-                                totalMinutes: 0,
-                                sessions: 0
+                            const totalMinutes = (player.total_hours || 0) * 60;
+
+                            // Include all players, even with 0 hours
+                            playerStats[player.id] = {
+                                id: player.id,
+                                name: player.name || 'Unknown',
+                                totalMinutes: totalMinutes,
+                                sessions: player.total_sessions || 0
                             };
-                        }
-                        playerStats[playerId].totalMinutes += (session.duration || 0) * 60;
-                        playerStats[playerId].sessions += 1;
-                    });
+                        });
+                    } else {
+                        // Process sessions in the promotion period
+                        promotionSessions.forEach(session => {
+                            const playerId = session.player_id;
+                            const player = players.find(p => p.id === playerId);
 
-                    // Add addon minutes and subtract penalty minutes for each player
-                    // Only count addons/penalties that were applied during the promotion period
-                    Object.keys(playerStats).forEach(playerId => {
-                        const playerAddons = addons.filter(a => {
-                            if (a.player_id != playerId) return false;
-                            const addonDate = new Date(a.date_applied);
-                            return addonDate >= startDate && addonDate <= endDate;
+                            // Skip deleted players
+                            if (player && player.deleted) return;
+
+                            if (!playerStats[playerId]) {
+                                playerStats[playerId] = {
+                                    id: playerId,
+                                    name: player ? player.name : 'Unknown',
+                                    totalMinutes: 0,
+                                    sessions: 0
+                                };
+                            }
+                            playerStats[playerId].totalMinutes += (session.duration || 0) * 60;
+                            playerStats[playerId].sessions += 1;
                         });
 
-                        const playerPenalties = penalties.filter(p => {
-                            if (p.player_id != playerId) return false;
-                            const penaltyDate = new Date(p.date_applied);
-                            return penaltyDate >= startDate && penaltyDate <= endDate;
+                        // Add addon minutes and subtract penalty minutes for each player
+                        // Only count addons/penalties that were applied during the promotion period
+                        Object.keys(playerStats).forEach(playerId => {
+                            const playerAddons = addons.filter(a => {
+                                if (a.player_id != playerId) return false;
+                                const addonDate = new Date(a.date_applied);
+                                return addonDate >= startDate && addonDate <= endDate;
+                            });
+
+                            const playerPenalties = penalties.filter(p => {
+                                if (p.player_id != playerId) return false;
+                                const penaltyDate = new Date(p.date_applied);
+                                return penaltyDate >= startDate && penaltyDate <= endDate;
+                            });
+
+                            const addonMinutes = playerAddons.reduce((sum, addon) => sum + (addon.bonus_minutes || 0), 0);
+                            const penaltyMinutes = playerPenalties.reduce((sum, penalty) => sum + (penalty.penalty_minutes || 0), 0);
+
+                            playerStats[playerId].totalMinutes += addonMinutes;
+                            playerStats[playerId].totalMinutes -= penaltyMinutes;
+
+                            // Ensure minutes don't go negative
+                            if (playerStats[playerId].totalMinutes < 0) {
+                                playerStats[playerId].totalMinutes = 0;
+                            }
                         });
-
-                        const addonMinutes = playerAddons.reduce((sum, addon) => sum + (addon.bonus_minutes || 0), 0);
-                        const penaltyMinutes = playerPenalties.reduce((sum, penalty) => sum + (penalty.penalty_minutes || 0), 0);
-
-                        playerStats[playerId].totalMinutes += addonMinutes;
-                        playerStats[playerId].totalMinutes -= penaltyMinutes;
-
-                        // Ensure minutes don't go negative
-                        if (playerStats[playerId].totalMinutes < 0) {
-                            playerStats[playerId].totalMinutes = 0;
-                        }
-                    });
+                    }
 
                     // Get all players for total count
                     const allPromotionPlayers = Object.values(playerStats)
@@ -1050,7 +1081,26 @@
                         `;
                     }).join('');
 
-                    document.getElementById('leaderboard').innerHTML = leaderboardHTML || '<div style="text-align: center; color: #64748b;">No players yet</div>';
+                    // Add detailed logging
+                    console.log('Leaderboard Update:', {
+                        totalPlayers: allPromotionPlayers.length,
+                        currentPage: currentLeaderboardPage,
+                        playersOnPage: leaderboard.length,
+                        hasHTML: !!leaderboardHTML
+                    });
+
+                    // Update leaderboard display
+                    const leaderboardElement = document.getElementById('leaderboard');
+                    if (leaderboardElement) {
+                        if (leaderboardHTML) {
+                            leaderboardElement.innerHTML = leaderboardHTML;
+                        } else if (allPromotionPlayers.length === 0) {
+                            leaderboardElement.innerHTML = '<div style="text-align: center; color: #64748b; padding: 20px;">🎰 Awaiting Players<br><span style="font-size: 0.9em;">Player rankings will appear here</span></div>';
+                        } else {
+                            leaderboardElement.innerHTML = '<div style="text-align: center; color: #64748b;">No players on this page</div>';
+                        }
+                    } else {
+                        console.error('Leaderboard element not found!');
                 }
 
                 // Update prize
