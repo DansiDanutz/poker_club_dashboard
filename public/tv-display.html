@@ -917,21 +917,28 @@
                     document.getElementById('end-date').textContent = formatDate(activePromotion.end_date);
                     document.getElementById('countdown').textContent = calculateCountdown(activePromotion.end_date);
 
-                    // Calculate leaderboard for this promotion
+                    // Calculate leaderboard for the specific promotion time period
                     const startDate = new Date(activePromotion.start_date);
                     const endDate = new Date(activePromotion.end_date);
 
+                    // Filter sessions within the promotion period
                     const promotionSessions = sessions.filter(session => {
                         const sessionDate = new Date(session.date);
                         return sessionDate >= startDate && sessionDate <= endDate;
                     });
 
-                    // Calculate player stats
+                    // Calculate player stats for this specific promotion period
                     const playerStats = {};
+
+                    // First, process all sessions in the promotion period
                     promotionSessions.forEach(session => {
                         const playerId = session.player_id;
+                        const player = players.find(p => p.id === playerId);
+
+                        // Skip deleted players
+                        if (player && player.deleted) return;
+
                         if (!playerStats[playerId]) {
-                            const player = players.find(p => p.id === playerId);
                             playerStats[playerId] = {
                                 id: playerId,
                                 name: player ? player.name : 'Unknown',
