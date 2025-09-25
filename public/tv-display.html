@@ -16,24 +16,39 @@
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             color: white;
             height: 100vh;
+            width: 100vw;
             display: flex;
             flex-direction: column;
             overflow: hidden;
         }
 
+        /* Responsive font sizes for TV displays */
+        @media (min-width: 1920px) {
+            html { font-size: 18px; }
+        }
+        @media (min-width: 2560px) {
+            html { font-size: 20px; }
+        }
+        @media (min-width: 3840px) {
+            html { font-size: 24px; }
+        }
+        @media (max-width: 1280px) {
+            html { font-size: 14px; }
+        }
+
         .header {
             background: rgba(0, 0, 0, 0.5);
-            padding: 20px;
+            padding: 1.2rem 2rem;
             text-align: center;
             border-bottom: 2px solid #fbbf24;
         }
 
         .club-name {
-            font-size: 3rem;
+            font-size: 2.5rem;
             font-weight: bold;
             text-transform: uppercase;
             color: #fbbf24;
-            margin-bottom: 10px;
+            margin-bottom: 0.5rem;
         }
 
         .clock {
@@ -44,15 +59,16 @@
         .main-content {
             display: flex;
             flex: 1;
-            padding: 20px;
-            gap: 20px;
+            padding: 1.5rem;
+            gap: 1.5rem;
         }
 
         .left-panel {
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 1rem;
+            max-width: 35%;
         }
 
         .right-panel {
@@ -61,8 +77,8 @@
 
         .card {
             background: rgba(0, 0, 0, 0.4);
-            border-radius: 10px;
-            padding: 20px;
+            border-radius: 0.8rem;
+            padding: 1.2rem;
             border: 1px solid rgba(251, 191, 36, 0.3);
         }
 
@@ -94,20 +110,18 @@
         .stats-container {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
+            gap: 0.8rem;
         }
 
         .stat-box {
-            flex: 1;
             background: rgba(251, 191, 36, 0.1);
-            padding: 15px;
-            border-radius: 8px;
+            padding: 0.8rem;
+            border-radius: 0.5rem;
             text-align: center;
         }
 
         .stat-value {
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: bold;
             color: #fbbf24;
         }
@@ -120,8 +134,8 @@
 
         .leaderboard {
             background: rgba(0, 0, 0, 0.4);
-            border-radius: 10px;
-            padding: 20px;
+            border-radius: 0.8rem;
+            padding: 1.2rem;
             border: 1px solid rgba(251, 191, 36, 0.3);
             height: 100%;
             display: flex;
@@ -145,10 +159,10 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 15px;
-            margin-bottom: 10px;
+            padding: 0.8rem 1rem;
+            margin-bottom: 0.6rem;
             background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
+            border-radius: 0.5rem;
             transition: all 0.3s;
         }
 
@@ -224,12 +238,38 @@
             color: #94a3b8;
             font-size: 0.9rem;
         }
+
+        .info-card {
+            flex: 1;
+        }
+
+        .info-title {
+            color: #fbbf24;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .info-content {
+            color: #e2e8f0;
+            line-height: 1.8;
+        }
+
+        .info-content p {
+            margin-bottom: 10px;
+            padding-left: 10px;
+            border-left: 3px solid rgba(251, 191, 36, 0.3);
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="club-name" id="club-name">PLAYER'S POKER CLUB</div>
-        <div class="clock" id="clock">--:--:--</div>
+    <div class="header" style="display: flex; justify-content: space-between; align-items: center;">
+        <div style="flex: 1; text-align: left;">
+            <div style="color: #10b981; font-size: 1.2rem; margin-bottom: 5px;">CURRENT PROMOTION</div>
+            <div id="header-promotion-name" style="color: #fbbf24; font-size: 1.8rem; font-weight: bold;">Loading...</div>
+        </div>
+        <div class="club-name" id="club-name" style="flex: 2; text-align: center;">PLAYER'S POKER CLUB</div>
+        <div class="clock" id="clock" style="flex: 1; text-align: right;">--:--:--</div>
     </div>
 
     <div class="main-content">
@@ -462,6 +502,7 @@
                     }
 
                     document.getElementById('promotion-name').textContent = activePromo.name || 'Leaderboard';
+                    document.getElementById('header-promotion-name').textContent = activePromo.name || 'Leaderboard';
                     document.getElementById('start-date').textContent = formatDate(activePromo.start_date);
                     document.getElementById('end-date').textContent = formatDate(activePromo.end_date);
                     document.getElementById('countdown').textContent = calculateCountdown(activePromo.end_date);
@@ -470,6 +511,19 @@
                     const start = new Date(activePromo.start_date);
                     const end = new Date(activePromo.end_date);
                     const totalDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+                    document.getElementById('period').textContent = `${totalDays} days`;
+
+                    // Calculate days remaining
+                    const daysLeft = Math.ceil((end - now) / (1000 * 60 * 60 * 24));
+                    document.getElementById('days-remaining').textContent = daysLeft > 0 ? `${daysLeft}` : 'Ended';
+
+                    // Calculate active players (example: players who played today)
+                    const todayPlayers = allPlayers.filter(p => {
+                        if (!p.last_played) return false;
+                        const lastPlayed = new Date(p.last_played);
+                        return lastPlayed.toDateString() === now.toDateString();
+                    });
+                    document.getElementById('active-players').textContent = todayPlayers.length;
                     document.getElementById('period').textContent = `${totalDays} days`;
 
                     // Calculate days remaining
@@ -482,6 +536,7 @@
                     document.getElementById('active-players').textContent = activePlayers;
                 } else {
                     document.getElementById('promotion-name').textContent = 'General Leaderboard';
+                    document.getElementById('header-promotion-name').textContent = 'General Leaderboard';
                     document.getElementById('start-date').textContent = '--';
                     document.getElementById('end-date').textContent = '--';
                     document.getElementById('countdown').textContent = '--';
