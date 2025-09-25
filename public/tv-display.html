@@ -1037,15 +1037,7 @@
                         let added = 0;
 
                         players.forEach(player => {
-                            // The API doesn't return deleted field, so we include ALL players
-                            // Only skip if the field exists AND is true/1
-                            if (player.hasOwnProperty('deleted') && (player.deleted === true || player.deleted === 1)) {
-                                skipped++;
-                                console.log('Skipping deleted player:', player.name, 'deleted:', player.deleted);
-                                return;
-                            }
-
-                            // Add ALL players (deleted field is not in API response)
+                            // ADD ALL PLAYERS - NO FILTERING
                             const totalMinutes = (player.total_hours || 0) * 60;
 
                             playerStats[player.id] = {
@@ -1055,16 +1047,6 @@
                                 sessions: player.total_sessions || 0
                             };
                             added++;
-
-                            // Debug log for first few players
-                            if (added <= 3) {
-                                console.log(`Added player ${added}:`, {
-                                    name: player.name,
-                                    total_hours: player.total_hours,
-                                    totalMinutes: totalMinutes,
-                                    deleted: player.deleted
-                                });
-                            }
                         });
 
                         console.log(`Results: Added ${added} players, Skipped ${skipped} deleted players`);

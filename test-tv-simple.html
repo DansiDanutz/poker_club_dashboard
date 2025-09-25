@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test TV Display</title>
+</head>
+<body>
+    <h1>Testing TV Display Logic</h1>
+    <div id="result"></div>
+
+    <script>
+        async function test() {
+            const resultDiv = document.getElementById('result');
+
+            try {
+                // Fetch from API
+                const response = await fetch('http://localhost:3000/api/tv-data');
+                const data = await response.json();
+
+                resultDiv.innerHTML += `<p>API Status: ${response.ok ? '✅' : '❌'}</p>`;
+                resultDiv.innerHTML += `<p>Players received: ${data.players?.length || 0}</p>`;
+
+                // Process players EXACTLY like TV Display
+                const players = data.players || [];
+                const playerStats = {};
+                let added = 0;
+
+                players.forEach(player => {
+                    // ADD ALL PLAYERS - NO FILTERING
+                    const totalMinutes = (player.total_hours || 0) * 60;
+
+                    playerStats[player.id] = {
+                        id: player.id,
+                        name: player.name || 'Unknown Player',
+                        totalMinutes: totalMinutes,
+                        sessions: player.total_sessions || 0
+                    };
+                    added++;
+                });
+
+                resultDiv.innerHTML += `<p>Players added to stats: ${added}</p>`;
+                resultDiv.innerHTML += `<p>PlayerStats object keys: ${Object.keys(playerStats).length}</p>`;
+
+                // Sort and display
+                const sorted = Object.values(playerStats)
+                    .sort((a, b) => b.totalMinutes - a.totalMinutes);
+
+                resultDiv.innerHTML += `<h2>Top 10 Players:</h2>`;
+                sorted.slice(0, 10).forEach((player, index) => {
+                    const hours = Math.floor(player.totalMinutes / 60);
+                    const minutes = Math.floor(player.totalMinutes % 60);
+                    resultDiv.innerHTML += `<p>${index + 1}. ${player.name}: ${hours}h ${minutes}m</p>`;
+                });
+
+            } catch (error) {
+                resultDiv.innerHTML = `<p style="color:red">Error: ${error.message}</p>`;
+            }
+        }
+
+        test();
+    </script>
+</body>
+</html>
