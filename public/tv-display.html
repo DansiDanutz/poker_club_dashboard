@@ -517,22 +517,13 @@
                     const daysLeft = Math.ceil((end - now) / (1000 * 60 * 60 * 24));
                     document.getElementById('days-remaining').textContent = daysLeft > 0 ? `${daysLeft}` : 'Ended';
 
-                    // Calculate active players (example: players who played today)
-                    const todayPlayers = allPlayers.filter(p => {
+                    // Calculate active players (players who played today)
+                    const todayStart = new Date();
+                    todayStart.setHours(0, 0, 0, 0);
+                    const activePlayers = allPlayers.filter(p => {
                         if (!p.last_played) return false;
-                        const lastPlayed = new Date(p.last_played);
-                        return lastPlayed.toDateString() === now.toDateString();
-                    });
-                    document.getElementById('active-players').textContent = todayPlayers.length;
-                    document.getElementById('period').textContent = `${totalDays} days`;
-
-                    // Calculate days remaining
-                    const daysLeft = Math.max(0, Math.ceil((end - now) / (1000 * 60 * 60 * 24)));
-                    document.getElementById('days-remaining').textContent = daysLeft > 0 ? `${daysLeft} days` : 'Ended';
-
-                    // Calculate active players (placeholder for now)
-                    const activePlayers = allPlayers.filter(p => p.last_played &&
-                        new Date(p.last_played) >= new Date(now.setHours(0,0,0,0))).length;
+                        return new Date(p.last_played) >= todayStart;
+                    }).length;
                     document.getElementById('active-players').textContent = activePlayers;
                 } else {
                     document.getElementById('promotion-name').textContent = 'General Leaderboard';
