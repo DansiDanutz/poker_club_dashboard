@@ -159,6 +159,12 @@ const PokerClubDashboard = () => {
   const [isProcessingPenalty, setIsProcessingPenalty] = useState(false);
   const [isProcessingAddon, setIsProcessingAddon] = useState(false);
   const [clickedEndButton, setClickedEndButton] = useState<number | null>(null);
+
+  // Player Database filters
+  const [playerSearchTerm, setPlayerSearchTerm] = useState('');
+  const [playerStatusFilter, setPlayerStatusFilter] = useState('all');
+  const [playerHoursFilter, setPlayerHoursFilter] = useState('all');
+  const [playerSortBy, setPlayerSortBy] = useState('hours-desc');
   
   // Session history filters
   const [historyDateFrom, setHistoryDateFrom] = useState('');
@@ -479,6 +485,126 @@ const PokerClubDashboard = () => {
     player.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     player.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Advanced filter function for Player Database
+  const getFilteredPlayers = () => {
+    let filtered = [...players];
+
+    // Apply search filter
+    if (playerSearchTerm) {
+      filtered = filtered.filter((player: Player) =>
+        player.name.toLowerCase().includes(playerSearchTerm.toLowerCase()) ||
+        player.email?.toLowerCase().includes(playerSearchTerm.toLowerCase()) ||
+        player.phone?.toLowerCase().includes(playerSearchTerm.toLowerCase())
+      );
+    }
+
+    // Apply status filter
+    if (playerStatusFilter !== 'all') {
+      const isSeated = (player: Player) => !!activeTables.find(t => t.player.id === player.id);
+
+      switch (playerStatusFilter) {
+        case 'active':
+          filtered = filtered.filter(isSeated);
+          break;
+        case 'inactive':
+          filtered = filtered.filter(player => !isSeated(player));
+          break;
+        case 'recent':
+          const oneWeekAgo = new Date();
+          oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+          filtered = filtered.filter(player =>
+            player.lastPlayed && new Date(player.lastPlayed) >= oneWeekAgo
+          );
+          break;
+        case 'frequent':
+          filtered = filtered.filter(player =>
+            player.totalSessions >= 10 || player.totalHours >= 20
+          );
+          break;
+      }
+    }
+
+    // Apply hours filter
+    if (playerHoursFilter !== 'all') {
+      switch (playerHoursFilter) {
+        case '0-10':
+          filtered = filtered.filter(player => player.totalHours >= 0 && player.totalHours < 10);
+          break;
+        case '10-50':
+          filtered = filtered.filter(player => player.totalHours >= 10 && player.totalHours < 50);
+          break;
+        case '50-100':
+          filtered = filtered.filter(player => player.totalHours >= 50 && player.totalHours < 100);
+          break;
+        case '100+':
+          filtered = filtered.filter(player => player.totalHours >= 100);
+          break;
+      }
+    }
+
+    // Add isSeated property
+    filtered = filtered.map((player: Player) => ({
+      ...player,
+      isSeated: !!activeTables.find(t => t.player.id === player.id)
+    }));
+
+    // Apply sorting
+    switch (playerSortBy) {
+      case 'hours-desc':
+        filtered.sort((a: any, b: any) => {
+          if (a.isSeated && !b.isSeated) return -1;
+          if (!a.isSeated && b.isSeated) return 1;
+          return b.totalHours - a.totalHours;
+        });
+        break;
+      case 'hours-asc':
+        filtered.sort((a: any, b: any) => {
+          if (a.isSeated && !b.isSeated) return -1;
+          if (!a.isSeated && b.isSeated) return 1;
+          return a.totalHours - b.totalHours;
+        });
+        break;
+      case 'name-asc':
+        filtered.sort((a: any, b: any) => {
+          if (a.isSeated && !b.isSeated) return -1;
+          if (!a.isSeated && b.isSeated) return 1;
+          return a.name.localeCompare(b.name);
+        });
+        break;
+      case 'name-desc':
+        filtered.sort((a: any, b: any) => {
+          if (a.isSeated && !b.isSeated) return -1;
+          if (!a.isSeated && b.isSeated) return 1;
+          return b.name.localeCompare(a.name);
+        });
+        break;
+      case 'recent':
+        filtered.sort((a: any, b: any) => {
+          if (a.isSeated && !b.isSeated) return -1;
+          if (!a.isSeated && b.isSeated) return 1;
+          const aDate = a.lastPlayed ? new Date(a.lastPlayed).getTime() : 0;
+          const bDate = b.lastPlayed ? new Date(b.lastPlayed).getTime() : 0;
+          return bDate - aDate;
+        });
+        break;
+      case 'sessions':
+        filtered.sort((a: any, b: any) => {
+          if (a.isSeated && !b.isSeated) return -1;
+          if (!a.isSeated && b.isSeated) return 1;
+          return (b.totalSessions || 0) - (a.totalSessions || 0);
+        });
+        break;
+      default:
+        filtered.sort((a: any, b: any) => {
+          if (a.isSeated && !b.isSeated) return -1;
+          if (!a.isSeated && b.isSeated) return 1;
+          return b.totalHours - a.totalHours;
+        });
+    }
+
+    return filtered;
+  };
 
   // Sit in player (add to table)
   const sitInPlayer = (player: Player) => {
@@ -1209,6 +1335,88 @@ const PokerClubDashboard = () => {
                   </CardHeader>
                   <CardContent>
                     <PlayersDataErrorBoundary isOnline={isOnline} onRetry={refreshData}>
+                      {/* Search and Filter Section */}
+                      <div className="mb-6 space-y-4">
+                        {/* Search Bar */}
+                        <div className="flex gap-4">
+                          <div className="relative flex-1">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                            <Input
+                              type="text"
+                              placeholder="Search by name, email, or phone..."
+                              value={playerSearchTerm}
+                              onChange={(e) => setPlayerSearchTerm(e.target.value)}
+                              className="pl-10"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Filter Options */}
+                        <div className="flex flex-wrap gap-3">
+                          <Select value={playerStatusFilter} onValueChange={setPlayerStatusFilter}>
+                            <SelectTrigger className="w-[180px]">
+                              <SelectValue placeholder="All Players" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">All Players</SelectItem>
+                              <SelectItem value="active">Active (Seated)</SelectItem>
+                              <SelectItem value="inactive">Inactive</SelectItem>
+                              <SelectItem value="recent">Played This Week</SelectItem>
+                              <SelectItem value="frequent">Frequent Players</SelectItem>
+                            </SelectContent>
+                          </Select>
+
+                          <Select value={playerHoursFilter} onValueChange={setPlayerHoursFilter}>
+                            <SelectTrigger className="w-[180px]">
+                              <SelectValue placeholder="All Hours" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">All Hours</SelectItem>
+                              <SelectItem value="0-10">0-10 Hours</SelectItem>
+                              <SelectItem value="10-50">10-50 Hours</SelectItem>
+                              <SelectItem value="50-100">50-100 Hours</SelectItem>
+                              <SelectItem value="100+">100+ Hours</SelectItem>
+                            </SelectContent>
+                          </Select>
+
+                          <Select value={playerSortBy} onValueChange={setPlayerSortBy}>
+                            <SelectTrigger className="w-[180px]">
+                              <SelectValue placeholder="Sort By" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="hours-desc">Most Hours</SelectItem>
+                              <SelectItem value="hours-asc">Least Hours</SelectItem>
+                              <SelectItem value="name-asc">Name (A-Z)</SelectItem>
+                              <SelectItem value="name-desc">Name (Z-A)</SelectItem>
+                              <SelectItem value="recent">Most Recent</SelectItem>
+                              <SelectItem value="sessions">Most Sessions</SelectItem>
+                            </SelectContent>
+                          </Select>
+
+                          {(playerSearchTerm || playerStatusFilter !== 'all' || playerHoursFilter !== 'all') && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setPlayerSearchTerm('');
+                                setPlayerStatusFilter('all');
+                                setPlayerHoursFilter('all');
+                                setPlayerSortBy('hours-desc');
+                              }}
+                              className="ml-auto"
+                            >
+                              <X className="h-4 w-4 mr-1" />
+                              Clear Filters
+                            </Button>
+                          )}
+                        </div>
+
+                        {/* Results Count */}
+                        <div className="text-sm text-muted-foreground">
+                          Showing {getFilteredPlayers().length} of {players.length} players
+                        </div>
+                      </div>
+
                       <PlayerTableErrorBoundary>
                         <div className="overflow-x-auto">
                           <Table>
@@ -1225,16 +1433,7 @@ const PokerClubDashboard = () => {
                             </TableRow>
                           </TableHeader>
                       <TableBody>
-                        {players
-                          .map((player: any) => ({
-                            ...player,
-                            isSeated: !!activeTables.find(t => t.player.id === player.id)
-                          }))
-                          .sort((a: any, b: any) => {
-                            if (a.isSeated && !b.isSeated) return -1;
-                            if (!a.isSeated && b.isSeated) return 1;
-                            return b.totalHours - a.totalHours;
-                          })
+                        {getFilteredPlayers()
                           .map((player: any, index: number) => {
                             const avgSession = player.sessions?.length > 0 
                               ? player.totalHours / player.sessions.length 
