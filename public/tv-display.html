@@ -149,7 +149,7 @@
                 rgba(139, 92, 246, 0.03),
                 transparent
             );
-            animation: cardShimmer 8s linear infinite;
+            animation: cardShimmer 15s linear infinite;
             pointer-events: none;
         }
 
@@ -233,7 +233,7 @@
             height: 100%;
             background: radial-gradient(circle, rgba(251, 191, 36, 0.2), transparent);
             transform: translate(-50%, -50%) scale(0);
-            animation: statPulse 3s infinite;
+            animation: statPulse 5s infinite;
         }
 
         @keyframes statPulse {
@@ -293,7 +293,7 @@
             background-size: 400% 400%;
             border-radius: 0.8rem;
             z-index: -1;
-            animation: borderGlow 4s ease-in-out infinite;
+            animation: borderGlow 8s ease-in-out infinite;
             opacity: 0.5;
         }
 
@@ -631,7 +631,7 @@
     <script>
         // Configuration
         const PLAYERS_PER_PAGE = 10;
-        const PAGE_ROTATION_TIME = 5000; // 5 seconds per page
+        const PAGE_ROTATION_TIME = 15000; // 15 seconds per page - more time to read
 
         // State
         let currentPage = 0;
@@ -867,8 +867,8 @@
             // Load data immediately
             loadData();
 
-            // Reload data every 30 seconds
-            setInterval(loadData, 30000);
+            // Reload data every 60 seconds - less frequent updates for stability
+            setInterval(loadData, 60000);
 
             // Update countdown every minute
             setInterval(() => {
