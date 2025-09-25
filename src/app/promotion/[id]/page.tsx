@@ -38,76 +38,39 @@ export default function PromotionDetailPage() {
       const foundPromotion = promotions.find(p => p.id === promotionId);
       setPromotion(foundPromotion);
       
-      if (foundPromotion && allSessions.length > 0 && players.length > 0) {
-        // Filter sessions within promotion period
-        const promotionSessions = allSessions.filter(session => {
-          const sessionDate = new Date(session.date);
-          const startDate = new Date(foundPromotion.start_date);
-          const endDate = new Date(foundPromotion.end_date);
-          return sessionDate >= startDate && sessionDate <= endDate;
-        });
-
-        // Calculate leaderboard using actual session structure
+      if (foundPromotion && players.length > 0) {
+        // ALWAYS show ALL players with their total hours from database
         const playerStats: Record<number, any> = {};
-        promotionSessions.forEach(session => {
-          const playerId = session.player_id;
-          if (!playerStats[playerId]) {
-            playerStats[playerId] = {
-              playerId,
-              name: players.find(p => p.id === playerId)?.name || 'Unknown',
-              totalHours: 0,
-              sessions: 0
-            };
-          }
-          // Calculate duration from seat_in_time and seat_out_time, fallback to duration field
-          const durationMinutes = session.seat_in_time && session.seat_out_time
-            ? (new Date(session.seat_out_time).getTime() - new Date(session.seat_in_time).getTime()) / (1000 * 60)
-            : (session.duration || 0) * 60;
-          playerStats[playerId].totalHours += durationMinutes / 60;
-          playerStats[playerId].sessions += 1;
+
+        // Initialize with ALL players and their total hours
+        players.forEach(player => {
+          // Skip deleted players
+          if (player.deleted) return;
+
+          playerStats[player.id] = {
+            playerId: player.id,
+            name: player.name || 'Unknown',
+            totalHours: player.totalHours || 0,  // Use total hours from database
+            sessions: player.totalSessions || 0   // Use total sessions from database
+          };
         });
 
-        // Add addon hours and subtract penalty hours for players in this promotion
-        const startDate = new Date(foundPromotion.start_date);
-        const endDate = new Date(foundPromotion.end_date);
-
-        Object.keys(playerStats).forEach((playerIdStr) => {
-          const playerId = parseInt(playerIdStr);
-
-          // Filter addons and penalties within promotion dates
-          const playerAddons = (addons || []).filter((a: any) => {
-            if (a.player_id !== playerId) return false;
-            const addonDate = new Date(a.date_applied);
-            return addonDate >= startDate && addonDate <= endDate;
-          });
-
-          const playerPenalties = (penalties || []).filter((p: any) => {
-            if (p.player_id !== playerId) return false;
-            const penaltyDate = new Date(p.date_applied);
-            return penaltyDate >= startDate && penaltyDate <= endDate;
-          });
-
-          // Calculate addon and penalty minutes
-          const addonMinutes = playerAddons.reduce((sum: number, addon: any) => sum + (addon.bonus_minutes || 0), 0);
-          const penaltyMinutes = playerPenalties.reduce((sum: number, penalty: any) => sum + (penalty.penalty_minutes || 0), 0);
-
-          // Adjust total hours
-          playerStats[playerId].totalHours += (addonMinutes / 60) - (penaltyMinutes / 60);
-
-          // Ensure hours don't go negative
-          if (playerStats[playerId].totalHours < 0) {
-            playerStats[playerId].totalHours = 0;
-          }
-        });
+        // No need for adjustments - we're using the total hours from database which already includes everything
 
         const sortedLeaderboard = Object.values(playerStats)
           .sort((a: any, b: any) => b.totalHours - a.totalHours);
 
         setLeaderboard(sortedLeaderboard);
+
+        // Calculate overall stats from all players
+        const totalPlayers = Object.keys(playerStats).length;
+        const totalHours = Object.values(playerStats).reduce((sum: number, player: any) => sum + (player.totalHours || 0), 0);
+        const totalSessions = Object.values(playerStats).reduce((sum: number, player: any) => sum + (player.sessions || 0), 0);
+
         setPromotionStats({
-          totalSessions: promotionSessions.length,
-          totalPlayers: Object.keys(playerStats).length,
-          totalHours: Object.values(playerStats).reduce((sum: number, player: any) => sum + (player.totalHours || 0), 0)
+          totalSessions,
+          totalPlayers,
+          totalHours
         });
       }
     }

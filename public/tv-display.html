@@ -987,42 +987,42 @@
                         return sessionDate >= startDate && sessionDate <= endDate;
                     });
 
-                    // Calculate player stats - ALWAYS show ALL players with their total hours
+                    // SIMPLIFIED: Just show ALL players with their total hours
                     const playerStats = {};
 
-                    console.log('Processing players for display. Total players:', players ? players.length : 0);
-                    console.log('Sessions in promotion period:', promotionSessions.length);
+                    console.log('=== TV DISPLAY PLAYER PROCESSING ===');
+                    console.log('Total players received:', players ? players.length : 0);
 
-                    // ALWAYS initialize with ALL players and their total hours from the database
-                    if (players && players.length > 0) {
-                        console.log(`Processing ${players.length} total players`);
+                    // Process ALL players - no filtering except deleted ones
+                    if (players && Array.isArray(players) && players.length > 0) {
+                        let skipped = 0;
+                        let added = 0;
 
                         players.forEach(player => {
-                            // Skip deleted players only
-                            if (player.deleted) {
-                                console.log(`Skipping deleted player: ${player.name}`);
+                            // Only skip if explicitly deleted
+                            if (player.deleted === true) {
+                                skipped++;
                                 return;
                             }
 
-                            // Use the total_hours from the database which represents their overall stats
+                            // Add EVERY non-deleted player
                             const totalMinutes = (player.total_hours || 0) * 60;
 
                             playerStats[player.id] = {
                                 id: player.id,
-                                name: player.name || 'Unknown',
+                                name: player.name || 'Unknown Player',
                                 totalMinutes: totalMinutes,
                                 sessions: player.total_sessions || 0
                             };
+                            added++;
                         });
 
-                        console.log(`Added ${Object.keys(playerStats).length} players to display`);
+                        console.log(`Results: Added ${added} players, Skipped ${skipped} deleted players`);
+                        console.log('Player stats object:', playerStats);
                     } else {
-                        console.warn('No players found in the data!');
+                        console.error('ERROR: No players array found or empty!');
+                        console.log('Players variable:', players);
                     }
-
-                    // If there are sessions in the promotion period, we can optionally show promotion-specific stats
-                    // But for now, we'll always show the overall leaderboard regardless of promotion
-                    console.log(`Final: Showing ${Object.keys(playerStats).length} players with their overall stats`);
 
                     // Get all players for total count
                     const allPromotionPlayers = Object.values(playerStats)
@@ -1098,25 +1098,34 @@
                     }).join('');
 
                     // Add detailed logging
-                    console.log('Leaderboard Update:', {
-                        totalPlayers: allPromotionPlayers.length,
-                        currentPage: currentLeaderboardPage,
-                        playersOnPage: leaderboard.length,
-                        hasHTML: !!leaderboardHTML
-                    });
+                    console.log('=== LEADERBOARD RENDER ===');
+                    console.log('All players to display:', allPromotionPlayers.length);
+                    console.log('Current page:', currentLeaderboardPage);
+                    console.log('Players on current page:', leaderboard.length);
+                    console.log('HTML generated:', leaderboardHTML ? 'YES' : 'NO');
+
+                    if (allPromotionPlayers.length > 0) {
+                        console.log('First player:', allPromotionPlayers[0]);
+                    }
 
                     // Update leaderboard display
                     const leaderboardElement = document.getElementById('leaderboard');
-                    if (leaderboardElement) {
-                        if (leaderboardHTML) {
-                            leaderboardElement.innerHTML = leaderboardHTML;
-                        } else if (allPromotionPlayers.length === 0) {
-                            leaderboardElement.innerHTML = '<div style="text-align: center; color: #64748b; padding: 20px;">🎰 Awaiting Players<br><span style="font-size: 0.9em;">Player rankings will appear here</span></div>';
-                        } else {
-                            leaderboardElement.innerHTML = '<div style="text-align: center; color: #64748b;">No players on this page</div>';
-                        }
+                    if (!leaderboardElement) {
+                        console.error('CRITICAL: Leaderboard element not found!');
+                        return;
+                    }
+
+                    console.log('Leaderboard element found, updating content...');
+
+                    if (leaderboardHTML && leaderboardHTML.length > 0) {
+                        console.log('Setting HTML content (length:', leaderboardHTML.length, ')');
+                        leaderboardElement.innerHTML = leaderboardHTML;
+                    } else if (allPromotionPlayers.length === 0) {
+                        console.log('No players to display - showing awaiting message');
+                        leaderboardElement.innerHTML = '<div style="text-align: center; color: #64748b; padding: 20px;">🎰 Awaiting Players<br><span style="font-size: 0.9em;">Player rankings will appear here</span></div>';
                     } else {
-                        console.error('Leaderboard element not found!');
+                        console.log('Players exist but no HTML generated - ERROR!');
+                        leaderboardElement.innerHTML = '<div style="text-align: center; color: #ef4444; padding: 20px;">Error displaying players. Check console.</div>';
                 }
 
                 // Update prize
@@ -1236,10 +1245,41 @@
             scheduleNextRotation();
         }
 
-        // Initialize
+        // Initialize with retry mechanism
         createParticles();
         updateClock();
-        updateData();
+
+        // Initial data load with retries
+        let retryCount = 0;
+        const maxRetries = 3;
+
+        async function loadDataWithRetry() {
+            try {
+                console.log(`Loading TV Display data (attempt ${retryCount + 1}/${maxRetries})...`);
+                await updateData();
+
+                // Check if we got players
+                const leaderboardEl = document.getElementById('leaderboard');
+                const hasPlayers = leaderboardEl && !leaderboardEl.innerHTML.includes('Awaiting Players');
+
+                if (!hasPlayers && retryCount < maxRetries - 1) {
+                    retryCount++;
+                    console.log('No players loaded, retrying in 2 seconds...');
+                    setTimeout(loadDataWithRetry, 2000);
+                } else if (hasPlayers) {
+                    console.log('✅ TV Display loaded successfully with players!');
+                }
+            } catch (error) {
+                console.error('Error loading data:', error);
+                if (retryCount < maxRetries - 1) {
+                    retryCount++;
+                    setTimeout(loadDataWithRetry, 2000);
+                }
+            }
+        }
+
+        // Start loading
+        loadDataWithRetry();
 
         // Set intervals
         setInterval(updateClock, 1000);
