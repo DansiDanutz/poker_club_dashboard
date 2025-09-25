@@ -92,8 +92,9 @@
         }
 
         .stats-container {
-            display: flex;
-            gap: 20px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
             margin-bottom: 20px;
         }
 
@@ -237,12 +238,20 @@
                 <div class="promotion-title">Current Promotion</div>
                 <div class="promotion-name" id="promotion-name">Loading...</div>
                 <div class="promotion-detail">
+                    <span>Period</span>
+                    <span id="period" style="color: #94a3b8;">--</span>
+                </div>
+                <div class="promotion-detail">
                     <span>Start Date</span>
                     <span id="start-date">--</span>
                 </div>
                 <div class="promotion-detail">
                     <span>End Date</span>
                     <span id="end-date">--</span>
+                </div>
+                <div class="promotion-detail">
+                    <span>Days Remaining</span>
+                    <span id="days-remaining" style="color: #10b981;">--</span>
                 </div>
                 <div class="promotion-detail">
                     <span>Time Remaining</span>
@@ -258,6 +267,20 @@
                 <div class="stat-box">
                     <div class="stat-value" id="total-hours">0</div>
                     <div class="stat-label">Total Hours</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="active-players">0</div>
+                    <div class="stat-label">Active Today</div>
+                </div>
+            </div>
+
+            <div class="card info-card">
+                <div class="info-title">📢 Club Announcements</div>
+                <div class="info-content" id="info-content">
+                    <p>🎉 Welcome to Player's Poker Club!</p>
+                    <p>🏆 Play more hours to win amazing prizes!</p>
+                    <p>📅 Check our weekly tournaments</p>
+                    <p>💰 Special bonuses for top players</p>
                 </div>
             </div>
         </div>
@@ -442,11 +465,29 @@
                     document.getElementById('start-date').textContent = formatDate(activePromo.start_date);
                     document.getElementById('end-date').textContent = formatDate(activePromo.end_date);
                     document.getElementById('countdown').textContent = calculateCountdown(activePromo.end_date);
+
+                    // Calculate period (total days)
+                    const start = new Date(activePromo.start_date);
+                    const end = new Date(activePromo.end_date);
+                    const totalDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+                    document.getElementById('period').textContent = `${totalDays} days`;
+
+                    // Calculate days remaining
+                    const daysLeft = Math.max(0, Math.ceil((end - now) / (1000 * 60 * 60 * 24)));
+                    document.getElementById('days-remaining').textContent = daysLeft > 0 ? `${daysLeft} days` : 'Ended';
+
+                    // Calculate active players (placeholder for now)
+                    const activePlayers = allPlayers.filter(p => p.last_played &&
+                        new Date(p.last_played) >= new Date(now.setHours(0,0,0,0))).length;
+                    document.getElementById('active-players').textContent = activePlayers;
                 } else {
                     document.getElementById('promotion-name').textContent = 'General Leaderboard';
                     document.getElementById('start-date').textContent = '--';
                     document.getElementById('end-date').textContent = '--';
                     document.getElementById('countdown').textContent = '--';
+                    document.getElementById('period').textContent = '--';
+                    document.getElementById('days-remaining').textContent = '--';
+                    document.getElementById('active-players').textContent = '0';
                 }
 
                 // Calculate pages and render
