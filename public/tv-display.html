@@ -839,12 +839,21 @@
             try {
                 console.log('Loading data from API...');
 
-                // Determine API URL based on environment
+                // Smart API URL detection that works with any domain/short URL
                 let apiUrl = '/api/tv-data';
-                if (window.location.hostname === 'localhost') {
+                
+                // Log hostname for debugging
+                console.log('Current hostname:', window.location.hostname);
+                console.log('Current protocol:', window.location.protocol);
+                console.log('Full URL:', window.location.href);
+                
+                // Use relative path by default (works for all domains)
+                // The path is relative to the current domain
+                apiUrl = '/api/tv-data';
+                
+                // Only override for specific known scenarios
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
                     apiUrl = 'http://localhost:3000/api/tv-data';
-                } else if (window.location.hostname.includes('ondigitalocean.app')) {
-                    apiUrl = 'https://hammerhead-app-f4ysx.ondigitalocean.app/api/tv-data';
                 }
 
                 console.log('Fetching from:', apiUrl);
