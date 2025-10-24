@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Poker Club TV - Leaderboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poker Club TV - Paginated Leaderboard</title>
     <style>
         * {
             margin: 0;
@@ -11,30 +11,6 @@
             box-sizing: border-box;
             -webkit-user-select: none;
             user-select: none;
-        }
-
-        html {
-            font-size: 16px;
-        }
-
-        @media (min-width: 3840px) {
-            html { font-size: 32px; }
-        }
-
-        @media (min-width: 2560px) and (max-width: 3839px) {
-            html { font-size: 28px; }
-        }
-
-        @media (min-width: 1920px) and (max-width: 2559px) {
-            html { font-size: 22px; }
-        }
-
-        @media (min-width: 1280px) and (max-width: 1919px) {
-            html { font-size: 18px; }
-        }
-
-        @media (max-width: 1279px) {
-            html { font-size: 14px; }
         }
 
         body {
@@ -46,55 +22,114 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            position: relative;
+            font-smoothing: antialiased;
             -webkit-font-smoothing: antialiased;
             text-rendering: optimizeLegibility;
+            image-rendering: crisp-edges;
+        }
+
+        /* Animated background particles - OPTIMIZED for Samsung TV */
+        .bg-animation {
+            position: fixed;
+            width: 100vw;
+            height: 100vh;
+            top: 0;
+            left: 0;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+            will-change: auto;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(251, 191, 36, 0.3);
+            border-radius: 50%;
+            animation: float 20s infinite linear;
+            will-change: transform, opacity;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) translateX(100px) scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        .particle:nth-child(1) { left: 10%; animation-delay: 0s; animation-duration: 25s; }
+        .particle:nth-child(2) { left: 20%; animation-delay: 2s; animation-duration: 20s; }
+        .particle:nth-child(3) { left: 30%; animation-delay: 4s; animation-duration: 22s; }
+        .particle:nth-child(4) { left: 40%; animation-delay: 6s; animation-duration: 18s; }
+        .particle:nth-child(5) { left: 50%; animation-delay: 8s; animation-duration: 24s; }
+        .particle:nth-child(6) { left: 60%; animation-delay: 10s; animation-duration: 21s; }
+        .particle:nth-child(7) { left: 70%; animation-delay: 12s; animation-duration: 19s; }
+        .particle:nth-child(8) { left: 80%; animation-delay: 14s; animation-duration: 23s; }
+        .particle:nth-child(9) { left: 90%; animation-delay: 16s; animation-duration: 20s; }
+        .particle:nth-child(10) { left: 95%; animation-delay: 18s; animation-duration: 25s; }
+
+        /* TV Resolution Optimization - Samsung supports UHD 4K (3840x2160), Full HD (1920x1080) */
+        @media (min-width: 3840px) {
+            html { font-size: 28px; }
+        }
+        @media (min-width: 2560px) and (max-width: 3839px) {
+            html { font-size: 24px; }
+        }
+        @media (min-width: 1920px) and (max-width: 2559px) {
+            html { font-size: 20px; }
+        }
+        @media (min-width: 1280px) and (max-width: 1919px) {
+            html { font-size: 16px; }
+        }
+        @media (max-width: 1279px) {
+            html { font-size: 14px; }
         }
 
         .header {
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.6);
             padding: 1.2rem 2rem;
-            border-bottom: 0.3rem solid #fbbf24;
-            box-shadow: 0 0.4rem 1rem rgba(0, 0, 0, 0.5);
+            text-align: center;
+            border-bottom: 3px solid #fbbf24;
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-
-        .header-left {
-            flex: 1;
-            text-align: left;
-        }
-
-        .current-promotion-label {
-            color: #10b981;
-            font-size: 1rem;
-            margin-bottom: 0.3rem;
-        }
-
-        .header-promotion-name {
-            color: #fbbf24;
-            font-size: 1.5rem;
-            font-weight: bold;
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
         }
 
         .club-name {
-            font-size: 2.5rem;
+            font-size: 2.8rem;
             font-weight: 900;
-            color: #fbbf24;
             text-transform: uppercase;
-            letter-spacing: 0.15rem;
-            text-shadow: 0.15rem 0.15rem 0.3rem rgba(0, 0, 0, 0.8);
+            color: #fbbf24;
+            letter-spacing: 3px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
             flex: 2;
             text-align: center;
         }
 
         .clock {
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             color: #94a3b8;
-            font-weight: 500;
-            font-variant-numeric: tabular-nums;
             flex: 1;
             text-align: right;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 1px;
         }
 
         .main-content {
@@ -102,6 +137,8 @@
             flex: 1;
             padding: 1.5rem;
             gap: 1.5rem;
+            position: relative;
+            z-index: 1;
             min-height: 0;
         }
 
@@ -111,18 +148,69 @@
             flex-direction: column;
             gap: 1rem;
             max-width: 35%;
+            min-width: 0;
         }
 
         .right-panel {
             flex: 2;
+            min-width: 0;
         }
 
         .card {
             background: rgba(0, 0, 0, 0.5);
             border-radius: 0.8rem;
             padding: 1.2rem;
-            border: 0.15rem solid rgba(251, 191, 36, 0.3);
-            box-shadow: 0 0.3rem 0.8rem rgba(0, 0, 0, 0.4);
+            border: 2px solid rgba(251, 191, 36, 0.4);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            transform: translateZ(0);
+            backface-visibility: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                45deg,
+                transparent,
+                rgba(251, 191, 36, 0.02),
+                transparent,
+                rgba(139, 92, 246, 0.02),
+                transparent
+            );
+            animation: cardShimmer 20s linear infinite;
+            pointer-events: none;
+            will-change: transform;
+        }
+
+        .card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(
+                circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+                rgba(251, 191, 36, 0.03),
+                transparent 50%
+            );
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        @keyframes cardShimmer {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         .promotion-info {
@@ -131,51 +219,387 @@
 
         .promotion-title {
             color: #fbbf24;
-            font-size: 1.2rem;
-            margin-bottom: 1rem;
+            font-size: 1.4rem;
+            margin-bottom: 15px;
             text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .promotion-name {
+            font-size: 2.4rem;
+            font-weight: 900;
+            margin-bottom: 25px;
+            color: #ffd700;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
         }
 
         .promotion-detail {
             display: flex;
             justify-content: space-between;
-            margin: 0.8rem 0;
-            padding: 0.8rem 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: 0.95rem;
+            margin: 12px 0;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            font-size: 1.1rem;
         }
 
         .stats-container {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 0.8rem;
+            gap: 1rem;
         }
 
         .stat-box {
-            background: rgba(251, 191, 36, 0.1);
-            padding: 0.8rem;
-            border-radius: 0.5rem;
+            background: rgba(251, 191, 36, 0.12);
+            padding: 1.2rem;
+            border-radius: 0.8rem;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
             border: 1px solid rgba(251, 191, 36, 0.3);
-            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-box::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(251, 191, 36, 0.25), transparent);
+            transform: translate(-50%, -50%) scale(0);
+            animation: statPulse 6s infinite;
+            will-change: transform;
+        }
+
+        @keyframes statPulse {
+            0%, 100% {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0.5;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(2.5);
+                opacity: 0;
+            }
         }
 
         .stat-box:hover {
             background: rgba(251, 191, 36, 0.18);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);
+            transform: translateY(-4px);
+            box-shadow: 0 6px 16px rgba(251, 191, 36, 0.35);
         }
 
         .stat-value {
-            font-size: 1.6rem;
+            font-size: 2.2rem;
             font-weight: 900;
             color: #fbbf24;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
         }
 
         .stat-label {
-            font-size: 0.8rem;
+            font-size: 1rem;
             color: #94a3b8;
-            margin-top: 0.4rem;
+            margin-top: 8px;
+            font-weight: 500;
+        }
+
+        .leaderboard {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 0.8rem;
+            padding: 1.5rem;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            border: 2px solid rgba(251, 191, 36, 0.3);
+        }
+
+        .leaderboard::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(
+                135deg,
+                #fbbf24,
+                #8b5cf6,
+                #10b981,
+                #ef4444,
+                #fbbf24
+            );
+            background-size: 400% 400%;
+            border-radius: 0.8rem;
+            z-index: -1;
+            animation: borderGlow 12s ease-in-out infinite;
+            opacity: 0.4;
+            will-change: opacity;
+        }
+
+        @keyframes borderGlow {
+            0%, 100% {
+                background-position: 0% 50%;
+                opacity: 0.3;
+            }
+            50% {
+                background-position: 100% 50%;
+                opacity: 0.5;
+            }
+        }
+
+        .leaderboard-title {
+            font-size: 2.2rem;
+            background: linear-gradient(90deg, #ffd700, #fbbf24, #ffd700);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            text-align: center;
+            text-transform: uppercase;
+            font-weight: 900;
+            letter-spacing: 2px;
+            animation: shineTitle 4s linear infinite;
+            text-shadow: 0 0 30px rgba(251, 191, 36, 0.4);
+        }
+
+        @keyframes shineTitle {
+            to {
+                background-position: 200% center;
+            }
+        }
+
+        .page-info {
+            text-align: center;
+            font-size: 1rem;
+            color: #fbbf24;
+            margin-bottom: 1rem;
+            font-weight: 500;
+            background: rgba(251, 191, 36, 0.1);
+            padding: 0.6rem;
+            border-radius: 0.4rem;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+        }
+
+        .leaderboard-content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 0 0.8rem;
+            min-height: 0;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(251, 191, 36, 0.3) transparent;
+        }
+
+        .leaderboard-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .leaderboard-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .leaderboard-content::-webkit-scrollbar-thumb {
+            background: rgba(251, 191, 36, 0.3);
+            border-radius: 4px;
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .player-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.2rem;
+            margin-bottom: 0.9rem;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%);
+            border-radius: 0.8rem;
+            border-left: 4px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            animation: slideInLeft 0.5s ease-out forwards;
+            opacity: 0;
+            will-change: transform, background-color;
+            backface-visibility: hidden;
+        }
+
+        .player-row:nth-child(1) { animation-delay: 0.1s; }
+        .player-row:nth-child(2) { animation-delay: 0.15s; }
+        .player-row:nth-child(3) { animation-delay: 0.2s; }
+        .player-row:nth-child(4) { animation-delay: 0.25s; }
+        .player-row:nth-child(5) { animation-delay: 0.3s; }
+        .player-row:nth-child(6) { animation-delay: 0.35s; }
+        .player-row:nth-child(7) { animation-delay: 0.4s; }
+        .player-row:nth-child(8) { animation-delay: 0.45s; }
+        .player-row:nth-child(9) { animation-delay: 0.5s; }
+        .player-row:nth-child(10) { animation-delay: 0.55s; }
+
+        .player-row:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.12), transparent);
+            transition: left 0.6s ease;
+            will-change: left;
+        }
+
+        .player-row:hover {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.18) 0%, rgba(251, 191, 36, 0.06) 100%);
+            transform: translateX(8px);
+            border-left-color: #fbbf24;
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);
+        }
+
+        .player-row:hover:before {
+            left: 100%;
+        }
+
+        .player-row.gold-winner {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 237, 78, 0.06) 100%);
+            border-left-color: #ffd700;
+            box-shadow: 0 2px 8px rgba(255, 215, 0, 0.2);
+        }
+
+        .player-row.silver-winner {
+            background: linear-gradient(135deg, rgba(192, 192, 192, 0.12) 0%, rgba(232, 232, 232, 0.05) 100%);
+            border-left-color: #c0c0c0;
+            box-shadow: 0 2px 8px rgba(192, 192, 192, 0.15);
+        }
+
+        .player-row.bronze-winner {
+            background: linear-gradient(135deg, rgba(205, 127, 50, 0.12) 0%, rgba(228, 168, 83, 0.05) 100%);
+            border-left-color: #cd7f32;
+            box-shadow: 0 2px 8px rgba(205, 127, 50, 0.15);
+        }
+
+        .player-rank {
+            width: 3.5rem;
+            height: 3.5rem;
+            background: #fbbf24;
+            color: #1a1a2e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.4rem;
+            box-shadow: 0 4px 10px rgba(251, 191, 36, 0.4);
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .player-rank.gold {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.5);
+            animation: goldPulse 2s ease-in-out infinite;
+        }
+
+        .player-rank.silver {
+            background: linear-gradient(135deg, #c0c0c0, #e8e8e8);
+            box-shadow: 0 6px 15px rgba(192, 192, 192, 0.4);
+        }
+
+        .player-rank.bronze {
+            background: linear-gradient(135deg, #cd7f32, #e4a853);
+            box-shadow: 0 6px 15px rgba(205, 127, 50, 0.4);
+        }
+
+        @keyframes goldPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        .player-info {
+            flex: 1;
+            margin-left: 20px;
+            min-width: 0;
+        }
+
+        .player-name {
+            font-size: 1.5rem;
+            font-weight: 900;
+            margin-bottom: 6px;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+        }
+
+        .gold-winner .player-name {
+            background: linear-gradient(90deg, #ffd700, #ffed4e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: none;
+        }
+
+        .silver-winner .player-name {
+            background: linear-gradient(90deg, #c0c0c0, #e8e8e8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: none;
+        }
+
+        .bronze-winner .player-name {
+            background: linear-gradient(90deg, #cd7f32, #e4a853);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: none;
+        }
+
+        .player-sessions {
+            font-size: 1rem;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .player-hours {
+            font-size: 1.8rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: right;
+            min-width: 8rem;
+            text-shadow: 0 0 15px rgba(251, 191, 36, 0.3);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.8rem;
+            color: #94a3b8;
+        }
+
+        .error {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.4rem;
+            color: #ef4444;
         }
 
         .info-card {
@@ -184,210 +608,55 @@
 
         .info-title {
             color: #fbbf24;
-            font-size: 1.2rem;
-            margin-bottom: 1rem;
+            font-size: 1.4rem;
+            margin-bottom: 18px;
             text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 1px;
         }
 
         .info-content {
             color: #e2e8f0;
-            line-height: 1.8;
-            font-size: 0.95rem;
+            line-height: 1.9;
+            font-size: 1.1rem;
         }
 
         .info-content p {
-            margin-bottom: 0.8rem;
-            padding-left: 1rem;
-            border-left: 3px solid rgba(251, 191, 36, 0.3);
+            margin-bottom: 12px;
+            padding-left: 15px;
+            border-left: 3px solid rgba(251, 191, 36, 0.4);
         }
-
-        .leaderboard {
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 0.8rem;
-            padding: 1.5rem;
-            border: 0.15rem solid rgba(251, 191, 36, 0.3);
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            box-shadow: 0 0.3rem 0.8rem rgba(0, 0, 0, 0.4);
-        }
-
-        .leaderboard-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .leaderboard-title {
-            font-size: 1.8rem;
-            color: #fbbf24;
-            text-transform: uppercase;
-            letter-spacing: 0.1rem;
-            text-shadow: 0 0 1.3rem rgba(251, 191, 36, 0.3);
-        }
-
-        .page-info {
-            font-size: 0.9rem;
-            background: rgba(251, 191, 36, 0.1);
-            padding: 0.4rem 0.8rem;
-            border-radius: 0.3rem;
-            border: 1px solid rgba(251, 191, 36, 0.3);
-            color: #fbbf24;
-        }
-
-        .leaderboard-content {
-            flex: 1;
-            overflow-y: auto;
-            overflow-x: hidden;
-        }
-
-        .player-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.8rem 1rem;
-            margin-bottom: 0.7rem;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%);
-            border-radius: 0.6rem;
-            border-left: 0.3rem solid #fbbf24;
-            transition: all 0.3s ease;
-            animation: slideIn 0.5s ease-out;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        .player-row:hover {
-            background: linear-gradient(135deg, rgba(251, 191, 36, 0.18) 0%, rgba(251, 191, 36, 0.06) 100%);
-            transform: translateX(0.5rem);
-        }
-
-        .player-row.rank-1 { border-left-color: #ffd700; }
-        .player-row.rank-2 { border-left-color: #c0c0c0; }
-        .player-row.rank-3 { border-left-color: #cd7f32; }
-
-        .rank-badge {
-            width: 2.8rem;
-            height: 2.8rem;
-            background: #fbbf24;
-            color: #1a1a2e;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 900;
-            font-size: 1.1rem;
-            box-shadow: 0 0.3rem 0.6rem rgba(251, 191, 36, 0.4);
-            flex-shrink: 0;
-        }
-
-        .rank-1 .rank-badge {
-            background: linear-gradient(135deg, #ffd700, #ffed4e);
-            box-shadow: 0 0.4rem 1.3rem rgba(255, 215, 0, 0.5);
-        }
-
-        .rank-2 .rank-badge {
-            background: linear-gradient(135deg, #c0c0c0, #e8e8e8);
-        }
-
-        .rank-3 .rank-badge {
-            background: linear-gradient(135deg, #cd7f32, #e4a853);
-        }
-
-        .player-info {
-            flex: 1;
-            margin-left: 1rem;
-            min-width: 0;
-        }
-
-        .player-name {
-            font-size: 1.2rem;
-            font-weight: 900;
-            color: white;
-            text-transform: uppercase;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-bottom: 0.2rem;
-        }
-
-        .player-sessions {
-            font-size: 0.75rem;
-            color: #94a3b8;
-        }
-
-        .player-hours {
-            font-size: 1.4rem;
-            font-weight: 900;
-            color: #fbbf24;
-            text-align: right;
-            min-width: 5.5rem;
-            font-variant-numeric: tabular-nums;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 2rem;
-            font-size: 1.4rem;
-            color: #94a3b8;
-        }
-
-        .spinner {
-            border: 0.3rem solid rgba(251, 191, 36, 0.3);
-            border-top: 0.3rem solid #fbbf24;
-            border-radius: 50%;
-            width: 2.5rem;
-            height: 2.5rem;
-            animation: spin 1s linear infinite;
-            margin: 1rem auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .status {
-            position: fixed;
-            bottom: 0.8rem;
-            right: 0.8rem;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 0.6rem 1rem;
-            border-radius: 0.3rem;
-            font-size: 0.75rem;
-            color: #94a3b8;
-            border: 1px solid rgba(251, 191, 36, 0.3);
-            max-width: 200px;
-            text-align: right;
-        }
-
-        .status.ok { color: #10b981; border-color: #10b981; }
-        .status.error { color: #ef4444; border-color: #ef4444; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="header-left">
-            <div class="current-promotion-label">CURRENT PROMOTION</div>
-            <div class="header-promotion-name" id="header-promotion-name">Loading...</div>
-        </div>
-        <div class="club-name">🏆 PLAYER'S POKER CLUB 🏆</div>
-        <div class="clock" id="clock">--:--:--</div>
+    <!-- Animated background particles -->
+    <div class="bg-animation">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
     </div>
 
-    <div class="main-content">
+    <div class="header" style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1;">
+        <div style="flex: 1; text-align: left;">
+            <div style="color: #10b981; font-size: 1.2rem; margin-bottom: 5px;">CURRENT PROMOTION</div>
+            <div id="header-promotion-name" style="color: #fbbf24; font-size: 1.8rem; font-weight: bold;">Loading...</div>
+        </div>
+        <div class="club-name" id="club-name" style="flex: 2; text-align: center;">PLAYER'S POKER CLUB</div>
+        <div class="clock" id="clock" style="flex: 1; text-align: right;">--:--:--</div>
+    </div>
+
+    <div class="main-content" style="position: relative; z-index: 1;">
         <div class="left-panel">
             <div class="card promotion-info">
                 <div class="promotion-title">Current Promotion</div>
+                <div class="promotion-name" id="promotion-name">Loading...</div>
                 <div class="promotion-detail">
                     <span>Period</span>
                     <span id="period" style="color: #94a3b8;">--</span>
@@ -438,55 +707,39 @@
 
         <div class="right-panel">
             <div class="leaderboard">
-                <div class="leaderboard-header">
-                    <div class="leaderboard-title">🏆 TOP LEADERBOARD 🏆</div>
-                    <div class="page-info" id="page-info">Loading...</div>
-                </div>
-                <div class="leaderboard-content" id="leaderboard">
-                    <div class="loading">
-                        <div class="spinner"></div>
-                        <p>Loading players...</p>
-                    </div>
+                <div class="leaderboard-title">🏆 TOP LEADERBOARD 🏆</div>
+                <div class="page-info" id="page-info">Loading...</div>
+                <div class="leaderboard-content" id="leaderboard-content">
+                    <div class="loading">Loading players...</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="status" id="status">Initializing...</div>
-
     <script>
-        const CACHE_KEY = 'poker_tv_cache';
-        const CACHE_TIME = 60000;
+        // Configuration
         const PLAYERS_PER_PAGE = 10;
-        const PAGE_ROTATION_TIME = 15000;
+        const PAGE_ROTATION_TIME = 15000; // 15 seconds per page
 
+        // State
         let currentPage = 0;
         let totalPages = 0;
         let allPlayers = [];
-        let pageRotationTimer = null;
+        let pageTimer = null;
 
+        // Update clock every second
         function updateClock() {
-            try {
-                const now = new Date();
-                const hours = String(now.getHours()).padStart(2, '0');
-                const minutes = String(now.getMinutes()).padStart(2, '0');
-                const seconds = String(now.getSeconds()).padStart(2, '0');
-                document.getElementById('clock').textContent = hours + ':' + minutes + ':' + seconds;
-            } catch (err) {
-                console.error('Clock error:', err);
-            }
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
+            document.getElementById('clock').textContent = timeStr;
         }
 
-        function setStatus(message, isOk = true) {
-            try {
-                const status = document.getElementById('status');
-                status.textContent = message;
-                status.className = 'status ' + (isOk ? 'ok' : 'error');
-            } catch (err) {
-                console.error('Status error:', err);
-            }
-        }
-
+        // Format date
         function formatDate(dateStr) {
             if (!dateStr) return '--';
             const date = new Date(dateStr);
@@ -497,82 +750,28 @@
             });
         }
 
+        // Calculate countdown
         function calculateCountdown(endDate) {
             if (!endDate) return '--';
+
             const now = new Date();
             const end = new Date(endDate);
             const diff = end - now;
+
             if (diff <= 0) return 'ENDED';
+
             const days = Math.floor(diff / (1000 * 60 * 60 * 24));
             const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
             if (days > 0) return `${days}d ${hours}h`;
             return `${hours}h remaining`;
         }
 
-        async function fetchWithRetry() {
-            const endpoints = [
-                '/api/tv-data',
-                '/api/tv-data?t=' + Date.now(),
-            ];
+        // Render leaderboard page
+        function renderLeaderboardPage() {
+            const container = document.getElementById('leaderboard-content');
 
-            for (const endpoint of endpoints) {
-                try {
-                    setStatus('Fetching...', true);
-                    const controller = new AbortController();
-                    const timeout = setTimeout(() => controller.abort(), 6000);
-
-                    const response = await fetch(endpoint, {
-                        signal: controller.signal,
-                        headers: {
-                            'Accept': 'application/json',
-                            'Cache-Control': 'no-cache, no-store, must-revalidate'
-                        }
-                    });
-
-                    clearTimeout(timeout);
-
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.players && data.players.length > 0) {
-                            setStatus('✓ Data loaded (' + data.players.length + ' players)', true);
-                            return data;
-                        }
-                    }
-                } catch (err) {
-                    console.log('Fetch error:', err.message);
-                }
-            }
-            throw new Error('All endpoints failed');
-        }
-
-        function loadFromCache() {
-            try {
-                const cached = localStorage.getItem(CACHE_KEY);
-                if (cached) {
-                    const { data, time } = JSON.parse(cached);
-                    if (Date.now() - time < CACHE_TIME) {
-                        setStatus('✓ From cache (' + data.players.length + ' players)', true);
-                        return data;
-                    }
-                }
-            } catch (err) {
-                console.log('Cache error:', err);
-            }
-            return null;
-        }
-
-        function saveToCache(data) {
-            try {
-                localStorage.setItem(CACHE_KEY, JSON.stringify({ data, time: Date.now() }));
-            } catch (err) {
-                console.log('Cache save error:', err);
-            }
-        }
-
-        function renderPage() {
-            const container = document.getElementById('leaderboard');
-
-            if (!allPlayers || allPlayers.length === 0) {
+            if (allPlayers.length === 0) {
                 container.innerHTML = '<div class="loading">No players yet</div>';
                 return;
             }
@@ -581,24 +780,35 @@
             const endIdx = Math.min(startIdx + PLAYERS_PER_PAGE, allPlayers.length);
             const pagePlayers = allPlayers.slice(startIdx, endIdx);
 
-            const pageInfo = document.getElementById('page-info');
-            pageInfo.textContent = `Page ${currentPage + 1} of ${totalPages}`;
-
             let html = '';
-            
             pagePlayers.forEach((player, idx) => {
-                const globalRank = startIdx + idx + 1;
-                const hours = Math.floor(player.total_hours || 0);
-                const minutes = Math.round(((player.total_hours || 0) % 1) * 60);
-
+                const rank = startIdx + idx + 1;
                 let rankClass = '';
-                if (globalRank <= 3) rankClass = 'rank-' + globalRank;
+                let rowClass = '';
+                let trophy = '';
+
+                if (rank === 1) {
+                    rankClass = 'gold';
+                    rowClass = 'gold-winner';
+                    trophy = '👑';
+                } else if (rank === 2) {
+                    rankClass = 'silver';
+                    rowClass = 'silver-winner';
+                    trophy = '🥈';
+                } else if (rank === 3) {
+                    rankClass = 'bronze';
+                    rowClass = 'bronze-winner';
+                    trophy = '🥉';
+                }
+
+                const hours = Math.floor(player.total_hours || 0);
+                const minutes = Math.round((player.total_hours || 0) % 1 * 60);
 
                 html += `
-                    <div class="player-row ${rankClass}">
-                        <div class="rank-badge">${globalRank}</div>
+                    <div class="player-row ${rowClass}">
+                        <div class="player-rank ${rankClass}">${rank}</div>
                         <div class="player-info">
-                            <div class="player-name">${(player.name || 'Unknown').toUpperCase()}</div>
+                            <div class="player-name">${player.name} ${trophy}</div>
                             <div class="player-sessions">${player.total_sessions || 0} sessions</div>
                         </div>
                         <div class="player-hours">${hours}h ${minutes}m</div>
@@ -607,53 +817,64 @@
             });
 
             container.innerHTML = html;
+
+            // Update page indicator
+            document.getElementById('page-info').textContent = `Page ${currentPage + 1} of ${totalPages}`;
         }
 
+        // Rotate pages
         function startPageRotation() {
-            if (pageRotationTimer) clearInterval(pageRotationTimer);
+            if (pageTimer) clearInterval(pageTimer);
+
             if (totalPages <= 1) return;
-            
-            pageRotationTimer = setInterval(() => {
+
+            pageTimer = setInterval(() => {
                 currentPage = (currentPage + 1) % totalPages;
-                renderPage();
+                renderLeaderboardPage();
             }, PAGE_ROTATION_TIME);
         }
 
-        function processPlayersData(players) {
-            if (!players || players.length === 0) {
-                allPlayers = [];
-                totalPages = 0;
-                currentPage = 0;
-                return;
-            }
-
-            allPlayers = players.sort((a, b) => (b.total_hours || 0) - (a.total_hours || 0));
-            totalPages = Math.ceil(allPlayers.length / PLAYERS_PER_PAGE);
-            currentPage = 0;
-
-            renderPage();
-            startPageRotation();
-
-            // Update stats
-            document.getElementById('total-players').textContent = allPlayers.length;
-            const totalHours = allPlayers.reduce((sum, p) => sum + (p.total_hours || 0), 0);
-            document.getElementById('total-hours').textContent = Math.round(totalHours);
-
-            const todayStart = new Date();
-            todayStart.setHours(0, 0, 0, 0);
-            const activePlayers = allPlayers.filter(p => {
-                if (!p.last_played) return false;
-                return new Date(p.last_played) >= todayStart;
-            }).length;
-            document.getElementById('active-players').textContent = activePlayers;
-        }
-
+        // Load data from API
         async function loadData() {
             try {
-                let data = await fetchWithRetry();
-                saveToCache(data);
+                console.log('Loading data from API...');
 
-                processPlayersData(data.players);
+                let apiUrl = '/api/tv-data';
+                
+                if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                    apiUrl = 'http://localhost:3000/api/tv-data';
+                }
+
+                console.log('Fetching from:', apiUrl);
+
+                const response = await fetch(apiUrl);
+
+                if (!response.ok) {
+                    throw new Error(`Failed to load data: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('Data loaded:', {
+                    players: data.players?.length || 0,
+                    promotions: data.promotions?.length || 0
+                });
+
+                // Update club name if available
+                if (data.clubSettings?.clubName) {
+                    document.getElementById('club-name').textContent = data.clubSettings.clubName.toUpperCase();
+                }
+
+                // Process players - NO FILTERING, SHOW ALL
+                allPlayers = (data.players || [])
+                    .filter(p => p.name)
+                    .sort((a, b) => (b.total_hours || 0) - (a.total_hours || 0));
+
+                console.log('Processed players:', allPlayers.length);
+
+                // Update stats
+                document.getElementById('total-players').textContent = allPlayers.length;
+                const totalHours = allPlayers.reduce((sum, p) => sum + (p.total_hours || 0), 0);
+                document.getElementById('total-hours').textContent = Math.round(totalHours);
 
                 // Update promotion info
                 if (data.promotions && data.promotions.length > 0) {
@@ -661,7 +882,10 @@
                     let activePromo = data.promotions.find(p =>
                         new Date(p.start_date) <= now && new Date(p.end_date) >= now
                     );
-                    if (!activePromo) activePromo = data.promotions[0];
+
+                    if (!activePromo) {
+                        activePromo = data.promotions[0];
+                    }
 
                     document.getElementById('promotion-name').textContent = activePromo.name || 'Leaderboard';
                     document.getElementById('header-promotion-name').textContent = activePromo.name || 'Leaderboard';
@@ -676,40 +900,64 @@
 
                     const daysLeft = Math.ceil((end - now) / (1000 * 60 * 60 * 24));
                     document.getElementById('days-remaining').textContent = daysLeft > 0 ? `${daysLeft}` : 'Ended';
-                }
-            } catch (err) {
-                console.error('Fetch error:', err.message);
-                setStatus('Using cache...', false);
 
-                const cachedData = loadFromCache();
-                if (cachedData && cachedData.players) {
-                    processPlayersData(cachedData.players);
+                    const todayStart = new Date();
+                    todayStart.setHours(0, 0, 0, 0);
+                    const activePlayers = allPlayers.filter(p => {
+                        if (!p.last_played) return false;
+                        return new Date(p.last_played) >= todayStart;
+                    }).length;
+                    document.getElementById('active-players').textContent = activePlayers;
                 } else {
-                    document.getElementById('leaderboard').innerHTML = 
-                        '<div class="loading">Unable to load data<br>Check connection</div>';
-                    setStatus('No data available', false);
+                    document.getElementById('promotion-name').textContent = 'General Leaderboard';
+                    document.getElementById('header-promotion-name').textContent = 'General Leaderboard';
+                    document.getElementById('start-date').textContent = '--';
+                    document.getElementById('end-date').textContent = '--';
+                    document.getElementById('countdown').textContent = '--';
+                    document.getElementById('period').textContent = '--';
+                    document.getElementById('days-remaining').textContent = '--';
+                    document.getElementById('active-players').textContent = '0';
                 }
+
+                // Calculate pages and render
+                totalPages = Math.ceil(allPlayers.length / PLAYERS_PER_PAGE);
+                currentPage = 0;
+                renderLeaderboardPage();
+
+                // Start rotation if multiple pages
+                startPageRotation();
+
+                console.log('Display updated successfully');
+
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('leaderboard-content').innerHTML =
+                    `<div class="error">Failed to load data: ${error.message}</div>`;
             }
         }
 
+        // Initialize
         function init() {
+            console.log('Initializing TV Paginated Display...');
             updateClock();
             setInterval(updateClock, 1000);
 
-            setTimeout(() => {
-                loadData();
-            }, 500);
+            loadData();
 
             setInterval(loadData, 60000);
-            
+
             setInterval(() => {
-                const endDateText = document.getElementById('end-date').textContent;
-                if (endDateText && endDateText !== '--') {
-                    document.getElementById('countdown').textContent = calculateCountdown(endDateText);
+                const promotionName = document.getElementById('promotion-name').textContent;
+                if (promotionName && promotionName !== 'Loading...') {
+                    const endDateText = document.getElementById('end-date').textContent;
+                    if (endDateText && endDateText !== '--') {
+                        document.getElementById('countdown').textContent = calculateCountdown(endDateText);
+                    }
                 }
             }, 60000);
         }
 
+        // Start when page loads
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', init);
         } else {
