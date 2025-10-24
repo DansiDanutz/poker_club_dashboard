@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Poker Club TV - Paginated Display</title>
+    <title>Poker Club TV - Leaderboard</title>
     <style>
         * {
             margin: 0;
@@ -52,13 +52,29 @@
 
         .header {
             background: rgba(0, 0, 0, 0.7);
-            padding: 1.5rem;
-            text-align: center;
-            border-bottom: 0.2rem solid #fbbf24;
-            box-shadow: 0 0.3rem 0.8rem rgba(0, 0, 0, 0.5);
+            padding: 1.2rem 2rem;
+            border-bottom: 0.3rem solid #fbbf24;
+            box-shadow: 0 0.4rem 1rem rgba(0, 0, 0, 0.5);
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+
+        .header-left {
+            flex: 1;
+            text-align: left;
+        }
+
+        .current-promotion-label {
+            color: #10b981;
+            font-size: 1rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .header-promotion-name {
+            color: #fbbf24;
+            font-size: 1.5rem;
+            font-weight: bold;
         }
 
         .club-name {
@@ -79,7 +95,6 @@
             font-variant-numeric: tabular-nums;
             flex: 1;
             text-align: right;
-            padding-right: 1rem;
         }
 
         .main-content {
@@ -88,58 +103,143 @@
             padding: 1.5rem;
             gap: 1.5rem;
             min-height: 0;
-            flex-direction: column;
         }
 
-        .page-header {
+        .left-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-width: 35%;
+        }
+
+        .right-panel {
+            flex: 2;
+        }
+
+        .card {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 0.8rem;
+            padding: 1.2rem;
+            border: 0.15rem solid rgba(251, 191, 36, 0.3);
+            box-shadow: 0 0.3rem 0.8rem rgba(0, 0, 0, 0.4);
+        }
+
+        .promotion-info {
+            flex: 1;
+        }
+
+        .promotion-title {
+            color: #fbbf24;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+        }
+
+        .promotion-detail {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            font-size: 1.2rem;
-            color: #94a3b8;
-            padding: 0 0.5rem;
-            margin-bottom: 0.5rem;
+            margin: 0.8rem 0;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.95rem;
         }
 
-        .page-title {
-            color: #fbbf24;
-            font-weight: 700;
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.8rem;
         }
 
-        .page-info {
-            font-size: 1rem;
+        .stat-box {
             background: rgba(251, 191, 36, 0.1);
-            padding: 0.4rem 0.8rem;
-            border-radius: 0.3rem;
+            padding: 0.8rem;
+            border-radius: 0.5rem;
+            text-align: center;
             border: 1px solid rgba(251, 191, 36, 0.3);
+            transition: all 0.3s;
+        }
+
+        .stat-box:hover {
+            background: rgba(251, 191, 36, 0.18);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);
+        }
+
+        .stat-value {
+            font-size: 1.6rem;
+            font-weight: 900;
+            color: #fbbf24;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-top: 0.4rem;
+        }
+
+        .info-card {
+            flex: 1;
+        }
+
+        .info-title {
+            color: #fbbf24;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+        }
+
+        .info-content {
+            color: #e2e8f0;
+            line-height: 1.8;
+            font-size: 0.95rem;
+        }
+
+        .info-content p {
+            margin-bottom: 0.8rem;
+            padding-left: 1rem;
+            border-left: 3px solid rgba(251, 191, 36, 0.3);
         }
 
         .leaderboard {
-            flex: 1;
             background: rgba(0, 0, 0, 0.5);
             border-radius: 0.8rem;
             padding: 1.5rem;
             border: 0.15rem solid rgba(251, 191, 36, 0.3);
             display: flex;
             flex-direction: column;
+            height: 100%;
             box-shadow: 0 0.3rem 0.8rem rgba(0, 0, 0, 0.4);
         }
 
+        .leaderboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
         .leaderboard-title {
-            font-size: 2rem;
+            font-size: 1.8rem;
             color: #fbbf24;
-            text-align: center;
-            margin-bottom: 1.5rem;
-            text-shadow: 0 0 1.3rem rgba(251, 191, 36, 0.3);
             text-transform: uppercase;
             letter-spacing: 0.1rem;
+            text-shadow: 0 0 1.3rem rgba(251, 191, 36, 0.3);
+        }
+
+        .page-info {
+            font-size: 0.9rem;
+            background: rgba(251, 191, 36, 0.1);
+            padding: 0.4rem 0.8rem;
+            border-radius: 0.3rem;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            color: #fbbf24;
         }
 
         .leaderboard-content {
             flex: 1;
             overflow-y: auto;
             overflow-x: hidden;
-            padding-right: 0.5rem;
         }
 
         .player-row {
@@ -176,8 +276,8 @@
         .player-row.rank-3 { border-left-color: #cd7f32; }
 
         .rank-badge {
-            width: 3rem;
-            height: 3rem;
+            width: 2.8rem;
+            height: 2.8rem;
             background: #fbbf24;
             color: #1a1a2e;
             border-radius: 50%;
@@ -185,7 +285,7 @@
             align-items: center;
             justify-content: center;
             font-weight: 900;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             box-shadow: 0 0.3rem 0.6rem rgba(251, 191, 36, 0.4);
             flex-shrink: 0;
         }
@@ -210,7 +310,7 @@
         }
 
         .player-name {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             font-weight: 900;
             color: white;
             text-transform: uppercase;
@@ -218,21 +318,19 @@
             overflow: hidden;
             text-overflow: ellipsis;
             margin-bottom: 0.2rem;
-            text-shadow: 0.08rem 0.08rem 0.15rem rgba(0, 0, 0, 0.6);
         }
 
         .player-sessions {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: #94a3b8;
         }
 
         .player-hours {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: 900;
             color: #fbbf24;
             text-align: right;
-            min-width: 6rem;
-            text-shadow: 0 0 1rem rgba(251, 191, 36, 0.3);
+            min-width: 5.5rem;
             font-variant-numeric: tabular-nums;
         }
 
@@ -247,8 +345,8 @@
             border: 0.3rem solid rgba(251, 191, 36, 0.3);
             border-top: 0.3rem solid #fbbf24;
             border-radius: 50%;
-            width: 3rem;
-            height: 3rem;
+            width: 2.5rem;
+            height: 2.5rem;
             animation: spin 1s linear infinite;
             margin: 1rem auto;
         }
@@ -278,22 +376,77 @@
 </head>
 <body>
     <div class="header">
+        <div class="header-left">
+            <div class="current-promotion-label">CURRENT PROMOTION</div>
+            <div class="header-promotion-name" id="header-promotion-name">Loading...</div>
+        </div>
         <div class="club-name">🏆 PLAYER'S POKER CLUB 🏆</div>
         <div class="clock" id="clock">--:--:--</div>
     </div>
 
     <div class="main-content">
-        <div class="page-header">
-            <div class="page-title">TOP PLAYERS LEADERBOARD</div>
-            <div class="page-info" id="page-info">Loading...</div>
+        <div class="left-panel">
+            <div class="card promotion-info">
+                <div class="promotion-title">Current Promotion</div>
+                <div class="promotion-detail">
+                    <span>Period</span>
+                    <span id="period" style="color: #94a3b8;">--</span>
+                </div>
+                <div class="promotion-detail">
+                    <span>Start Date</span>
+                    <span id="start-date">--</span>
+                </div>
+                <div class="promotion-detail">
+                    <span>End Date</span>
+                    <span id="end-date">--</span>
+                </div>
+                <div class="promotion-detail">
+                    <span>Days Remaining</span>
+                    <span id="days-remaining" style="color: #10b981;">--</span>
+                </div>
+                <div class="promotion-detail">
+                    <span>Time Remaining</span>
+                    <span id="countdown" style="color: #fbbf24;">--</span>
+                </div>
+            </div>
+
+            <div class="stats-container">
+                <div class="stat-box">
+                    <div class="stat-value" id="total-players">0</div>
+                    <div class="stat-label">Total Players</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="total-hours">0</div>
+                    <div class="stat-label">Total Hours</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="active-players">0</div>
+                    <div class="stat-label">Active Today</div>
+                </div>
+            </div>
+
+            <div class="card info-card">
+                <div class="info-title">📢 Club Announcements</div>
+                <div class="info-content" id="info-content">
+                    <p>🎉 Welcome to Player's Poker Club!</p>
+                    <p>🏆 Play more hours to win amazing prizes!</p>
+                    <p>📅 Check our weekly tournaments</p>
+                    <p>💰 Special bonuses for top players</p>
+                </div>
+            </div>
         </div>
 
-        <div class="leaderboard">
-            <div class="leaderboard-title" id="page-title">LOADING...</div>
-            <div class="leaderboard-content" id="leaderboard">
-                <div class="loading">
-                    <div class="spinner"></div>
-                    <p>Loading players...</p>
+        <div class="right-panel">
+            <div class="leaderboard">
+                <div class="leaderboard-header">
+                    <div class="leaderboard-title">🏆 TOP LEADERBOARD 🏆</div>
+                    <div class="page-info" id="page-info">Loading...</div>
+                </div>
+                <div class="leaderboard-content" id="leaderboard">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading players...</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -305,16 +458,12 @@
         const CACHE_KEY = 'poker_tv_cache';
         const CACHE_TIME = 60000;
         const PLAYERS_PER_PAGE = 10;
-        const PAGE_ROTATION_TIME = 15000; // 15 seconds per page
+        const PAGE_ROTATION_TIME = 15000;
 
-        // State
         let currentPage = 0;
         let totalPages = 0;
         let allPlayers = [];
         let pageRotationTimer = null;
-
-        console.log('TV Paginated Display Initialized');
-        console.log('Screen:', window.innerWidth + 'x' + window.innerHeight);
 
         function updateClock() {
             try {
@@ -333,10 +482,31 @@
                 const status = document.getElementById('status');
                 status.textContent = message;
                 status.className = 'status ' + (isOk ? 'ok' : 'error');
-                console.log('Status:', message);
             } catch (err) {
                 console.error('Status error:', err);
             }
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '--';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            });
+        }
+
+        function calculateCountdown(endDate) {
+            if (!endDate) return '--';
+            const now = new Date();
+            const end = new Date(endDate);
+            const diff = end - now;
+            if (diff <= 0) return 'ENDED';
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            if (days > 0) return `${days}d ${hours}h`;
+            return `${hours}h remaining`;
         }
 
         async function fetchWithRetry() {
@@ -348,13 +518,8 @@
             for (const endpoint of endpoints) {
                 try {
                     setStatus('Fetching...', true);
-                    console.log('Attempting:', endpoint);
-
                     const controller = new AbortController();
-                    const timeout = setTimeout(() => {
-                        console.log('Timeout on:', endpoint);
-                        controller.abort();
-                    }, 6000);
+                    const timeout = setTimeout(() => controller.abort(), 6000);
 
                     const response = await fetch(endpoint, {
                         signal: controller.signal,
@@ -366,12 +531,8 @@
 
                     clearTimeout(timeout);
 
-                    console.log('Response status:', response.status);
-
                     if (response.ok) {
                         const data = await response.json();
-                        console.log('Data received:', data.players?.length, 'players');
-                        
                         if (data.players && data.players.length > 0) {
                             setStatus('✓ Data loaded (' + data.players.length + ' players)', true);
                             return data;
@@ -381,7 +542,6 @@
                     console.log('Fetch error:', err.message);
                 }
             }
-
             throw new Error('All endpoints failed');
         }
 
@@ -391,7 +551,6 @@
                 if (cached) {
                     const { data, time } = JSON.parse(cached);
                     if (Date.now() - time < CACHE_TIME) {
-                        console.log('Loading from cache:', data.players?.length, 'players');
                         setStatus('✓ From cache (' + data.players.length + ' players)', true);
                         return data;
                     }
@@ -422,13 +581,8 @@
             const endIdx = Math.min(startIdx + PLAYERS_PER_PAGE, allPlayers.length);
             const pagePlayers = allPlayers.slice(startIdx, endIdx);
 
-            // Update title
-            const pageTitle = document.getElementById('page-title');
-            pageTitle.textContent = 'PLAYERS ' + (startIdx + 1) + ' - ' + endIdx;
-
-            // Update page info
             const pageInfo = document.getElementById('page-info');
-            pageInfo.textContent = 'Page ' + (currentPage + 1) + ' of ' + totalPages;
+            pageInfo.textContent = `Page ${currentPage + 1} of ${totalPages}`;
 
             let html = '';
             
@@ -438,9 +592,7 @@
                 const minutes = Math.round(((player.total_hours || 0) % 1) * 60);
 
                 let rankClass = '';
-                if (globalRank <= 3) {
-                    rankClass = 'rank-' + globalRank;
-                }
+                if (globalRank <= 3) rankClass = 'rank-' + globalRank;
 
                 html += `
                     <div class="player-row ${rankClass}">
@@ -455,18 +607,11 @@
             });
 
             container.innerHTML = html;
-            console.log(`Page ${currentPage + 1}/${totalPages}: Showing players ${startIdx + 1}-${endIdx}`);
         }
 
         function startPageRotation() {
             if (pageRotationTimer) clearInterval(pageRotationTimer);
-
-            if (totalPages <= 1) {
-                console.log('Only 1 page, no rotation needed');
-                return;
-            }
-
-            console.log('Starting page rotation with', totalPages, 'pages');
+            if (totalPages <= 1) return;
             
             pageRotationTimer = setInterval(() => {
                 currentPage = (currentPage + 1) % totalPages;
@@ -486,18 +631,52 @@
             totalPages = Math.ceil(allPlayers.length / PLAYERS_PER_PAGE);
             currentPage = 0;
 
-            console.log('Loaded', allPlayers.length, 'players in', totalPages, 'pages');
-            
             renderPage();
             startPageRotation();
+
+            // Update stats
+            document.getElementById('total-players').textContent = allPlayers.length;
+            const totalHours = allPlayers.reduce((sum, p) => sum + (p.total_hours || 0), 0);
+            document.getElementById('total-hours').textContent = Math.round(totalHours);
+
+            const todayStart = new Date();
+            todayStart.setHours(0, 0, 0, 0);
+            const activePlayers = allPlayers.filter(p => {
+                if (!p.last_played) return false;
+                return new Date(p.last_played) >= todayStart;
+            }).length;
+            document.getElementById('active-players').textContent = activePlayers;
         }
 
         async function loadData() {
-            console.log('loadData() called');
             try {
                 let data = await fetchWithRetry();
                 saveToCache(data);
+
                 processPlayersData(data.players);
+
+                // Update promotion info
+                if (data.promotions && data.promotions.length > 0) {
+                    const now = new Date();
+                    let activePromo = data.promotions.find(p =>
+                        new Date(p.start_date) <= now && new Date(p.end_date) >= now
+                    );
+                    if (!activePromo) activePromo = data.promotions[0];
+
+                    document.getElementById('promotion-name').textContent = activePromo.name || 'Leaderboard';
+                    document.getElementById('header-promotion-name').textContent = activePromo.name || 'Leaderboard';
+                    document.getElementById('start-date').textContent = formatDate(activePromo.start_date);
+                    document.getElementById('end-date').textContent = formatDate(activePromo.end_date);
+                    document.getElementById('countdown').textContent = calculateCountdown(activePromo.end_date);
+
+                    const start = new Date(activePromo.start_date);
+                    const end = new Date(activePromo.end_date);
+                    const totalDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+                    document.getElementById('period').textContent = `${totalDays} days`;
+
+                    const daysLeft = Math.ceil((end - now) / (1000 * 60 * 60 * 24));
+                    document.getElementById('days-remaining').textContent = daysLeft > 0 ? `${daysLeft}` : 'Ended';
+                }
             } catch (err) {
                 console.error('Fetch error:', err.message);
                 setStatus('Using cache...', false);
@@ -514,20 +693,21 @@
         }
 
         function init() {
-            console.log('Initializing TV Paginated Display...');
-            
             updateClock();
             setInterval(updateClock, 1000);
 
             setTimeout(() => {
-                console.log('Starting data load...');
                 loadData();
             }, 500);
 
-            // Reload every 60 seconds
             setInterval(loadData, 60000);
             
-            console.log('Initialization complete');
+            setInterval(() => {
+                const endDateText = document.getElementById('end-date').textContent;
+                if (endDateText && endDateText !== '--') {
+                    document.getElementById('countdown').textContent = calculateCountdown(endDateText);
+                }
+            }, 60000);
         }
 
         if (document.readyState === 'loading') {
@@ -535,10 +715,6 @@
         } else {
             init();
         }
-
-        window.addEventListener('resize', () => {
-            console.log('Resized to:', window.innerWidth + 'x' + window.innerHeight);
-        });
     </script>
 </body>
 </html>
