@@ -729,14 +729,21 @@
 
         // Update clock every second
         function updateClock() {
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString('en-US', {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: false
-            });
-            document.getElementById('clock').textContent = timeStr;
+            try {
+                const clockEl = document.getElementById('clock');
+                if (!clockEl) return;
+                
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: false
+                });
+                clockEl.textContent = timeStr;
+            } catch (error) {
+                console.error('Error updating clock:', error);
+            }
         }
 
         // Format date
@@ -769,57 +776,71 @@
 
         // Render leaderboard page
         function renderLeaderboardPage() {
-            const container = document.getElementById('leaderboard-content');
+            try {
+                const container = document.getElementById('leaderboard-content');
 
-            if (allPlayers.length === 0) {
-                container.innerHTML = '<div class="loading">No players yet</div>';
-                return;
-            }
-
-            const startIdx = currentPage * PLAYERS_PER_PAGE;
-            const endIdx = Math.min(startIdx + PLAYERS_PER_PAGE, allPlayers.length);
-            const pagePlayers = allPlayers.slice(startIdx, endIdx);
-
-            let html = '';
-            pagePlayers.forEach((player, idx) => {
-                const rank = startIdx + idx + 1;
-                let rankClass = '';
-                let rowClass = '';
-                let trophy = '';
-
-                if (rank === 1) {
-                    rankClass = 'gold';
-                    rowClass = 'gold-winner';
-                    trophy = '👑';
-                } else if (rank === 2) {
-                    rankClass = 'silver';
-                    rowClass = 'silver-winner';
-                    trophy = '🥈';
-                } else if (rank === 3) {
-                    rankClass = 'bronze';
-                    rowClass = 'bronze-winner';
-                    trophy = '🥉';
+                if (!container) {
+                    console.error('leaderboard-content element not found');
+                    return;
                 }
 
-                const hours = Math.floor(player.total_hours || 0);
-                const minutes = Math.round((player.total_hours || 0) % 1 * 60);
+                if (allPlayers.length === 0) {
+                    container.innerHTML = '<div class="loading">No players yet</div>';
+                    return;
+                }
 
-                html += `
-                    <div class="player-row ${rowClass}">
-                        <div class="player-rank ${rankClass}">${rank}</div>
-                        <div class="player-info">
-                            <div class="player-name">${player.name} ${trophy}</div>
-                            <div class="player-sessions">${player.total_sessions || 0} sessions</div>
+                const startIdx = currentPage * PLAYERS_PER_PAGE;
+                const endIdx = Math.min(startIdx + PLAYERS_PER_PAGE, allPlayers.length);
+                const pagePlayers = allPlayers.slice(startIdx, endIdx);
+
+                let html = '';
+                pagePlayers.forEach((player, idx) => {
+                    const rank = startIdx + idx + 1;
+                    let rankClass = '';
+                    let rowClass = '';
+                    let trophy = '';
+
+                    if (rank === 1) {
+                        rankClass = 'gold';
+                        rowClass = 'gold-winner';
+                        trophy = '👑';
+                    } else if (rank === 2) {
+                        rankClass = 'silver';
+                        rowClass = 'silver-winner';
+                        trophy = '🥈';
+                    } else if (rank === 3) {
+                        rankClass = 'bronze';
+                        rowClass = 'bronze-winner';
+                        trophy = '🥉';
+                    }
+
+                    const hours = Math.floor(player.total_hours || 0);
+                    const minutes = Math.round((player.total_hours || 0) % 1 * 60);
+
+                    html += `
+                        <div class="player-row ${rowClass}">
+                            <div class="player-rank ${rankClass}">${rank}</div>
+                            <div class="player-info">
+                                <div class="player-name">${player.name} ${trophy}</div>
+                                <div class="player-sessions">${player.total_sessions || 0} sessions</div>
+                            </div>
+                            <div class="player-hours">${hours}h ${minutes}m</div>
                         </div>
-                        <div class="player-hours">${hours}h ${minutes}m</div>
-                    </div>
-                `;
-            });
+                    `;
+                });
 
-            container.innerHTML = html;
+                container.innerHTML = html;
 
-            // Update page indicator
-            document.getElementById('page-info').textContent = `Page ${currentPage + 1} of ${totalPages}`;
+                // Update page indicator
+                const pageInfoEl = document.getElementById('page-info');
+                if (pageInfoEl) {
+                    pageInfoEl.textContent = `Page ${currentPage + 1} of ${totalPages}`;
+                }
+
+                console.log(`Rendered page ${currentPage + 1}/${totalPages}: ${pagePlayers.length} players`);
+            } catch (error) {
+                console.error('Error rendering leaderboard page:', error);
+            }
         }
 
         // Rotate pages
@@ -854,15 +875,20 @@
                 }
 
                 const data = await response.json();
+                console.log('Full API Response:', data);
                 console.log('Data loaded:', {
                     players: data.players?.length || 0,
-                    promotions: data.promotions?.length || 0
+                    promotions: data.promotions?.length || 0,
+                    clubSettings: data.clubSettings
                 });
 
-                // Update club name if available
-                if (data.clubSettings?.clubName) {
-                    document.getElementById('club-name').textContent = data.clubSettings.clubName.toUpperCase();
-                }
+                // Safely update club name
+                try {
+                    const clubNameEl = document.getElementById('club-name');
+                    if (clubNameEl && data.clubSettings?.clubName) {
+                        clubNameEl.textContent = data.clubSettings.clubName.toUpperCase();
+                    }
+                } catch (e) { console.error('Club name update error:', e); }
 
                 // Process players - NO FILTERING, SHOW ALL
                 allPlayers = (data.players || [])
@@ -871,10 +897,15 @@
 
                 console.log('Processed players:', allPlayers.length);
 
-                // Update stats
-                document.getElementById('total-players').textContent = allPlayers.length;
-                const totalHours = allPlayers.reduce((sum, p) => sum + (p.total_hours || 0), 0);
-                document.getElementById('total-hours').textContent = Math.round(totalHours);
+                // Update stats - with safety checks
+                try {
+                    const totalPlayersEl = document.getElementById('total-players');
+                    if (totalPlayersEl) totalPlayersEl.textContent = allPlayers.length;
+                    
+                    const totalHours = allPlayers.reduce((sum, p) => sum + (p.total_hours || 0), 0);
+                    const totalHoursEl = document.getElementById('total-hours');
+                    if (totalHoursEl) totalHoursEl.textContent = Math.round(totalHours);
+                } catch (e) { console.error('Stats update error:', e); }
 
                 // Update promotion info
                 if (data.promotions && data.promotions.length > 0) {
@@ -887,36 +918,72 @@
                         activePromo = data.promotions[0];
                     }
 
-                    document.getElementById('promotion-name').textContent = activePromo.name || 'Leaderboard';
-                    document.getElementById('header-promotion-name').textContent = activePromo.name || 'Leaderboard';
-                    document.getElementById('start-date').textContent = formatDate(activePromo.start_date);
-                    document.getElementById('end-date').textContent = formatDate(activePromo.end_date);
-                    document.getElementById('countdown').textContent = calculateCountdown(activePromo.end_date);
+                    console.log('Active promotion:', activePromo.name);
 
-                    const start = new Date(activePromo.start_date);
-                    const end = new Date(activePromo.end_date);
-                    const totalDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
-                    document.getElementById('period').textContent = `${totalDays} days`;
+                    // Safely update all promotion elements
+                    try {
+                        const promNameEl = document.getElementById('promotion-name');
+                        if (promNameEl) promNameEl.textContent = activePromo.name || 'Leaderboard';
+                        
+                        const headerPromEl = document.getElementById('header-promotion-name');
+                        if (headerPromEl) headerPromEl.textContent = activePromo.name || 'Leaderboard';
+                        
+                        const startDateEl = document.getElementById('start-date');
+                        if (startDateEl) startDateEl.textContent = formatDate(activePromo.start_date);
+                        
+                        const endDateEl = document.getElementById('end-date');
+                        if (endDateEl) endDateEl.textContent = formatDate(activePromo.end_date);
+                        
+                        const countdownEl = document.getElementById('countdown');
+                        if (countdownEl) countdownEl.textContent = calculateCountdown(activePromo.end_date);
 
-                    const daysLeft = Math.ceil((end - now) / (1000 * 60 * 60 * 24));
-                    document.getElementById('days-remaining').textContent = daysLeft > 0 ? `${daysLeft}` : 'Ended';
+                        const start = new Date(activePromo.start_date);
+                        const end = new Date(activePromo.end_date);
+                        const totalDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+                        const periodEl = document.getElementById('period');
+                        if (periodEl) periodEl.textContent = `${totalDays} days`;
 
-                    const todayStart = new Date();
-                    todayStart.setHours(0, 0, 0, 0);
-                    const activePlayers = allPlayers.filter(p => {
-                        if (!p.last_played) return false;
-                        return new Date(p.last_played) >= todayStart;
-                    }).length;
-                    document.getElementById('active-players').textContent = activePlayers;
+                        const daysLeft = Math.ceil((end - now) / (1000 * 60 * 60 * 24));
+                        const daysRemainingEl = document.getElementById('days-remaining');
+                        if (daysRemainingEl) daysRemainingEl.textContent = daysLeft > 0 ? `${daysLeft}` : 'Ended';
+
+                        const todayStart = new Date();
+                        todayStart.setHours(0, 0, 0, 0);
+                        const activePlayers = allPlayers.filter(p => {
+                            if (!p.last_played) return false;
+                            return new Date(p.last_played) >= todayStart;
+                        }).length;
+                        const activePlayersEl = document.getElementById('active-players');
+                        if (activePlayersEl) activePlayersEl.textContent = activePlayers;
+
+                        console.log('Promotion updated:', {
+                            name: activePromo.name,
+                            startDate: activePromo.start_date,
+                            endDate: activePromo.end_date,
+                            daysLeft,
+                            activePlayers
+                        });
+                    } catch (e) { console.error('Promotion elements update error:', e); }
                 } else {
-                    document.getElementById('promotion-name').textContent = 'General Leaderboard';
-                    document.getElementById('header-promotion-name').textContent = 'General Leaderboard';
-                    document.getElementById('start-date').textContent = '--';
-                    document.getElementById('end-date').textContent = '--';
-                    document.getElementById('countdown').textContent = '--';
-                    document.getElementById('period').textContent = '--';
-                    document.getElementById('days-remaining').textContent = '--';
-                    document.getElementById('active-players').textContent = '0';
+                    console.warn('No promotions found!');
+                    try {
+                        const promNameEl = document.getElementById('promotion-name');
+                        if (promNameEl) promNameEl.textContent = 'General Leaderboard';
+                        const headerPromEl = document.getElementById('header-promotion-name');
+                        if (headerPromEl) headerPromEl.textContent = 'General Leaderboard';
+                        const startDateEl = document.getElementById('start-date');
+                        if (startDateEl) startDateEl.textContent = '--';
+                        const endDateEl = document.getElementById('end-date');
+                        if (endDateEl) endDateEl.textContent = '--';
+                        const countdownEl = document.getElementById('countdown');
+                        if (countdownEl) countdownEl.textContent = '--';
+                        const periodEl = document.getElementById('period');
+                        if (periodEl) periodEl.textContent = '--';
+                        const daysRemainingEl = document.getElementById('days-remaining');
+                        if (daysRemainingEl) daysRemainingEl.textContent = '--';
+                        const activePlayersEl = document.getElementById('active-players');
+                        if (activePlayersEl) activePlayersEl.textContent = '0';
+                    } catch (e) { console.error('Fallback promotion elements error:', e); }
                 }
 
                 // Calculate pages and render
@@ -927,12 +994,20 @@
                 // Start rotation if multiple pages
                 startPageRotation();
 
-                console.log('Display updated successfully');
+                console.log('Display updated successfully:', {
+                    totalPages,
+                    totalPlayers: allPlayers.length,
+                    promotionName: document.getElementById('promotion-name')?.textContent,
+                    totalHours: document.getElementById('total-hours')?.textContent,
+                    activePlayers: document.getElementById('active-players')?.textContent
+                });
 
             } catch (error) {
                 console.error('Error loading data:', error);
-                document.getElementById('leaderboard-content').innerHTML =
-                    `<div class="error">Failed to load data: ${error.message}</div>`;
+                const leaderboardEl = document.getElementById('leaderboard-content');
+                if (leaderboardEl) {
+                    leaderboardEl.innerHTML = `<div class="error">Failed to load data: ${error.message}</div>`;
+                }
             }
         }
 
