@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Poker Club TV - Paginated Display</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        html {
+            font-size: 16px;
+        }
+
+        @media (min-width: 3840px) {
+            html { font-size: 32px; }
+        }
+
+        @media (min-width: 2560px) and (max-width: 3839px) {
+            html { font-size: 28px; }
+        }
+
+        @media (min-width: 1920px) and (max-width: 2559px) {
+            html { font-size: 22px; }
+        }
+
+        @media (min-width: 1280px) and (max-width: 1919px) {
+            html { font-size: 18px; }
+        }
+
+        @media (max-width: 1279px) {
+            html { font-size: 14px; }
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 1.5rem;
+            text-align: center;
+            border-bottom: 0.2rem solid #fbbf24;
+            box-shadow: 0 0.3rem 0.8rem rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .club-name {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: #fbbf24;
+            text-transform: uppercase;
+            letter-spacing: 0.15rem;
+            text-shadow: 0.15rem 0.15rem 0.3rem rgba(0, 0, 0, 0.8);
+            flex: 2;
+            text-align: center;
+        }
+
+        .clock {
+            font-size: 1.5rem;
+            color: #94a3b8;
+            font-weight: 500;
+            font-variant-numeric: tabular-nums;
+            flex: 1;
+            text-align: right;
+            padding-right: 1rem;
+        }
+
+        .main-content {
+            display: flex;
+            flex: 1;
+            padding: 1.5rem;
+            gap: 1.5rem;
+            min-height: 0;
+            flex-direction: column;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.2rem;
+            color: #94a3b8;
+            padding: 0 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-title {
+            color: #fbbf24;
+            font-weight: 700;
+        }
+
+        .page-info {
+            font-size: 1rem;
+            background: rgba(251, 191, 36, 0.1);
+            padding: 0.4rem 0.8rem;
+            border-radius: 0.3rem;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+        }
+
+        .leaderboard {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 0.8rem;
+            padding: 1.5rem;
+            border: 0.15rem solid rgba(251, 191, 36, 0.3);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0.3rem 0.8rem rgba(0, 0, 0, 0.4);
+        }
+
+        .leaderboard-title {
+            font-size: 2rem;
+            color: #fbbf24;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 1.3rem rgba(251, 191, 36, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.1rem;
+        }
+
+        .leaderboard-content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 0.5rem;
+        }
+
+        .player-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 1rem;
+            margin-bottom: 0.7rem;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%);
+            border-radius: 0.6rem;
+            border-left: 0.3rem solid #fbbf24;
+            transition: all 0.3s ease;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .player-row:hover {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.18) 0%, rgba(251, 191, 36, 0.06) 100%);
+            transform: translateX(0.5rem);
+        }
+
+        .player-row.rank-1 { border-left-color: #ffd700; }
+        .player-row.rank-2 { border-left-color: #c0c0c0; }
+        .player-row.rank-3 { border-left-color: #cd7f32; }
+
+        .rank-badge {
+            width: 3rem;
+            height: 3rem;
+            background: #fbbf24;
+            color: #1a1a2e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.2rem;
+            box-shadow: 0 0.3rem 0.6rem rgba(251, 191, 36, 0.4);
+            flex-shrink: 0;
+        }
+
+        .rank-1 .rank-badge {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            box-shadow: 0 0.4rem 1.3rem rgba(255, 215, 0, 0.5);
+        }
+
+        .rank-2 .rank-badge {
+            background: linear-gradient(135deg, #c0c0c0, #e8e8e8);
+        }
+
+        .rank-3 .rank-badge {
+            background: linear-gradient(135deg, #cd7f32, #e4a853);
+        }
+
+        .player-info {
+            flex: 1;
+            margin-left: 1rem;
+            min-width: 0;
+        }
+
+        .player-name {
+            font-size: 1.3rem;
+            font-weight: 900;
+            color: white;
+            text-transform: uppercase;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 0.2rem;
+            text-shadow: 0.08rem 0.08rem 0.15rem rgba(0, 0, 0, 0.6);
+        }
+
+        .player-sessions {
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+
+        .player-hours {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #fbbf24;
+            text-align: right;
+            min-width: 6rem;
+            text-shadow: 0 0 1rem rgba(251, 191, 36, 0.3);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            font-size: 1.4rem;
+            color: #94a3b8;
+        }
+
+        .spinner {
+            border: 0.3rem solid rgba(251, 191, 36, 0.3);
+            border-top: 0.3rem solid #fbbf24;
+            border-radius: 50%;
+            width: 3rem;
+            height: 3rem;
+            animation: spin 1s linear infinite;
+            margin: 1rem auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status {
+            position: fixed;
+            bottom: 0.8rem;
+            right: 0.8rem;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 0.6rem 1rem;
+            border-radius: 0.3rem;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            max-width: 200px;
+            text-align: right;
+        }
+
+        .status.ok { color: #10b981; border-color: #10b981; }
+        .status.error { color: #ef4444; border-color: #ef4444; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="club-name">🏆 PLAYER'S POKER CLUB 🏆</div>
+        <div class="clock" id="clock">--:--:--</div>
+    </div>
+
+    <div class="main-content">
+        <div class="page-header">
+            <div class="page-title">TOP PLAYERS LEADERBOARD</div>
+            <div class="page-info" id="page-info">Loading...</div>
+        </div>
+
+        <div class="leaderboard">
+            <div class="leaderboard-title" id="page-title">LOADING...</div>
+            <div class="leaderboard-content" id="leaderboard">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading players...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="status" id="status">Initializing...</div>
+
+    <script>
+        const CACHE_KEY = 'poker_tv_cache';
+        const CACHE_TIME = 60000;
+        const PLAYERS_PER_PAGE = 10;
+        const PAGE_ROTATION_TIME = 15000; // 15 seconds per page
+
+        // State
+        let currentPage = 0;
+        let totalPages = 0;
+        let allPlayers = [];
+        let pageRotationTimer = null;
+
+        console.log('TV Paginated Display Initialized');
+        console.log('Screen:', window.innerWidth + 'x' + window.innerHeight);
+
+        function updateClock() {
+            try {
+                const now = new Date();
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                document.getElementById('clock').textContent = hours + ':' + minutes + ':' + seconds;
+            } catch (err) {
+                console.error('Clock error:', err);
+            }
+        }
+
+        function setStatus(message, isOk = true) {
+            try {
+                const status = document.getElementById('status');
+                status.textContent = message;
+                status.className = 'status ' + (isOk ? 'ok' : 'error');
+                console.log('Status:', message);
+            } catch (err) {
+                console.error('Status error:', err);
+            }
+        }
+
+        async function fetchWithRetry() {
+            const endpoints = [
+                '/api/tv-data',
+                '/api/tv-data?t=' + Date.now(),
+            ];
+
+            for (const endpoint of endpoints) {
+                try {
+                    setStatus('Fetching...', true);
+                    console.log('Attempting:', endpoint);
+
+                    const controller = new AbortController();
+                    const timeout = setTimeout(() => {
+                        console.log('Timeout on:', endpoint);
+                        controller.abort();
+                    }, 6000);
+
+                    const response = await fetch(endpoint, {
+                        signal: controller.signal,
+                        headers: {
+                            'Accept': 'application/json',
+                            'Cache-Control': 'no-cache, no-store, must-revalidate'
+                        }
+                    });
+
+                    clearTimeout(timeout);
+
+                    console.log('Response status:', response.status);
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        console.log('Data received:', data.players?.length, 'players');
+                        
+                        if (data.players && data.players.length > 0) {
+                            setStatus('✓ Data loaded (' + data.players.length + ' players)', true);
+                            return data;
+                        }
+                    }
+                } catch (err) {
+                    console.log('Fetch error:', err.message);
+                }
+            }
+
+            throw new Error('All endpoints failed');
+        }
+
+        function loadFromCache() {
+            try {
+                const cached = localStorage.getItem(CACHE_KEY);
+                if (cached) {
+                    const { data, time } = JSON.parse(cached);
+                    if (Date.now() - time < CACHE_TIME) {
+                        console.log('Loading from cache:', data.players?.length, 'players');
+                        setStatus('✓ From cache (' + data.players.length + ' players)', true);
+                        return data;
+                    }
+                }
+            } catch (err) {
+                console.log('Cache error:', err);
+            }
+            return null;
+        }
+
+        function saveToCache(data) {
+            try {
+                localStorage.setItem(CACHE_KEY, JSON.stringify({ data, time: Date.now() }));
+            } catch (err) {
+                console.log('Cache save error:', err);
+            }
+        }
+
+        function renderPage() {
+            const container = document.getElementById('leaderboard');
+
+            if (!allPlayers || allPlayers.length === 0) {
+                container.innerHTML = '<div class="loading">No players yet</div>';
+                return;
+            }
+
+            const startIdx = currentPage * PLAYERS_PER_PAGE;
+            const endIdx = Math.min(startIdx + PLAYERS_PER_PAGE, allPlayers.length);
+            const pagePlayers = allPlayers.slice(startIdx, endIdx);
+
+            // Update title
+            const pageTitle = document.getElementById('page-title');
+            pageTitle.textContent = 'PLAYERS ' + (startIdx + 1) + ' - ' + endIdx;
+
+            // Update page info
+            const pageInfo = document.getElementById('page-info');
+            pageInfo.textContent = 'Page ' + (currentPage + 1) + ' of ' + totalPages;
+
+            let html = '';
+            
+            pagePlayers.forEach((player, idx) => {
+                const globalRank = startIdx + idx + 1;
+                const hours = Math.floor(player.total_hours || 0);
+                const minutes = Math.round(((player.total_hours || 0) % 1) * 60);
+
+                let rankClass = '';
+                if (globalRank <= 3) {
+                    rankClass = 'rank-' + globalRank;
+                }
+
+                html += `
+                    <div class="player-row ${rankClass}">
+                        <div class="rank-badge">${globalRank}</div>
+                        <div class="player-info">
+                            <div class="player-name">${(player.name || 'Unknown').toUpperCase()}</div>
+                            <div class="player-sessions">${player.total_sessions || 0} sessions</div>
+                        </div>
+                        <div class="player-hours">${hours}h ${minutes}m</div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            console.log(`Page ${currentPage + 1}/${totalPages}: Showing players ${startIdx + 1}-${endIdx}`);
+        }
+
+        function startPageRotation() {
+            if (pageRotationTimer) clearInterval(pageRotationTimer);
+
+            if (totalPages <= 1) {
+                console.log('Only 1 page, no rotation needed');
+                return;
+            }
+
+            console.log('Starting page rotation with', totalPages, 'pages');
+            
+            pageRotationTimer = setInterval(() => {
+                currentPage = (currentPage + 1) % totalPages;
+                renderPage();
+            }, PAGE_ROTATION_TIME);
+        }
+
+        function processPlayersData(players) {
+            if (!players || players.length === 0) {
+                allPlayers = [];
+                totalPages = 0;
+                currentPage = 0;
+                return;
+            }
+
+            allPlayers = players.sort((a, b) => (b.total_hours || 0) - (a.total_hours || 0));
+            totalPages = Math.ceil(allPlayers.length / PLAYERS_PER_PAGE);
+            currentPage = 0;
+
+            console.log('Loaded', allPlayers.length, 'players in', totalPages, 'pages');
+            
+            renderPage();
+            startPageRotation();
+        }
+
+        async function loadData() {
+            console.log('loadData() called');
+            try {
+                let data = await fetchWithRetry();
+                saveToCache(data);
+                processPlayersData(data.players);
+            } catch (err) {
+                console.error('Fetch error:', err.message);
+                setStatus('Using cache...', false);
+
+                const cachedData = loadFromCache();
+                if (cachedData && cachedData.players) {
+                    processPlayersData(cachedData.players);
+                } else {
+                    document.getElementById('leaderboard').innerHTML = 
+                        '<div class="loading">Unable to load data<br>Check connection</div>';
+                    setStatus('No data available', false);
+                }
+            }
+        }
+
+        function init() {
+            console.log('Initializing TV Paginated Display...');
+            
+            updateClock();
+            setInterval(updateClock, 1000);
+
+            setTimeout(() => {
+                console.log('Starting data load...');
+                loadData();
+            }, 500);
+
+            // Reload every 60 seconds
+            setInterval(loadData, 60000);
+            
+            console.log('Initialization complete');
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+
+        window.addEventListener('resize', () => {
+            console.log('Resized to:', window.innerWidth + 'x' + window.innerHeight);
+        });
+    </script>
+</body>
+</html>
