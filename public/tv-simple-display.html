@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poker Club TV - Simple Display</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: white;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 3px solid #fbbf24;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        .club-name {
+            font-size: 3rem;
+            font-weight: 900;
+            color: #fbbf24;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            margin-bottom: 0.5rem;
+        }
+
+        .clock {
+            font-size: 1.5rem;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .main-content {
+            display: flex;
+            flex: 1;
+            padding: 2rem;
+            gap: 2rem;
+            min-height: 0;
+        }
+
+        .leaderboard {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 1rem;
+            padding: 2rem;
+            border: 2px solid rgba(251, 191, 36, 0.3);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .leaderboard-title {
+            font-size: 2.5rem;
+            color: #fbbf24;
+            text-align: center;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .leaderboard-content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .player-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.2rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%);
+            border-radius: 0.8rem;
+            border-left: 4px solid #fbbf24;
+            transition: all 0.3s ease;
+        }
+
+        .player-row:hover {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.18) 0%, rgba(251, 191, 36, 0.06) 100%);
+            transform: translateX(8px);
+        }
+
+        .player-row.rank-1 { border-left-color: #ffd700; }
+        .player-row.rank-2 { border-left-color: #c0c0c0; }
+        .player-row.rank-3 { border-left-color: #cd7f32; }
+
+        .rank-badge {
+            width: 4rem;
+            height: 4rem;
+            background: #fbbf24;
+            color: #1a1a2e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 10px rgba(251, 191, 36, 0.4);
+            flex-shrink: 0;
+        }
+
+        .rank-1 .rank-badge {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.5);
+        }
+
+        .rank-2 .rank-badge {
+            background: linear-gradient(135deg, #c0c0c0, #e8e8e8);
+        }
+
+        .rank-3 .rank-badge {
+            background: linear-gradient(135deg, #cd7f32, #e4a853);
+        }
+
+        .player-info {
+            flex: 1;
+            margin-left: 1.5rem;
+            min-width: 0;
+        }
+
+        .player-name {
+            font-size: 1.6rem;
+            font-weight: 900;
+            color: white;
+            text-transform: uppercase;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 0.3rem;
+        }
+
+        .player-sessions {
+            font-size: 1rem;
+            color: #94a3b8;
+        }
+
+        .player-hours {
+            font-size: 2rem;
+            font-weight: 900;
+            color: #fbbf24;
+            text-align: right;
+            min-width: 8rem;
+            text-shadow: 0 0 15px rgba(251, 191, 36, 0.3);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            font-size: 1.8rem;
+            color: #94a3b8;
+        }
+
+        .spinner {
+            border: 4px solid rgba(251, 191, 36, 0.3);
+            border-top: 4px solid #fbbf24;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+            color: #94a3b8;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+        }
+
+        .status.ok { color: #10b981; border-color: #10b981; }
+        .status.error { color: #ef4444; border-color: #ef4444; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="club-name">🏆 PLAYER'S POKER CLUB 🏆</div>
+        <div class="clock" id="clock">--:--:--</div>
+    </div>
+
+    <div class="main-content">
+        <div class="leaderboard">
+            <div class="leaderboard-title">TOP PLAYERS</div>
+            <div class="leaderboard-content" id="leaderboard">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading players...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="status" id="status">Initializing...</div>
+
+    <script>
+        const CACHE_KEY = 'poker_tv_cache';
+        const CACHE_TIME = 60000; // 1 minute
+
+        // Update clock
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').textContent = now.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            });
+        }
+
+        // Set status
+        function setStatus(message, isOk = true) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = 'status ' + (isOk ? 'ok' : 'error');
+        }
+
+        // Try multiple API endpoints
+        async function fetchWithRetry() {
+            const endpoints = [
+                '/api/tv-data',
+                '/api/tv-data?t=' + Date.now(), // bust cache
+            ];
+
+            for (const endpoint of endpoints) {
+                try {
+                    setStatus('Fetching data...', true);
+                    const controller = new AbortController();
+                    const timeout = setTimeout(() => controller.abort(), 5000);
+
+                    const response = await fetch(endpoint, {
+                        signal: controller.signal,
+                        headers: {
+                            'Accept': 'application/json',
+                            'Cache-Control': 'no-cache'
+                        }
+                    });
+
+                    clearTimeout(timeout);
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.players && data.players.length > 0) {
+                            setStatus('✓ Data loaded', true);
+                            return data;
+                        }
+                    }
+                } catch (err) {
+                    console.log('Endpoint failed:', endpoint, err.message);
+                }
+            }
+
+            throw new Error('All endpoints failed');
+        }
+
+        // Load from cache
+        function loadFromCache() {
+            try {
+                const cached = localStorage.getItem(CACHE_KEY);
+                if (cached) {
+                    const { data, time } = JSON.parse(cached);
+                    if (Date.now() - time < CACHE_TIME) {
+                        setStatus('✓ From cache', true);
+                        return data;
+                    }
+                }
+            } catch (err) {
+                console.log('Cache error:', err);
+            }
+            return null;
+        }
+
+        // Save to cache
+        function saveToCache(data) {
+            try {
+                localStorage.setItem(CACHE_KEY, JSON.stringify({
+                    data: data,
+                    time: Date.now()
+                }));
+            } catch (err) {
+                console.log('Cache save error:', err);
+            }
+        }
+
+        // Render players
+        function renderPlayers(players) {
+            const container = document.getElementById('leaderboard');
+
+            if (!players || players.length === 0) {
+                container.innerHTML = '<div class="loading">No players yet</div>';
+                return;
+            }
+
+            let html = '';
+            players.slice(0, 10).forEach((player, idx) => {
+                const rank = idx + 1;
+                const hours = Math.floor(player.total_hours || 0);
+                const minutes = Math.round((player.total_hours % 1) * 60);
+
+                html += `
+                    <div class="player-row rank-${rank}">
+                        <div class="rank-badge">${rank}</div>
+                        <div class="player-info">
+                            <div class="player-name">${player.name || 'Unknown'}</div>
+                            <div class="player-sessions">${player.total_sessions || 0} sessions</div>
+                        </div>
+                        <div class="player-hours">${hours}h ${minutes}m</div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Main load function
+        async function loadData() {
+            try {
+                // Try to fetch fresh data
+                let data = await fetchWithRetry();
+                saveToCache(data);
+                renderPlayers(data.players);
+            } catch (err) {
+                console.error('Fetch error:', err);
+                setStatus('✗ API failed, using cache', false);
+
+                // Fall back to cache
+                const cachedData = loadFromCache();
+                if (cachedData) {
+                    renderPlayers(cachedData.players);
+                } else {
+                    document.getElementById('leaderboard').innerHTML = 
+                        '<div class="loading">Unable to load data. Check connection.</div>';
+                }
+            }
+        }
+
+        // Initialize
+        function init() {
+            updateClock();
+            setInterval(updateClock, 1000);
+
+            // Load data immediately
+            loadData();
+
+            // Reload every 60 seconds
+            setInterval(loadData, 60000);
+        }
+
+        // Start when ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+</body>
+</html>
