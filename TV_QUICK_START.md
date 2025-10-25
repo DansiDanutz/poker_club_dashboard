@@ -5,7 +5,7 @@
 
 ## **⚡ Quick Setup (5 Minutes)**
 
-### **Step 1: TV Picture Settings** 
+### **Step 1: TV Picture Settings**
 Press **MENU** → **Settings** → **Picture**
 
 | Setting | Value |
@@ -30,7 +30,7 @@ Press **MENU** → **Settings** → **General & Privacy** → **Screen Protectio
 ### **Step 4: Navigate to Display**
 Open Browser → Enter URL:
 
-```
+```html
 https://hammerhead-app-f4ysx.ondigitalocean.app/tv
 or
 http://[YOUR_LOCAL_IP]:8080
@@ -75,7 +75,7 @@ http://[YOUR_LOCAL_IP]:8080
 
 ## **📊 Display Specifications**
 
-```
+```text
 Resolution Scaling:
 ├─ 4K (3840x2160)    → 28px fonts
 ├─ QHD (2560x1440)   → 24px fonts
@@ -119,6 +119,6 @@ Network:
 
 ## **✨ You're All Set!**
 
-Your leaderboard display is now optimized for Samsung TV T-KTSUDEUC-1341.2. 
+Your leaderboard display is now optimized for Samsung TV T-KTSUDEUC-1341.2.
 
 Enjoy the show! 🏆
