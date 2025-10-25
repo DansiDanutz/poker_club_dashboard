@@ -30,7 +30,7 @@ Based on your room lighting conditions:
 | **Normal Room** | 130-170 cd/m² | 60-70% |
 | **Dark Room** | 100-130 cd/m² | 50-60% |
 
-*Tip: For TV display showing 24/7, use Normal Room settings*
+### **Tip: For TV display showing 24/7, use Normal Room settings**
 
 ### **Step 4: Color Temperature**
 1. Go to **Settings** → **Picture** → **Expert Settings**
@@ -99,7 +99,7 @@ Based on your room lighting conditions:
 ### **Web Display URL Configuration**
 
 #### **For WiFi Connection:**
-```
+```html
 URL: https://hammerhead-app-f4ysx.ondigitalocean.app/tv
 or
 URL: http://[YOUR_LOCAL_IP]:3000/tv
@@ -138,7 +138,7 @@ SCREEN_OPTIMIZATION = 300000; // Allow TV optimization every 5 minutes
    - Security: **WPA2** or **WPA3**
 
 3. **Port Configuration** (per your rules)
-   ```
+   ```text
    Module 1 (Leaderboard): Port 8080  [FREEZE after setup]
    Module 2 (Promotions): Port 8081   [FREEZE after setup]
    Module 3 (Analytics):  Port 8082   [FREEZE after setup]
@@ -257,7 +257,7 @@ image-rendering: crisp-edges;
 Per your module requirements, follow this deployment process:
 
 ### **Phase 1: Development & Testing**
-```
+```text
 Port 8080: Leaderboard (Active Development)
 - Test with full animations
 - Verify all features
@@ -265,7 +265,7 @@ Port 8080: Leaderboard (Active Development)
 ```
 
 ### **Phase 2: Lock & Deploy**
-```
+```text
 FREEZE Port 8080: Leaderboard
 - Document all settings
 - Create backup
@@ -277,7 +277,7 @@ Port 8081: Promotion Module (Development)
 ```
 
 ### **Phase 3: Final Configuration**
-```
+```text
 FREEZE Port 8081: Promotion
 
 Port 8082: Analytics Module (Development)
@@ -287,7 +287,7 @@ Port 8082: Analytics Module (Development)
 
 ## **Quick Reference Card**
 
-```
+```text
 ┌─────────────────────────────────────────────┐
 │ SAMSUNG TV T-KTSUDEUC-1341.2               │
 │ Optimized for: Poker Club Leaderboard      │
@@ -308,7 +308,7 @@ Port 8082: Analytics Module (Development)
 
 ## **Support Resources**
 
-- **Samsung Support:** https://www.samsung.com/support/
+- **Samsung Support:** [https://www.samsung.com/support/](https://www.samsung.com/support/)
 - **e-Manual PDF:** KM2DVBEUN-3.0.8 (available on Samsung support page)
 - **Local Firmware Update:** Via USB in Settings → Support → Software Update
 - **Contact Samsung Support:** Settings → Support → Contact Samsung
