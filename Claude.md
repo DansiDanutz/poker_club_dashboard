@@ -17,7 +17,7 @@
 - **Framework**: Next.js 15 with App Router + TypeScript
 - **Database**: Supabase PostgreSQL with Real-time Sync
 - **UI Library**: shadcn/ui + Tailwind CSS + Dark/Light Themes
-- **Hosting**: http://localhost:3000 (Development) - Fixed Cache Issues
+- **Hosting**: [http://localhost:3000](http://localhost:3000) (Development) - Fixed Cache Issues
 - **Status**: 🟢 Production Ready with Enterprise-Grade Reliability
 - **Deployment**: Digital Ocean App Platform Ready
 
@@ -240,7 +240,7 @@ claude "Add real-time chat functionality to the poker dashboard"
 ## 🔐 Enterprise Backup & Restore System
 
 ### **Comprehensive Data Protection**
-```
+```text
 📦 Backup Components:
 - Complete Supabase database (all tables)
 - LocalStorage application state
@@ -275,7 +275,7 @@ claude "Add real-time chat functionality to the poker dashboard"
 ## 🔄 Sync System Architecture
 
 ### **Hybrid Sync Strategy**
-```
+```text
 🌐 Online Mode:
 User Action → Supabase → Real-time Update → All Connected Clients
 
@@ -353,7 +353,7 @@ npm start
 4. **SSL Certificates**: Ensure HTTPS for all connections
 5. **Rate Limiting**: Configure appropriate API rate limits
 
-### **Performance Optimizations**
+### **Production Deployment Optimizations**
 - **CDN Integration**: Serve static assets via CDN
 - **Image Optimization**: Use Next.js Image component
 - **Database Connection Pooling**: Configure Supabase pooling
