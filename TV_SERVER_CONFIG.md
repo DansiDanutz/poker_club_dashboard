@@ -7,7 +7,7 @@
 
 ### **Current Architecture**
 
-```
+```text
 ┌─────────────────────────────────────────┐
 │      Samsung TV (T-KTSUDEUC-1341.2)    │
 └─────────────────────────────────────────┘
@@ -213,7 +213,7 @@ const API_CONFIG = {
 
 ### **Cache Headers for TV Display**
 
-```
+```text
 # Cache Strategy
 Static Assets:   max-age=86400 (24 hours)
 Dynamic Data:    max-age=60 (1 minute)
